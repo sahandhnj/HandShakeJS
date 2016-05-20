@@ -1,0 +1,10 @@
+{
+  "name": "plekryption",
+  "version": "0.0.0",
+  "description": "The encryption system for plek(front-end)",
+  "main": "dist/main.js",
+  "dependencies": {
+    "jsencrypt": "^2.3.0"
+  },
+  "devDependencies": {}
+}
