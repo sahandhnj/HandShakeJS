@@ -5,3 +5,11 @@
 Install through bower:
 
         bower install plekryption
+        
+Compile ts files:
+        
+        gulp build
+
+watch changes:
+        
+        gulp watch

@@ -3,7 +3,10 @@
   "version": "0.0.0",
   "description": "The encryption system for plek(front-end)",
   "main": "dist/main.js",
-  "dependencies": {},
+  "dependencies": {
+    "jsencrypt": "^2.3.0",
+    "requirejs": "^2.2.0"
+  },
   "devDependencies": {
     "bower": "^1.7.9",
     "del": "^2.2.0",

@@ -1,5 +1,4 @@
 module Plekryption {
-
   export class HelloWorld {
 
     constructor() {

@@ -1,6 +1,6 @@
 /*jslint node: true */ // allow 'require' global
 'use strict';
-
+var tsconfig = require('./tsconfig.json');
 var gulp = require('gulp'),
   concat = require('gulp-concat'),
   del = require('del'),
@@ -15,20 +15,17 @@ var gulp = require('gulp'),
 
 var sources = {
   app: {
-    ts: ['./src/**/*.ts'],
+    ts: tsconfig.filesGlob
   }
 };
 
 var destinations = {
-  js: './dist/'
+  js: tsconfig.compilerOptions.outDir
 };
 
-gulp.task('js:app', function() {
+gulp.task('compile', function() {
   var tsStream = gulp.src(sources.app.ts)
-    .pipe(ts({
-      declarationFiles: false,
-      noExternalResolve: true
-    }));
+    .pipe(ts(tsconfig.compilerOptions));
 
   es.merge(
     tsStream.dts.pipe(gulp.dest(destinations.js)),
@@ -40,7 +37,7 @@ gulp.task('js:app', function() {
 
 // deletes the dist folder for a clean build
 gulp.task('clean', function() {
-  del(['./dist'], function(err, deletedFiles) {
+  del([destinations.js], function(err, deletedFiles) {
     if(deletedFiles.length) {
       util.log('Deleted', util.colors.red(deletedFiles.join(' ,')) );
     } else {
@@ -50,7 +47,8 @@ gulp.task('clean', function() {
 });
 
 gulp.task('build', [
-  'js:app'
+  'clean',
+  'compile'
 ]);
 
 gulp.task('bump', function() {
@@ -72,14 +70,13 @@ gulp.task('bump', function() {
           .pipe(git.commit('bump patch version'))
           .pipe(filter('package.json'))  // read package.json for the new version
           .pipe(tagVersion());           // create tag
-
     }
   });
 });
 
 // watch scripts, styles, and templates
 gulp.task('watch', function() {
-  gulp.watch(sources.app.ts, ['js:app']);
+  gulp.watch(sources.app.ts, ['compile']);
 });
 
 // default
