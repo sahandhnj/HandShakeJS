@@ -13,3 +13,7 @@ Compile ts files:
 watch changes:
         
         gulp watch
+        
+patch a new version
+        
+        gulp bump
