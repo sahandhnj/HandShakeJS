@@ -5,7 +5,7 @@
         "help": true,
         "listFiles": true,
         "watch": true,
-        "allowSyntheticDefaultImports":true,
+        "allowSyntheticDefaultImports":false,
         "target": "ES6",
         "module": "commonjs",
         "moduleResolution": "classic",

@@ -32,7 +32,6 @@ module Keymanager {
             }).then(()=>{
                 if(this._status === Status.KeysDoesNotExist){
                     let keyGen = new genKeys();
-                    this._status = Status.KeysGenerated;
                     return this.storeKeys(keyGen.pubKey,keyGen.priKey);
                 }
             }).then(()=>{
@@ -42,12 +41,12 @@ module Keymanager {
             }).catch((err: any)=>{
                 alert (err);
             });
-            
+
         }
 
         retrievePubKey(): Promise<string | Error> {
             const p: Promise<string | Error> = new Promise (
-                (resolve: (str: string)=>void, reject: (str: Error)=>void) => {
+                (resolve: (str: string)=>void, reject: (err: Error)=>void) => {
                     try{
                         let res = store.get("keys");
                         if(!!res && !!res.publicKey){
@@ -65,7 +64,7 @@ module Keymanager {
 
         retrievePriKey(): Promise<string | Error> {
             const p: Promise<string | Error> = new Promise (
-                (resolve: (str: string)=>void, reject: (str: Error)=>void) => {
+                (resolve: (str: string)=>void, reject: (err: Error)=>void) => {
                     try{
                         let res = store.get("keys");
                         if(!!res && !!res.privateKey){
@@ -81,14 +80,29 @@ module Keymanager {
             return p;
         }
 
+        removeKeys(): Promise<Error> {
+            const p: Promise<Error> = new Promise (
+                (resolve: ()=>void, reject: (err: Error)=>void) => {
+                    try{
+                        store.remove('keys');
+                        resolve();
+                    } catch(err){
+                        reject(err);
+                    }
+                }
+            );
+            return p;
+        }
+
         storeKeys(pubKey: string, priKey: string): Promise<Error> {
             const p: Promise<Error> = new Promise (
-                (resolve: ()=>void, reject: (str: Error)=>void) => {
+                (resolve: ()=>void, reject: (err: Error)=>void) => {
                     try{
                         if(!!pubKey && !!priKey ){
                             store.set('keys', { publicKey: pubKey, privateKey: priKey });
                             this._pubKey = pubKey;
                             this._priKey = priKey;
+                            this._status = Status.KeysGenerated;
                             resolve();
                         }
                         reject(new Error('public/private keys are not set.'))
@@ -107,7 +121,12 @@ module Keymanager {
                         this._status = Status.Failed;
                         reject(new Error('Local storage is not supported by your browser. Please disable "Private Mode", or upgrade to a modern browser.'));
                     }
-                    else resolve(null);
+                    else{
+                        resolve(null);
+                        /*this.removeKeys().then(()=>{
+                            resolve(null);
+                        })*/
+                    } 
                 }
             );
             return p;

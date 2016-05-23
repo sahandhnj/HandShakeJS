@@ -18,7 +18,6 @@ var Keymanager;
             }).then(() => {
                 if (this._status === 2 /* KeysDoesNotExist */) {
                     let keyGen = new genKeys();
-                    this._status = 3 /* KeysGenerated */;
                     return this.storeKeys(keyGen.pubKey, keyGen.priKey);
                 }
             }).then(() => {
@@ -63,6 +62,18 @@ var Keymanager;
             });
             return p;
         }
+        removeKeys() {
+            const p = new Promise((resolve, reject) => {
+                try {
+                    store.remove('keys');
+                    resolve();
+                }
+                catch (err) {
+                    reject(err);
+                }
+            });
+            return p;
+        }
         storeKeys(pubKey, priKey) {
             const p = new Promise((resolve, reject) => {
                 try {
@@ -70,6 +81,7 @@ var Keymanager;
                         store.set('keys', { publicKey: pubKey, privateKey: priKey });
                         this._pubKey = pubKey;
                         this._priKey = priKey;
+                        this._status = 3 /* KeysGenerated */;
                         resolve();
                     }
                     reject(new Error('public/private keys are not set.'));
@@ -86,8 +98,9 @@ var Keymanager;
                     this._status = 5 /* Failed */;
                     reject(new Error('Local storage is not supported by your browser. Please disable "Private Mode", or upgrade to a modern browser.'));
                 }
-                else
+                else {
                     resolve(null);
+                }
             });
             return p;
         }
