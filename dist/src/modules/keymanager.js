@@ -1,5 +1,3 @@
-
-
 var Keymanager;
 (function (Keymanager) {
     class initiate {
@@ -108,3 +106,4 @@ var Keymanager;
     }
 })(Keymanager || (Keymanager = {}));
 ;
+//# sourceMappingURL=keymanager.js.map

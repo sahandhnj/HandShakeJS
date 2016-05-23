@@ -52,7 +52,7 @@ gulp.task('build', [
 ]);
 
 gulp.task('bump', function() {
-    return gulp.src(['./package.json', './bower.json'])
+    return gulp.src(['./package.json'])
         .pipe(bump({type: 'patch'}))
         .pipe(gulp.dest('./'))
         .pipe(git.commit('bump patch version'))
