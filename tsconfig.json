@@ -14,7 +14,7 @@
         "experimentalDecorators": true,
         "removeComments": false,
         "noImplicitAny": false,
-        "declaration": true,
+        "declaration": false,
         "noLib": false,
         "outDir": "dist"
     },
@@ -24,6 +24,6 @@
     "exclude": [
         "node_modules",
         "dist",
-        "typings"
+        "localSettings/typings"
     ]
 }

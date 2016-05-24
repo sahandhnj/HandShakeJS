@@ -1,6 +1,6 @@
-module Keymanager {
+import {config,JSEncrypt,store} from './lib';
 
-    //var config = require('json!./config.json');
+export module Keymanager {
     const enum Status {
         Initiated,
         KeysExist,
@@ -38,6 +38,7 @@ module Keymanager {
                 document.write('<h3>Status</h3><p>'+ this._status +'</p>');
                 document.write('<h3>PublicKey</h3><p>'+ this._pubKey +'</p>');
                 document.write('<h3>PrivateKey</h3><p>'+ this._priKey +'</p>');
+                document.write('<h3>config</h3><p>'+ JSON.stringify(config) +'</p>');
             }).catch((err: any)=>{
                 alert (err);
             });
@@ -48,7 +49,7 @@ module Keymanager {
             const p: Promise<string | Error> = new Promise (
                 (resolve: (str: string)=>void, reject: (err: Error)=>void) => {
                     try{
-                        let res = store.get("keys");
+                        let res = store.get(config.keyManagement.keyStorageId);
                         if(!!res && !!res.publicKey){
                             this._pubKey = res.publicKey;
                             resolve(res.publicKey);
@@ -66,7 +67,7 @@ module Keymanager {
             const p: Promise<string | Error> = new Promise (
                 (resolve: (str: string)=>void, reject: (err: Error)=>void) => {
                     try{
-                        let res = store.get("keys");
+                        let res = store.get(config.keyManagement.keyStorageId);
                         if(!!res && !!res.privateKey){
                             this._priKey = res.privateKey;
                             resolve(res.privateKey);
@@ -84,7 +85,7 @@ module Keymanager {
             const p: Promise<Error> = new Promise (
                 (resolve: ()=>void, reject: (err: Error)=>void) => {
                     try{
-                        store.remove('keys');
+                        store.remove(config.keyManagement.keyStorageId);
                         resolve();
                     } catch(err){
                         reject(err);
@@ -99,13 +100,13 @@ module Keymanager {
                 (resolve: ()=>void, reject: (err: Error)=>void) => {
                     try{
                         if(!!pubKey && !!priKey ){
-                            store.set('keys', { publicKey: pubKey, privateKey: priKey });
+                            store.set(config.keyManagement.keyStorageId, { publicKey: pubKey, privateKey: priKey });
                             this._pubKey = pubKey;
                             this._priKey = priKey;
                             this._status = Status.KeysGenerated;
                             resolve();
                         }
-                        reject(new Error('public/private keys are not set.'))
+                        reject(new Error(config.keyManagement.errorMessages.noSetKeyPairs))
                     } catch(err){
                         reject(err);
                     }
@@ -119,14 +120,14 @@ module Keymanager {
                 (resolve: (n: any)=>void, reject: (err: Error)=>void) => {
                     if (!store.enabled){
                         this._status = Status.Failed;
-                        reject(new Error('Local storage is not supported by your browser. Please disable "Private Mode", or upgrade to a modern browser.'));
+                        reject(new Error(config.keyManagement.errorMessages.localStorageNoSupport));
                     }
                     else{
                         resolve(null);
                         /*this.removeKeys().then(()=>{
                             resolve(null);
                         })*/
-                    } 
+                    }
                 }
             );
             return p;
