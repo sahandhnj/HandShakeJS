@@ -19,19 +19,6 @@ export module Keymanager {
         private keyStorageId: string = config.keyManagement.keyStorageId;
 
         constructor(){
-            var cr = new Crypto.encryption();
-            var tmpCred:any;
-            var enc:any;
-            cr.setCredential().then(val =>{
-                tmpCred = val;
-                return cr.encryptAES(val,"SOME TEXT TO BE ENCRYPTED");
-            }).then(encs => {
-                enc = encs;
-            }).catch((err) => {
-               alert(err);
-            });
-
-
             var arrayOfPromise = [
                 this.initialChecks(),
                 this.retrievePubKey(),
@@ -47,17 +34,21 @@ export module Keymanager {
                     let keyGen = new genKeys();
                     return this.storeKeys(keyGen.pubKey,keyGen.priKey);
                 }
-            }).then(()=>{
-                document.write('<h3>Status</h3><p>'+ this._status +'</p>');
-                document.write('<h3>PublicKey</h3><p>'+ this._pubKey +'</p>');
-                document.write('<h3>PrivateKey</h3><p>'+ this._priKey +'</p>');
-                document.write('<h3>NONCE</h3><p>'+ tmpCred.nonce.toString() +'</p>');
-                document.write('<h3>Key</h3><p>'+ tmpCred.key.toString() +'</p>');
-                document.write('<h3>SOME TEXT TO BE ENCRYPTED =></h3><p>'+ enc +'</p>');
             }).catch((err: any)=>{
                 alert (err);
             });
 
+        }
+        get pubKey(): string {
+            return this._pubKey;
+        }
+
+        get priKey(): string {
+            return this._priKey;
+        }
+
+        get status(): number {
+            return this._status;
         }
 
         retrievePubKey(): Promise<string | Error> {

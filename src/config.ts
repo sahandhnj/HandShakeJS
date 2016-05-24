@@ -11,10 +11,14 @@ var cryptoJSON = {
     keyGenPossibilities:"!@$%^&*()_+=-[]{}`~,.?/|;:ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789",
     errorMessages: {
         credGenFail: "Key or NONCE cannot be generated",
-        noNONCE: "NONCE is required for the encryption",
+        noNONCE: "NONCE is required for the encryption/decryption",
         badNONCESize:"The size of NONCE Does not match the encryption algorithm",
-        noKEY: "KEY is required for the encryption",
-        noPlainText: "Plain Text is required for the encryption"
+        noKEY: "KEY is required for the encryption/decryption",
+        noPlainText: "Plain Text is required for the encryption",
+        other: "Cipher could not be generated",
+        nonceExtractionFail:"Could not extract NONCE and Cipher",
+        noCipher:"A Cipher is required for decryption",
+        decryptionFailed: "For unknown reasons decryption failed"
     }
 };
 

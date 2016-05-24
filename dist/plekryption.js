@@ -46,9 +46,40 @@
 
 	"use strict";
 	const keymanager_1 = __webpack_require__(1);
+	const cryptography_1 = __webpack_require__(6);
 	var Plekryption;
 	(function (Plekryption) {
-	    var km = new keymanager_1.Keymanager.initiate();
+	    test();
+	    function test() {
+	        /***** BEGIM TESTING **********/
+	        var km = new keymanager_1.Keymanager.initiate();
+	        var cr = new cryptography_1.Cryptography.encryption();
+	        var tmpCred;
+	        var enc;
+	        var dec;
+	        var status = km.status;
+	        var pubKey = km.pubKey;
+	        var priKey = km.priKey;
+	        cr.setCredential().then(val => {
+	            tmpCred = val;
+	            return cr.encryptAES_CTR(val, "Awesome Encryption");
+	        }).then(encs => {
+	            enc = encs;
+	            return cr.decryptAES_CTR(encs.toString(), tmpCred.key);
+	        }).then((res) => {
+	            dec = res;
+	            document.write('<h3>Status</h3><p>' + status + '</p>');
+	            document.write('<h3>PublicKey</h3><p>' + pubKey + '</p>');
+	            document.write('<h3>PrivateKey</h3><p>' + priKey + '</p>');
+	            document.write('<h3>NONCE</h3><p>' + tmpCred.nonce.toString() + '</p>');
+	            document.write('<h3>Key</h3><p>' + tmpCred.key.toString() + '</p>');
+	            document.write('<h3>Cipher</h3><p>' + enc + '</p>');
+	            document.write('<h3>Decrypted</h3><p>' + dec + '</p>');
+	        }).catch((err) => {
+	            alert(err);
+	        });
+	        /***** END TESTING **********/
+	    }
 	})(Plekryption = exports.Plekryption || (exports.Plekryption = {}));
 
 
@@ -64,17 +95,6 @@
 	        constructor() {
 	            this._status = 0 /* Initiated */;
 	            this.keyStorageId = lib_1.config.keyManagement.keyStorageId;
-	            var cr = new lib_1.Crypto.encryption();
-	            var tmpCred;
-	            var enc;
-	            cr.setCredential().then(val => {
-	                tmpCred = val;
-	                return cr.encryptAES(val, "SOME TEXT TO BE ENCRYPTED");
-	            }).then(encs => {
-	                enc = encs;
-	            }).catch((err) => {
-	                alert(err);
-	            });
 	            var arrayOfPromise = [
 	                this.initialChecks(),
 	                this.retrievePubKey(),
@@ -90,16 +110,19 @@
 	                    let keyGen = new genKeys();
 	                    return this.storeKeys(keyGen.pubKey, keyGen.priKey);
 	                }
-	            }).then(() => {
-	                document.write('<h3>Status</h3><p>' + this._status + '</p>');
-	                document.write('<h3>PublicKey</h3><p>' + this._pubKey + '</p>');
-	                document.write('<h3>PrivateKey</h3><p>' + this._priKey + '</p>');
-	                document.write('<h3>NONCE</h3><p>' + tmpCred.nonce.toString() + '</p>');
-	                document.write('<h3>Key</h3><p>' + tmpCred.key.toString() + '</p>');
-	                document.write('<h3>SOME TEXT TO BE ENCRYPTED =></h3><p>' + enc + '</p>');
+	                alert(this._status);
 	            }).catch((err) => {
 	                alert(err);
 	            });
+	        }
+	        get pubKey() {
+	            return this._pubKey;
+	        }
+	        get priKey() {
+	            return this._priKey;
+	        }
+	        get status() {
+	            return this._status;
 	        }
 	        retrievePubKey() {
 	            const p = new Promise((resolve, reject) => {
@@ -233,10 +256,14 @@
 	    keyGenPossibilities: "!@$%^&*()_+=-[]{}`~,.?/|;:ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789",
 	    errorMessages: {
 	        credGenFail: "Key or NONCE cannot be generated",
-	        noNONCE: "NONCE is required for the encryption",
+	        noNONCE: "NONCE is required for the encryption/decryption",
 	        badNONCESize: "The size of NONCE Does not match the encryption algorithm",
-	        noKEY: "KEY is required for the encryption",
-	        noPlainText: "Plain Text is required for the encryption"
+	        noKEY: "KEY is required for the encryption/decryption",
+	        noPlainText: "Plain Text is required for the encryption",
+	        other: "Cipher could not be generated",
+	        nonceExtractionFail: "Could not extract NONCE and Cipher",
+	        noCipher: "A Cipher is required for decryption",
+	        decryptionFailed: "For unknown reasons decryption failed"
 	    }
 	};
 	exports.crypto = cryptoJSON;
@@ -349,7 +376,7 @@
 	                    if (!!plaintext) {
 	                        //noinspection TypeScriptUnresolvedVariable
 	                        let cipher = lib_1.crypto.AES.encrypt(plaintext, cred.key);
-	                        resolve(cipher);
+	                        (!!cipher) ? resolve(cipher) : reject(new Error(lib_1.config.crypto.errorMessages.other));
 	                    }
 	                    else
 	                        reject(new Error(lib_1.config.crypto.errorMessages.noPlainText));
@@ -377,7 +404,8 @@
 	                    if (!!plaintext) {
 	                        //noinspection TypeScriptUnresolvedVariable
 	                        let cipher = lib_1.crypto.AES.encrypt(plaintext, cred.key, { iv: nonce, mode: lib_1.crypto.mode.CTR, padding: lib_1.crypto.pad.NoPadding });
-	                        resolve(cipher);
+	                        cipher = cred.nonce + cipher;
+	                        (!!cipher) ? resolve(cipher) : reject(new Error(lib_1.config.crypto.errorMessages.other));
 	                    }
 	                    else
 	                        reject(new Error(lib_1.config.crypto.errorMessages.noPlainText));
@@ -388,12 +416,88 @@
 	            });
 	            return p;
 	        }
+	        decryptAES_CTR(cipher, key) {
+	            const p = new Promise((resolve, reject) => {
+	                try {
+	                    if (!!cipher && cipher.length > 0) {
+	                        var ex = this.extractNONCE(cipher);
+	                        if (typeof ex == "Error")
+	                            reject(ex);
+	                    }
+	                    else
+	                        reject(new Error(lib_1.config.crypto.errorMessages.noCipher));
+	                    if (!!ex.nonce || (ex.nonce.length === this.NONCE_LENGTH * 2)) {
+	                        //noinspection TypeScriptUnresolvedVariable
+	                        var nonce = lib_1.crypto.enc.Hex.parse(ex.nonce);
+	                    }
+	                    else
+	                        reject(new Error(lib_1.config.crypto.errorMessages.noNONCE));
+	                    if (!ex.cipher)
+	                        reject(new Error(lib_1.config.crypto.errorMessages.noCipher));
+	                    if (!key && key.length !== this.KEY_LENGTH)
+	                        reject(new Error(lib_1.config.crypto.errorMessages.noKEY));
+	                    //noinspection TypeScriptUnresolvedVariable
+	                    var plain = lib_1.crypto.AES.decrypt(ex.cipher, key, { iv: nonce, mode: lib_1.crypto.mode.CTR, padding: lib_1.crypto.pad.NoPadding });
+	                    //noinspection TypeScriptUnresolvedVariable
+	                    plain = plain.toString(lib_1.crypto.enc.Utf8);
+	                    (!!plain) ? resolve(plain) : reject(new Error(lib_1.config.crypto.errorMessages.decryptionFailed));
+	                }
+	                catch (err) {
+	                    reject(err);
+	                }
+	            });
+	            return p;
+	        }
+	        decryptAES(cipher, key) {
+	            const p = new Promise((resolve, reject) => {
+	                try {
+	                    if (!cipher)
+	                        reject(new Error(lib_1.config.crypto.errorMessages.noCipher));
+	                    if (!key && key.length !== this.KEY_LENGTH)
+	                        reject(new Error(lib_1.config.crypto.errorMessages.noKEY));
+	                    //noinspection TypeScriptUnresolvedVariable
+	                    let plain = lib_1.crypto.AES.decrypt(cipher, key);
+	                    //noinspection TypeScriptUnresolvedVariable
+	                    plain = plain.toString(lib_1.crypto.enc.Utf8);
+	                    (!!plain) ? resolve(plain) : reject(new Error(lib_1.config.crypto.errorMessages.decryptionFailed));
+	                }
+	                catch (err) {
+	                    reject(err);
+	                }
+	            });
+	            return p;
+	        }
+	        extractNONCE(cipher) {
+	            try {
+	                var res = {
+	                    nonce: "",
+	                    cipher: ""
+	                };
+	                for (var i = 0; i < this.NONCE_LENGTH * 2; i++)
+	                    res.nonce += cipher[i];
+	                for (var j = this.NONCE_LENGTH * 2; j < cipher.length; j++)
+	                    res.cipher += cipher[j];
+	                if (res.nonce.length == this.NONCE_LENGTH * 2 && res.cipher.length > 0)
+	                    return (res);
+	                else
+	                    return (new Error(lib_1.config.crypto.errorMessages.nonceExtractionFail));
+	            }
+	            catch (err) {
+	                return (err);
+	            }
+	        }
 	        generateRandomKey(len = this.KEY_LENGTH) {
 	            let key = "";
 	            let possible = lib_1.config.crypto.keyGenPossibilities;
 	            for (let i = 0; i < len; i++)
 	                key += possible.charAt(Math.floor(Math.random() * possible.length));
 	            return key;
+	        }
+	        hex2a(hex) {
+	            var str = '';
+	            for (var i = 0; i < hex.length; i += 2)
+	                str += String.fromCharCode(parseInt(hex.substr(i, 2), 16));
+	            return str;
 	        }
 	        setCredential(key) {
 	            const p = new Promise((resolve, reject) => {
