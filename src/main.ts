@@ -91,15 +91,16 @@ export module Plekryption {
         addHtmlForm();
     };
     function addHtmlForm():any{
-        var input = document.createElement("input");
-        input.type = "text";
-        input.id = "msg"; // set the CSS class
-        document.body.appendChild(input); // p
+        var txt = document.createElement("textarea");
+        txt.rows = 10;
+        txt.cols = 100;
+        txt.id = "msg"; // set the CSS class
+        document.body.appendChild(txt); // p
 
         var button = document.createElement('button');
         button.innerText = "Send";
         button.onclick = function () {
-            t.chat(input.value);
+            t.chat(txt.value);
         };
         document.body.appendChild(button);
     }

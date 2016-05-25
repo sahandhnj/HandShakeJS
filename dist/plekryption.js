@@ -116,14 +116,15 @@
 	        addHtmlForm();
 	    };
 	    function addHtmlForm() {
-	        var input = document.createElement("input");
-	        input.type = "text";
-	        input.id = "msg"; // set the CSS class
-	        document.body.appendChild(input); // p
+	        var txt = document.createElement("textarea");
+	        txt.rows = 10;
+	        txt.cols = 100;
+	        txt.id = "msg"; // set the CSS class
+	        document.body.appendChild(txt); // p
 	        var button = document.createElement('button');
 	        button.innerText = "Send";
 	        button.onclick = function () {
-	            t.chat(input.value);
+	            t.chat(txt.value);
 	        };
 	        document.body.appendChild(button);
 	    }
@@ -304,10 +305,7 @@
 	                    reject(new Error(lib_1.config.keyManagement.asymmetricKeys.errorMessages.localStorageNoSupport));
 	                }
 	                else {
-	                    //resolve(null);
-	                    this.removeKeys().then(() => {
-	                        resolve(null);
-	                    }).catch(err => { reject(err); });
+	                    resolve(null);
 	                }
 	            });
 	            return p;

@@ -192,10 +192,10 @@ export module Keymanager {
                         reject(new Error(config.keyManagement.asymmetricKeys.errorMessages.localStorageNoSupport));
                     }
                     else{
-                        //resolve(null);
-                        this.removeKeys().then(()=>{
+                        resolve(null);
+                        /*this.removeKeys().then(()=>{
                             resolve(null);
-                        }).catch(err => { reject(err); });
+                        }).catch(err => { reject(err); });*/
                     }
                 }
             );
