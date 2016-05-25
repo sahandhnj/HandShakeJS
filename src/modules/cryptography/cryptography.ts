@@ -8,9 +8,9 @@ export module Cryptography{
         constructor(){
 
         }
-        encryptAES(cred: any,plaintext: string): Promise<Object | Error>{
-            const p: Promise<Object | Error> = new Promise (
-                (resolve: (cipher: Object)=>void, reject: (err: Error)=>void) => {
+        encryptAES(cred: any,plaintext: string): Promise<string | Error>{
+            const p: Promise<string | Error> = new Promise (
+                (resolve: (cipher: string)=>void, reject: (err: Error)=>void) => {
                     try{
                         if(!cred.key && cred.key.length !== this.KEY_LENGTH)
                             reject(new Error(config.crypto.errorMessages.noKEY));
@@ -18,6 +18,7 @@ export module Cryptography{
                         if(!!plaintext) {
                             //noinspection TypeScriptUnresolvedVariable
                             let cipher = crypto.AES.encrypt(plaintext, cred.key);
+                            cipher = cipher.toString();
                             (!!cipher) ? resolve(cipher) : reject (new Error(config.crypto.errorMessages.other));
 
                         } else

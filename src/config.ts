@@ -1,8 +1,13 @@
 var keyManagementJSON = {
+    masterKey: "J]oIc0M$A~*im+XOOK+K[2L4N6alEbk(",
     keyStorageId: "keys",
     errorMessages:  {
         noSetKeyPairs: "public/private keys are not set.",
-        localStorageNoSupport: "Local storage is not supported by your browser. Please disable Private Mode or upgrade to a modern browser."
+        localStorageNoSupport: "Local storage is not supported by your browser. Please disable Private Mode or upgrade to a modern browser.",
+        keyEncryptionFailed: "Public and Private keys cannot be encrypted.",
+        noPubKey: "No Public key is set",
+        noPriKey: "No Private key is set",
+        noStatus: "No Status key is set"
     }
 };
 var cryptoJSON = {

@@ -4,22 +4,37 @@ import {Cryptography} from './modules/cryptography/cryptography';
 
 export module Plekryption {
 test();
-    
+
 function test():void {
     /***** BEGIM TESTING **********/
-    var km = new Keymanager.initiate();
+    var km = new Keymanager.asymmetricKeys();
     var cr = new Cryptography.encryption();
 
     var tmpCred:any;
     var enc:any;
     var dec:any;
-    var status:any= km.status;
-    var pubKey:any= km.pubKey;
-    var priKey:any= km.priKey;
-    
-    cr.setCredential().then(val =>{
+    var status:any;
+    var pubKey:any;
+    var priKey:any;
+    km.initiate().then(()=>{
+        var promiseArray = [
+            km.pubKey,
+            km.priKey,
+            km.status
+        ];
+        return Promise.all(promiseArray);
+
+    }).then(val => {
+        pubKey = val[0];
+        priKey= val[1];
+        status= val[2];
+        console.log(priKey);
+
+
+        return cr.setCredential();
+    }).then(val =>{
         tmpCred = val;
-        return cr.encryptAES_CTR(val,"Awesome Encryption");
+        return cr.encryptAES_CTR(val,"I want to be encrypted");
     }).then(encs => {
         enc = encs;
         return cr.decryptAES_CTR(encs.toString(),tmpCred.key);

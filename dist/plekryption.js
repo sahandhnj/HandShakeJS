@@ -52,17 +52,30 @@
 	    test();
 	    function test() {
 	        /***** BEGIM TESTING **********/
-	        var km = new keymanager_1.Keymanager.initiate();
+	        var km = new keymanager_1.Keymanager.asymmetricKeys();
 	        var cr = new cryptography_1.Cryptography.encryption();
 	        var tmpCred;
 	        var enc;
 	        var dec;
-	        var status = km.status;
-	        var pubKey = km.pubKey;
-	        var priKey = km.priKey;
-	        cr.setCredential().then(val => {
+	        var status;
+	        var pubKey;
+	        var priKey;
+	        km.initiate().then(() => {
+	            var promiseArray = [
+	                km.pubKey,
+	                km.priKey,
+	                km.status
+	            ];
+	            return Promise.all(promiseArray);
+	        }).then(val => {
+	            pubKey = val[0];
+	            priKey = val[1];
+	            status = val[2];
+	            console.log(priKey);
+	            return cr.setCredential();
+	        }).then(val => {
 	            tmpCred = val;
-	            return cr.encryptAES_CTR(val, "Awesome Encryption");
+	            return cr.encryptAES_CTR(val, "I want to be encrypted");
 	        }).then(encs => {
 	            enc = encs;
 	            return cr.decryptAES_CTR(encs.toString(), tmpCred.key);
@@ -91,38 +104,91 @@
 	const lib_1 = __webpack_require__(2);
 	var Keymanager;
 	(function (Keymanager) {
-	    class initiate {
+	    var cr = new lib_1.Crypto.encryption();
+	    class asymmetricKeys {
 	        constructor() {
 	            this._status = 0 /* Initiated */;
 	            this.keyStorageId = lib_1.config.keyManagement.keyStorageId;
-	            var arrayOfPromise = [
-	                this.initialChecks(),
-	                this.retrievePubKey(),
-	                this.retrievePriKey()
-	            ];
-	            Promise.all(arrayOfPromise).then(val => {
-	                if (!!val[1] && !!val[2])
-	                    this._status = 1 /* KeysExist */;
-	                else
-	                    this._status = 2 /* KeysDoesNotExist */;
-	            }).then(() => {
-	                if (this._status === 2 /* KeysDoesNotExist */) {
-	                    let keyGen = new genKeys();
-	                    return this.storeKeys(keyGen.pubKey, keyGen.priKey);
+	        }
+	        initiate() {
+	            const p = new Promise((resolve, reject) => {
+	                try {
+	                    var arrayOfPromise = [
+	                        this.initialChecks(),
+	                        this.retrievePubKey(),
+	                        this.retrievePriKey()
+	                    ];
+	                    Promise.all(arrayOfPromise).then(val => {
+	                        if (!!val[1] && !!val[2])
+	                            this._status = 1 /* KeysExist */;
+	                        else
+	                            this._status = 2 /* KeysDoesNotExist */;
+	                    }).then(() => {
+	                        if (this._status === 2 /* KeysDoesNotExist */) {
+	                            let keyGen = new genKeys();
+	                            return this.storeKeys(keyGen.pubKey, keyGen.priKey);
+	                        }
+	                    }).then(() => {
+	                        resolve();
+	                    }).catch((err) => {
+	                        throw (err);
+	                    });
 	                }
-	                alert(this._status);
-	            }).catch((err) => {
-	                alert(err);
+	                catch (err) {
+	                    reject(err);
+	                }
 	            });
+	            return p;
 	        }
 	        get pubKey() {
-	            return this._pubKey;
+	            const p = new Promise((resolve, reject) => {
+	                try {
+	                    if (!!this._pubKey) {
+	                        cr.decryptAES(this._pubKey, lib_1.config.keyManagement.masterKey).then(val => {
+	                            let tmpPubKey = val;
+	                            resolve(tmpPubKey);
+	                        }).catch(err => { throw err; });
+	                    }
+	                    else
+	                        throw new Error(lib_1.config.keyManagement.errorMessages.noPubKey);
+	                }
+	                catch (err) {
+	                    reject(err);
+	                }
+	            });
+	            return p;
 	        }
 	        get priKey() {
-	            return this._priKey;
+	            const p = new Promise((resolve, reject) => {
+	                try {
+	                    if (!!this._priKey) {
+	                        cr.decryptAES(this._priKey, lib_1.config.keyManagement.masterKey).then(val => {
+	                            let tmpPriKey = val;
+	                            resolve(tmpPriKey);
+	                        }).catch(err => { throw err; });
+	                    }
+	                    else
+	                        throw new Error(lib_1.config.keyManagement.errorMessages.noPriKey);
+	                }
+	                catch (err) {
+	                    reject(err);
+	                }
+	            });
+	            return p;
 	        }
 	        get status() {
-	            return this._status;
+	            const p = new Promise((resolve, reject) => {
+	                try {
+	                    if (!!this._status)
+	                        resolve(this._status);
+	                    else
+	                        throw new Error(lib_1.config.keyManagement.errorMessages.noStatus);
+	                }
+	                catch (err) {
+	                    reject(err);
+	                }
+	            });
+	            return p;
 	        }
 	        retrievePubKey() {
 	            const p = new Promise((resolve, reject) => {
@@ -174,13 +240,21 @@
 	            const p = new Promise((resolve, reject) => {
 	                try {
 	                    if (!!pubKey && !!priKey) {
-	                        lib_1.store.set(this.keyStorageId, { publicKey: pubKey, privateKey: priKey });
-	                        this._pubKey = pubKey;
-	                        this._priKey = priKey;
-	                        this._status = 3 /* KeysGenerated */;
-	                        resolve();
+	                        var promises = [
+	                            cr.encryptAES({ key: lib_1.config.keyManagement.masterKey }, priKey),
+	                            cr.encryptAES({ key: lib_1.config.keyManagement.masterKey }, pubKey)
+	                        ];
+	                        Promise.all(promises).then(val => {
+	                            //if(typeof val[0] !== "string" || typeof val[1] !== "string") reject(new Error(config.keyManagement.errorMessages.keyEncryptionFailed));
+	                            lib_1.store.set(this.keyStorageId, { publicKey: val[1], privateKey: val[0] });
+	                            this._pubKey = val[1].toString();
+	                            this._priKey = val[0].toString();
+	                            this._status = 3 /* KeysGenerated */;
+	                            resolve();
+	                        }).catch(err => { throw err; });
 	                    }
-	                    reject(new Error(lib_1.config.keyManagement.errorMessages.noSetKeyPairs));
+	                    else
+	                        reject(new Error(lib_1.config.keyManagement.errorMessages.noSetKeyPairs));
 	                }
 	                catch (err) {
 	                    reject(err);
@@ -195,13 +269,16 @@
 	                    reject(new Error(lib_1.config.keyManagement.errorMessages.localStorageNoSupport));
 	                }
 	                else {
-	                    resolve(null);
+	                    // resolve(null);
+	                    this.removeKeys().then(() => {
+	                        resolve(null);
+	                    });
 	                }
 	            });
 	            return p;
 	        }
 	    }
-	    Keymanager.initiate = initiate;
+	    Keymanager.asymmetricKeys = asymmetricKeys;
 	    class genKeys {
 	        constructor(keySize = { keySize: 2048 }) {
 	            let crypt = new lib_1.JSEncrypt();
@@ -243,10 +320,15 @@
 
 	"use strict";
 	var keyManagementJSON = {
+	    masterKey: "J]oIc0M$A~*im+XOOK+K[2L4N6alEbk(",
 	    keyStorageId: "keys",
 	    errorMessages: {
 	        noSetKeyPairs: "public/private keys are not set.",
-	        localStorageNoSupport: "Local storage is not supported by your browser. Please disable Private Mode or upgrade to a modern browser."
+	        localStorageNoSupport: "Local storage is not supported by your browser. Please disable Private Mode or upgrade to a modern browser.",
+	        keyEncryptionFailed: "Public and Private keys cannot be encrypted.",
+	        noPubKey: "No Public key is set",
+	        noPriKey: "No Private key is set",
+	        noStatus: "No Status key is set"
 	    }
 	};
 	exports.keyManagement = keyManagementJSON;
@@ -376,6 +458,7 @@
 	                    if (!!plaintext) {
 	                        //noinspection TypeScriptUnresolvedVariable
 	                        let cipher = lib_1.crypto.AES.encrypt(plaintext, cred.key);
+	                        cipher = cipher.toString();
 	                        (!!cipher) ? resolve(cipher) : reject(new Error(lib_1.config.crypto.errorMessages.other));
 	                    }
 	                    else

@@ -1,6 +1,7 @@
 import {config,JSEncrypt,store,Crypto} from './lib';
 
 export module Keymanager {
+    var cr = new Crypto.encryption();
     const enum Status {
         Initiated,
         KeysExist,
@@ -12,43 +13,96 @@ export module Keymanager {
     export interface keyConfig {
         keySize: number;
     }
-    export class initiate {
+    export class asymmetricKeys {
         private _pubKey: string;
         private _priKey: string;
         private _status: Status = Status.Initiated;
         private keyStorageId: string = config.keyManagement.keyStorageId;
 
         constructor(){
-            var arrayOfPromise = [
-                this.initialChecks(),
-                this.retrievePubKey(),
-                this.retrievePriKey()
-            ];
+
+        }
+        initiate(): Promise<Error> {
+            const p: Promise<Error> = new Promise (
+                (resolve: ()=>void, reject: (err: Error)=>void) => {
+                    try{
+                        var arrayOfPromise = [
+                            this.initialChecks(),
+                            this.retrievePubKey(),
+                            this.retrievePriKey()
+                        ];
 
 
-            Promise.all(arrayOfPromise).then(val =>{
-                if(!!val[1] && !!val[2]) this._status = Status.KeysExist;
-                else this._status = Status.KeysDoesNotExist;
-            }).then(()=>{
-                if(this._status === Status.KeysDoesNotExist){
-                    let keyGen = new genKeys();
-                    return this.storeKeys(keyGen.pubKey,keyGen.priKey);
+                        Promise.all(arrayOfPromise).then(val =>{
+                            if(!!val[1] && !!val[2]) this._status = Status.KeysExist;
+                            else this._status = Status.KeysDoesNotExist;
+                        }).then(()=>{
+                            if(this._status === Status.KeysDoesNotExist){
+                                let keyGen = new genKeys();
+                                return this.storeKeys(keyGen.pubKey,keyGen.priKey);
+                            }
+                        }).then(()=>{
+                           resolve();
+                        }).catch((err: any)=>{
+                            throw (err);
+                        });
+
+                    } catch(err){
+                        reject(err);
+                    }
                 }
-            }).catch((err: any)=>{
-                alert (err);
-            });
-
-        }
-        get pubKey(): string {
-            return this._pubKey;
+            );
+            return p;
         }
 
-        get priKey(): string {
-            return this._priKey;
+        get pubKey(): Promise<string | Error> {
+            const p: Promise<string | Error> = new Promise (
+                (resolve: (pubKey: string)=>void, reject: (err: Error)=>void) => {
+                    try{
+                        if(!!this._pubKey) {
+                            cr.decryptAES(this._pubKey,config.keyManagement.masterKey).then(val=>{
+                                let tmpPubKey:any = val;
+                                resolve(tmpPubKey);
+                            }).catch(err=>{throw err});
+                        } else throw new Error(config.keyManagement.errorMessages.noPubKey);
+                    } catch(err){
+                        reject(err);
+                    }
+                }
+            );
+            return p;
         }
 
-        get status(): number {
-            return this._status;
+        get priKey(): Promise<string | Error> {
+            const p: Promise<string | Error> = new Promise (
+                (resolve: (priKey: string)=>void, reject: (err: Error)=>void) => {
+                    try{
+                        if(!!this._priKey) {
+                            cr.decryptAES(this._priKey,config.keyManagement.masterKey).then(val=>{
+                                let tmpPriKey:any = val;
+                                resolve(tmpPriKey);
+                            }).catch(err=>{throw err});
+                        } else throw new Error(config.keyManagement.errorMessages.noPriKey);
+                    } catch(err){
+                        reject(err);
+                    }
+                }
+            );
+            return p;
+        }
+
+        get status(): Promise<number | Error> {
+            const p: Promise<number | Error> = new Promise (
+                (resolve: (status: number)=>void, reject: (err: Error)=>void) => {
+                    try{
+                        if(!!this._status) resolve(this._status);
+                        else throw new Error(config.keyManagement.errorMessages.noStatus);
+                    } catch(err){
+                        reject(err);
+                    }
+                }
+            );
+            return p;
         }
 
         retrievePubKey(): Promise<string | Error> {
@@ -106,13 +160,22 @@ export module Keymanager {
                 (resolve: ()=>void, reject: (err: Error)=>void) => {
                     try{
                         if(!!pubKey && !!priKey ){
-                            store.set(this.keyStorageId, { publicKey: pubKey, privateKey: priKey });
-                            this._pubKey = pubKey;
-                            this._priKey = priKey;
-                            this._status = Status.KeysGenerated;
-                            resolve();
+                            var promises: Promise<string | Error>[] = [
+                                cr.encryptAES({key:config.keyManagement.masterKey},priKey),
+                                cr.encryptAES({key:config.keyManagement.masterKey},pubKey)
+                            ];
+
+                            Promise.all(promises).then(val =>{
+                              //if(typeof val[0] !== "string" || typeof val[1] !== "string") reject(new Error(config.keyManagement.errorMessages.keyEncryptionFailed));
+
+                                store.set(this.keyStorageId, { publicKey: val[1], privateKey: val[0]});
+                                this._pubKey = val[1].toString();
+                                this._priKey = val[0].toString();
+                                this._status = Status.KeysGenerated;
+                                resolve();
+                            }).catch(err => {throw err});
                         }
-                        reject(new Error(config.keyManagement.errorMessages.noSetKeyPairs))
+                        else reject(new Error(config.keyManagement.errorMessages.noSetKeyPairs))
                     } catch(err){
                         reject(err);
                     }
