@@ -71,7 +71,6 @@
 	            pubKey = val[0];
 	            priKey = val[1];
 	            status = val[2];
-	            console.log(priKey);
 	            return cr.setCredential();
 	        }).then(val => {
 	            tmpCred = val;
@@ -89,6 +88,7 @@
 	            document.write('<h3>Cipher</h3><p>' + enc + '</p>');
 	            document.write('<h3>Decrypted</h3><p>' + dec + '</p>');
 	        }).catch((err) => {
+	            alert("ERRR");
 	            alert(err);
 	        });
 	        /***** END TESTING **********/
@@ -131,7 +131,7 @@
 	                    }).then(() => {
 	                        resolve();
 	                    }).catch((err) => {
-	                        throw (err);
+	                        reject(err);
 	                    });
 	                }
 	                catch (err) {
@@ -147,7 +147,7 @@
 	                        cr.decryptAES(this._pubKey, lib_1.config.keyManagement.masterKey).then(val => {
 	                            let tmpPubKey = val;
 	                            resolve(tmpPubKey);
-	                        }).catch(err => { throw err; });
+	                        }).catch(err => { reject(err); });
 	                    }
 	                    else
 	                        throw new Error(lib_1.config.keyManagement.errorMessages.noPubKey);
@@ -165,7 +165,7 @@
 	                        cr.decryptAES(this._priKey, lib_1.config.keyManagement.masterKey).then(val => {
 	                            let tmpPriKey = val;
 	                            resolve(tmpPriKey);
-	                        }).catch(err => { throw err; });
+	                        }).catch(err => { reject(err); });
 	                    }
 	                    else
 	                        throw new Error(lib_1.config.keyManagement.errorMessages.noPriKey);
@@ -245,13 +245,14 @@
 	                            cr.encryptAES({ key: lib_1.config.keyManagement.masterKey }, pubKey)
 	                        ];
 	                        Promise.all(promises).then(val => {
-	                            //if(typeof val[0] !== "string" || typeof val[1] !== "string") reject(new Error(config.keyManagement.errorMessages.keyEncryptionFailed));
+	                            if (typeof val[0] !== "string" || typeof val[1] !== "string")
+	                                reject(new Error(lib_1.config.keyManagement.errorMessages.keyEncryptionFailed));
 	                            lib_1.store.set(this.keyStorageId, { publicKey: val[1], privateKey: val[0] });
 	                            this._pubKey = val[1].toString();
 	                            this._priKey = val[0].toString();
 	                            this._status = 3 /* KeysGenerated */;
 	                            resolve();
-	                        }).catch(err => { throw err; });
+	                        }).catch(err => { reject(err); });
 	                    }
 	                    else
 	                        reject(new Error(lib_1.config.keyManagement.errorMessages.noSetKeyPairs));
@@ -269,10 +270,7 @@
 	                    reject(new Error(lib_1.config.keyManagement.errorMessages.localStorageNoSupport));
 	                }
 	                else {
-	                    // resolve(null);
-	                    this.removeKeys().then(() => {
-	                        resolve(null);
-	                    });
+	                    resolve(null);
 	                }
 	            });
 	            return p;

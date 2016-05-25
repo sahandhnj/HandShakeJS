@@ -28,7 +28,6 @@ function test():void {
         pubKey = val[0];
         priKey= val[1];
         status= val[2];
-        console.log(priKey);
 
 
         return cr.setCredential();
@@ -49,6 +48,7 @@ function test():void {
         document.write('<h3>Decrypted</h3><p>'+ dec +'</p>');
 
     }).catch((err) => {
+        alert("ERRR");
         alert(err);
     });
     /***** END TESTING **********/

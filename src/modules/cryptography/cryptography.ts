@@ -74,18 +74,18 @@ export module Cryptography{
                             //noinspection TypeScriptUnresolvedVariable
                             var nonce = crypto.enc.Hex.parse(ex.nonce);
                         }
-                        else                          
+                        else
                             reject(new Error(config.crypto.errorMessages.noNONCE));
 
                         if(!ex.cipher) reject(new Error(config.crypto.errorMessages.noCipher));
 
                         if(!key && key.length !== this.KEY_LENGTH)
                             reject(new Error(config.crypto.errorMessages.noKEY));
-                        
+
 
                         //noinspection TypeScriptUnresolvedVariable
                         var plain = crypto.AES.decrypt(ex.cipher,key,{iv: nonce,mode: crypto.mode.CTR, padding: crypto.pad.NoPadding});
-                        
+
                         //noinspection TypeScriptUnresolvedVariable
                         plain = plain.toString(crypto.enc.Utf8);
                         (!!plain) ? resolve(plain) : reject (new Error(config.crypto.errorMessages.decryptionFailed));

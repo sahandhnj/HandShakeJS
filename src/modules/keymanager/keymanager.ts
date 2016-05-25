@@ -31,8 +31,7 @@ export module Keymanager {
                             this.retrievePubKey(),
                             this.retrievePriKey()
                         ];
-
-
+                        
                         Promise.all(arrayOfPromise).then(val =>{
                             if(!!val[1] && !!val[2]) this._status = Status.KeysExist;
                             else this._status = Status.KeysDoesNotExist;
@@ -44,7 +43,7 @@ export module Keymanager {
                         }).then(()=>{
                            resolve();
                         }).catch((err: any)=>{
-                            throw (err);
+                            reject(err);
                         });
 
                     } catch(err){
@@ -63,7 +62,7 @@ export module Keymanager {
                             cr.decryptAES(this._pubKey,config.keyManagement.masterKey).then(val=>{
                                 let tmpPubKey:any = val;
                                 resolve(tmpPubKey);
-                            }).catch(err=>{throw err});
+                            }).catch(err=>{ reject(err); });
                         } else throw new Error(config.keyManagement.errorMessages.noPubKey);
                     } catch(err){
                         reject(err);
@@ -81,7 +80,7 @@ export module Keymanager {
                             cr.decryptAES(this._priKey,config.keyManagement.masterKey).then(val=>{
                                 let tmpPriKey:any = val;
                                 resolve(tmpPriKey);
-                            }).catch(err=>{throw err});
+                            }).catch(err=>{ reject(err) });
                         } else throw new Error(config.keyManagement.errorMessages.noPriKey);
                     } catch(err){
                         reject(err);
@@ -166,14 +165,15 @@ export module Keymanager {
                             ];
 
                             Promise.all(promises).then(val =>{
-                              //if(typeof val[0] !== "string" || typeof val[1] !== "string") reject(new Error(config.keyManagement.errorMessages.keyEncryptionFailed));
+                                if(typeof val[0] !== "string" || typeof val[1] !== "string") 
+                                  reject(new Error(config.keyManagement.errorMessages.keyEncryptionFailed));
 
                                 store.set(this.keyStorageId, { publicKey: val[1], privateKey: val[0]});
                                 this._pubKey = val[1].toString();
                                 this._priKey = val[0].toString();
                                 this._status = Status.KeysGenerated;
                                 resolve();
-                            }).catch(err => {throw err});
+                            }).catch(err => { reject(err); });
                         }
                         else reject(new Error(config.keyManagement.errorMessages.noSetKeyPairs))
                     } catch(err){
@@ -195,13 +195,12 @@ export module Keymanager {
                         resolve(null);
                         /*this.removeKeys().then(()=>{
                             resolve(null);
-                        })*/
+                        }).catch(err => { reject(err); });*/
                     }
                 }
             );
             return p;
         }
-
     }
 
     class genKeys {
