@@ -3,54 +3,106 @@ import {Cryptography} from './modules/cryptography/cryptography';
 
 
 export module Plekryption {
-test();
 
-function test():void {
-    /***** BEGIM TESTING **********/
-    var km = new Keymanager.asymmetricKeys();
-    var cr = new Cryptography.encryption();
+    export class test{
+        private km = new Keymanager.asymmetricKeys();
+        private kms = new Keymanager.asymmetricKey();
+        private cr = new Cryptography.AES();
+        private crr = new Cryptography.RSA();
 
-    var tmpCred:any;
-    var enc:any;
-    var dec:any;
-    var status:any;
-    var pubKey:any;
-    var priKey:any;
-    km.initiate().then(()=>{
-        var promiseArray = [
-            km.pubKey,
-            km.priKey,
-            km.status
-        ];
-        return Promise.all(promiseArray);
-
-    }).then(val => {
-        pubKey = val[0];
-        priKey= val[1];
-        status= val[2];
+        private tmpCred:any;
+        private enc:any;
+        private dec:any;
+        private status:any;
+        private pubKey:any;
+        private priKey:any;
+        private chatKey:any;
+        private encChatKey:any;
+        private decChatKey:any;
+        constructor(){
+        }
 
 
-        return cr.setCredential();
-    }).then(val =>{
-        tmpCred = val;
-        return cr.encryptAES_CTR(val,"I want to be encrypted");
-    }).then(encs => {
-        enc = encs;
-        return cr.decryptAES_CTR(encs.toString(),tmpCred.key);
-    }).then((res)=>{
-        dec = res;
-        document.write('<h3>Status</h3><p>'+ status +'</p>');
-        document.write('<h3>PublicKey</h3><p>'+ pubKey +'</p>');
-        document.write('<h3>PrivateKey</h3><p>'+ priKey +'</p>');
-        document.write('<h3>NONCE</h3><p>'+ tmpCred.nonce.toString() +'</p>');
-        document.write('<h3>Key</h3><p>'+ tmpCred.key.toString() +'</p>');
-        document.write('<h3>Cipher</h3><p>'+ enc +'</p>');
-        document.write('<h3>Decrypted</h3><p>'+ dec +'</p>');
+        public chat(msg:string): any {
+            this.cr.setCredential(this.decChatKey).then(val =>{
+                this.tmpCred = val;
+                return this.cr.encrypt_CTR(val,msg);
+            }).then(encs => {
+                this.enc = encs;
+                document.getElementById('stuff').innerHTML += '<hr>'
+                document.getElementById('stuff').innerHTML += ('<h3>Cipher</h3><p>'+ this.enc +'</p>');
+                document.getElementById('stuff').innerHTML +=('<h3>NONCE</h3><p>'+ this.tmpCred.nonce.toString() +'</p>');
+                return this.cr.decrypt_CTR(encs.toString(),this.tmpCred.key);
+            }).then((res)=>{
+                this.dec = res;
+                document.getElementById('stuff').innerHTML +=('<h3>Decrypted</h3><p>'+ this.dec +'</p>');
 
-    }).catch((err) => {
-        alert("ERRR");
-        alert(err);
-    });
-    /***** END TESTING **********/
-}
+            }).catch(err => {
+                alert(err);
+            });
+        }
+
+        public set():void {
+            /***** BEGIM TESTING **********/
+
+
+            this.km.initiate().then(()=>{
+                var promiseArray = [
+                    this.km.pubKey,
+                    this.km.priKey,
+                    this.km.status
+                ];
+                return Promise.all(promiseArray);
+
+            }).then(val => {
+                this.pubKey = val[0];
+                this.priKey= val[1];
+                this.status= val[2];
+                document.write('<h3>Status</h3><p>'+ this.status +'</p>');
+                document.write('<h3>PublicKey</h3><p>'+ this.pubKey +'</p>');
+                document.write('<h3>PrivateKey</h3><p>'+ this.priKey +'</p>');
+
+                return this.kms.generateKey();
+            }).then((val) =>{
+                this.chatKey = val;
+                document.write('<h3>ChatKey</h3><p>'+ this.chatKey +'</p>');
+                return this.crr.initiate(this.pubKey,this.priKey);
+            }).then(() =>{
+                return this.crr.encrypt(this.chatKey);
+            }).then((val) =>{
+                this.encChatKey = val;
+                document.write('<h3>Encrypted ChatKey</h3><p>'+ this.encChatKey +'</p>');
+                return this.crr.decrypt(this.encChatKey);
+            }).then((val) =>{
+                this.decChatKey = val;
+
+            }).catch((err) => {
+                alert(err);
+            });
+            /***** END TESTING **********/
+        }
+    }
+    var t = new test();
+    t.set();
+    //var msg = (<HTMLInputElement>document.getElementById('val')).value;
+
+
+    window.onload = function () {
+        addHtmlForm();
+    };
+    function addHtmlForm():any{
+        var input = document.createElement("input");
+        input.type = "text";
+        input.id = "msg"; // set the CSS class
+        document.body.appendChild(input); // p
+
+        var button = document.createElement('button');
+        button.innerText = "Send";
+        button.onclick = function () {
+            t.chat(input.value);
+        };
+        document.body.appendChild(button);
+    }
+
+
 }

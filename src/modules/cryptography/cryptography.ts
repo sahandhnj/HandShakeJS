@@ -1,28 +1,28 @@
-import {config,crypto} from './lib';
+import {config,crypto,JSEncrypt} from './lib';
 
 export module Cryptography{
-    export class encryption {
-        private NONCE_LENGTH :number = config.crypto.nonceLength/8 || 12;
-        private KEY_LENGTH :number = config.crypto.keyLength/8 || 32;
+    export class AES {
+        private NONCE_LENGTH :number = config.crypto.AES.nonceLength/8 || 12;
+        private KEY_LENGTH :number = config.crypto.AES.keyLength/8 || 32;
 
         constructor(){
 
         }
-        encryptAES(cred: any,plaintext: string): Promise<string | Error>{
+        encrypt(cred: any,plaintext: string): Promise<string | Error>{
             const p: Promise<string | Error> = new Promise (
                 (resolve: (cipher: string)=>void, reject: (err: Error)=>void) => {
                     try{
                         if(!cred.key && cred.key.length !== this.KEY_LENGTH)
-                            reject(new Error(config.crypto.errorMessages.noKEY));
+                            reject(new Error(config.crypto.AES.errorMessages.noKEY));
 
                         if(!!plaintext) {
                             //noinspection TypeScriptUnresolvedVariable
                             let cipher = crypto.AES.encrypt(plaintext, cred.key);
                             cipher = cipher.toString();
-                            (!!cipher) ? resolve(cipher) : reject (new Error(config.crypto.errorMessages.other));
+                            (!!cipher) ? resolve(cipher) : reject (new Error(config.crypto.AES.errorMessages.other));
 
                         } else
-                            reject (new Error(config.crypto.errorMessages.noPlainText));
+                            reject (new Error(config.crypto.AES.errorMessages.noPlainText));
 
                     } catch(err) {
                         reject(err);
@@ -30,7 +30,7 @@ export module Cryptography{
                 });
             return p;
         }
-        encryptAES_CTR(cred: any,plaintext: string): Promise<string | Error>{
+        encrypt_CTR(cred: any,plaintext: string): Promise<string | Error>{
             const p: Promise<string | Error> = new Promise (
                 (resolve: (cipher: string)=>void, reject: (err: Error)=>void) => {
                     try{
@@ -39,21 +39,21 @@ export module Cryptography{
                             //noinspection TypeScriptUnresolvedVariable
                             nonce = crypto.enc.Hex.parse(cred.nonce);
                         } else
-                            reject(new Error(config.crypto.errorMessages.noNONCE));
+                            reject(new Error(config.crypto.AES.errorMessages.noNONCE));
 
-                        if(nonce.words.length !== this.NONCE_LENGTH/4) reject(new Error(config.crypto.errorMessages.badNONCESize));
+                        if(nonce.words.length !== this.NONCE_LENGTH/4) reject(new Error(config.crypto.AES.errorMessages.badNONCESize));
 
                         if(!cred.key && cred.key.length !== this.KEY_LENGTH)
-                            reject(new Error(config.crypto.errorMessages.noKEY));
+                            reject(new Error(config.crypto.AES.errorMessages.noKEY));
 
                         if(!!plaintext) {
                             //noinspection TypeScriptUnresolvedVariable
                             let cipher = crypto.AES.encrypt(plaintext, cred.key, { iv: nonce, mode: crypto.mode.CTR, padding: crypto.pad.NoPadding });
                             cipher = cred.nonce + cipher;
 
-                            (!!cipher) ? resolve(cipher) : reject (new Error(config.crypto.errorMessages.other));
+                            (!!cipher) ? resolve(cipher) : reject (new Error(config.crypto.AES.errorMessages.other));
                         } else
-                            reject (new Error(config.crypto.errorMessages.noPlainText));
+                            reject (new Error(config.crypto.AES.errorMessages.noPlainText));
 
                     } catch(err) {
                         reject(err);
@@ -61,7 +61,7 @@ export module Cryptography{
                 });
             return p;
         }
-        decryptAES_CTR(cipher: string, key:string): Promise<string | Error>{
+        decrypt_CTR(cipher: string, key:string): Promise<string | Error>{
             const p: Promise<string | Error> = new Promise (
                 (resolve: (cipher: string)=>void, reject: (err: Error)=>void) => {
                     try{
@@ -69,18 +69,18 @@ export module Cryptography{
                             var ex:any = this.extractNONCE(cipher);
                             if(typeof ex == "Error") reject(ex);
                         }
-                        else reject(new Error(config.crypto.errorMessages.noCipher));
+                        else reject(new Error(config.crypto.AES.errorMessages.noCipher));
                         if(!!ex.nonce || (ex.nonce.length === this.NONCE_LENGTH*2)){
                             //noinspection TypeScriptUnresolvedVariable
                             var nonce = crypto.enc.Hex.parse(ex.nonce);
                         }
                         else
-                            reject(new Error(config.crypto.errorMessages.noNONCE));
+                            reject(new Error(config.crypto.AES.errorMessages.noNONCE));
 
-                        if(!ex.cipher) reject(new Error(config.crypto.errorMessages.noCipher));
+                        if(!ex.cipher) reject(new Error(config.crypto.AES.errorMessages.noCipher));
 
                         if(!key && key.length !== this.KEY_LENGTH)
-                            reject(new Error(config.crypto.errorMessages.noKEY));
+                            reject(new Error(config.crypto.AES.errorMessages.noKEY));
 
 
                         //noinspection TypeScriptUnresolvedVariable
@@ -88,7 +88,7 @@ export module Cryptography{
 
                         //noinspection TypeScriptUnresolvedVariable
                         plain = plain.toString(crypto.enc.Utf8);
-                        (!!plain) ? resolve(plain) : reject (new Error(config.crypto.errorMessages.decryptionFailed));
+                        (!!plain) ? resolve(plain) : reject (new Error(config.crypto.AES.errorMessages.decryptionFailed));
 
                     } catch(err) {
                         reject(err);
@@ -96,20 +96,20 @@ export module Cryptography{
                 });
             return p;
         }
-        decryptAES(cipher: string, key:string): Promise<string | Error>{
+        decrypt(cipher: string, key:string): Promise<string | Error>{
             const p: Promise<string | Error> = new Promise (
                 (resolve: (cipher: string)=>void, reject: (err: Error)=>void) => {
                     try{
-                        if(!cipher) reject(new Error(config.crypto.errorMessages.noCipher));
+                        if(!cipher) reject(new Error(config.crypto.AES.errorMessages.noCipher));
 
                         if(!key && key.length !== this.KEY_LENGTH)
-                            reject(new Error(config.crypto.errorMessages.noKEY));
+                            reject(new Error(config.crypto.AES.errorMessages.noKEY));
 
                         //noinspection TypeScriptUnresolvedVariable
                         let plain = crypto.AES.decrypt(cipher,key);
                         //noinspection TypeScriptUnresolvedVariable
                         plain = plain.toString(crypto.enc.Utf8);
-                        (!!plain) ? resolve(plain) : reject (new Error(config.crypto.errorMessages.decryptionFailed));
+                        (!!plain) ? resolve(plain) : reject (new Error(config.crypto.AES.errorMessages.decryptionFailed));
 
                     } catch(err) {
                         reject(err);
@@ -130,7 +130,7 @@ export module Cryptography{
                     res.cipher += cipher[j];
 
                 if(res.nonce.length == this.NONCE_LENGTH*2 && res.cipher.length > 0)  return(res) ;
-                else return(new Error(config.crypto.errorMessages.nonceExtractionFail));
+                else return(new Error(config.crypto.AES.errorMessages.nonceExtractionFail));
 
             } catch(err) {
                 return(err);
@@ -138,7 +138,7 @@ export module Cryptography{
         }
         generateRandomKey(len:number = this.KEY_LENGTH ): string{
             let key = "";
-            let possible = config.crypto.keyGenPossibilities;
+            let possible = config.crypto.AES.keyGenPossibilities;
             for( let i=0; i < len; i++ )
                 key += possible.charAt(Math.floor(Math.random() * possible.length));
 
@@ -150,7 +150,6 @@ export module Cryptography{
                 str += String.fromCharCode(parseInt(hex.substr(i, 2), 16));
             return str;
         }
-
         setCredential(key?:string) : Promise<Object | Error>{
             const p: Promise<Object | Error> = new Promise (
                 (resolve: (cred: Object)=>void, reject: (err: Error)=>void) => {
@@ -165,12 +164,63 @@ export module Cryptography{
 
                         (!!key && key.length === this.KEY_LENGTH) ? cred.key = key : cred.key = this.generateRandomKey();
                         if(!!cred.key && !! cred.nonce) resolve(cred);
-                        else reject(new Error(config.crypto.errorMessages.credGenFail));
+                        else reject(new Error(config.crypto.AES.errorMessages.credGenFail));
 
                     } catch(err) {
                         reject(err);
                     }
                 });
+            return p;
+        }
+    }
+    export class RSA {
+        private rsaEnc:any;
+        private rsaDec:any;
+        constructor(){
+
+        }
+        initiate(pubKey:string, priKey:string): Promise<Error>{
+            const p: Promise<Error> = new Promise (
+                (resolve: ()=>void, reject: (err: Error)=>void) => {
+                    try{
+                        this.rsaEnc = new JSEncrypt();
+                        this.rsaDec = new JSEncrypt();
+
+                        this.rsaEnc.setPublicKey(pubKey);
+                        this.rsaDec.setPrivateKey(priKey);
+
+                        if(!!this.rsaEnc && !!this.rsaDec) resolve();
+                        else reject(new Error(config.crypto.RSA.errorMessages.initiationFialed));
+                    } catch (err) { reject(err); }
+                }
+            );
+            return p;
+        }
+        encrypt(plain:string): Promise<string | Error>{
+            const p: Promise<string | Error> = new Promise (
+                (resolve: (cipher: string)=>void, reject: (err: Error)=>void) => {
+                    try {
+                        if(!this.rsaEnc) reject(new Error(config.crypto.RSA.errorMessages.noPubKey));
+                        var encrypted:string = this.rsaEnc.encrypt(plain);
+                        if(!!encrypted) resolve(encrypted);
+                        else reject(new Error(config.crypto.RSA.errorMessages.encFailed));
+
+                    } catch (err) { reject(err); }
+                }
+            );
+            return p;
+        }
+        decrypt(cipher:string): Promise<string | Error>{
+            const p: Promise<string | Error> = new Promise (
+                (resolve: (plain: string)=>void, reject: (err: Error)=>void) => {
+                    try {
+                        if(!this.rsaEnc) reject(new Error(config.crypto.RSA.errorMessages.noPriKey));
+                        var decrypted:string = this.rsaDec.decrypt(cipher);
+                        if(!!decrypted) resolve(decrypted);
+                        else reject(new Error(config.crypto.RSA.errorMessages.decFailed));
+                    } catch (err) { reject(err); }
+                }
+            );
             return p;
         }
     }
