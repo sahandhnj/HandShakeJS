@@ -177,19 +177,30 @@ export module Cryptography{
         private rsaEnc:any;
         private rsaDec:any;
         constructor(){
-
+            this.rsaEnc = new JSEncrypt();
+            this.rsaDec = new JSEncrypt();
         }
-        initiate(pubKey:string, priKey:string): Promise<Error>{
+        init(pubKey:string, priKey:string): Promise<Error>{
             const p: Promise<Error> = new Promise (
                 (resolve: ()=>void, reject: (err: Error)=>void) => {
                     try{
-                        this.rsaEnc = new JSEncrypt();
-                        this.rsaDec = new JSEncrypt();
-
                         this.rsaEnc.setPublicKey(pubKey);
                         this.rsaDec.setPrivateKey(priKey);
 
                         if(!!this.rsaEnc && !!this.rsaDec) resolve();
+                        else reject(new Error(config.crypto.RSA.errorMessages.initiationFialed));
+                    } catch (err) { reject(err); }
+                }
+            );
+            return p;
+        }
+        singleInit(pubKey:string): Promise<Error>{
+            const p: Promise<Error> = new Promise (
+                (resolve: ()=>void, reject: (err: Error)=>void) => {
+                    try{
+                        this.rsaEnc.setPublicKey(pubKey);
+
+                        if(!!this.rsaEnc) resolve();
                         else reject(new Error(config.crypto.RSA.errorMessages.initiationFialed));
                     } catch (err) { reject(err); }
                 }
@@ -202,6 +213,7 @@ export module Cryptography{
                     try {
                         if(!this.rsaEnc) reject(new Error(config.crypto.RSA.errorMessages.noPubKey));
                         var encrypted:string = this.rsaEnc.encrypt(plain);
+
                         if(!!encrypted) resolve(encrypted);
                         else reject(new Error(config.crypto.RSA.errorMessages.encFailed));
 
@@ -216,6 +228,7 @@ export module Cryptography{
                     try {
                         if(!this.rsaEnc) reject(new Error(config.crypto.RSA.errorMessages.noPriKey));
                         var decrypted:string = this.rsaDec.decrypt(cipher);
+
                         if(!!decrypted) resolve(decrypted);
                         else reject(new Error(config.crypto.RSA.errorMessages.decFailed));
                     } catch (err) { reject(err); }

@@ -23,7 +23,8 @@ export module Keymanager {
         constructor(){
             this.cr = new Crypto.AES();
         }
-        initiate(): Promise<Error> {
+
+        init(): Promise<Error> {
             const p: Promise<Error> = new Promise (
                 (resolve: ()=>void, reject: (err: Error)=>void) => {
                     try{
@@ -70,6 +71,7 @@ export module Keymanager {
                 });
             return p;
         }
+
         get pubKey(): Promise<string | Error> {
             const p: Promise<string | Error> = new Promise (
                 (resolve: (pubKey: string)=>void, reject: (err: Error)=>void) => {
@@ -210,10 +212,10 @@ export module Keymanager {
                         reject(new Error(config.keyManagement.asymmetric.errorMessages.localStorageNoSupport));
                     }
                     else{
-                        //resolve(null);
-                        this.removeKeys().then(()=>{
+                        resolve(null);
+                        /*this.removeKeys().then(()=>{
                             resolve(null);
-                        }).catch(err => { reject(err); });
+                        }).catch(err => { reject(err); });*/
                     }
                 }
             );

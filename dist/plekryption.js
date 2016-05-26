@@ -82,17 +82,44 @@
 	                alert(err);
 	            });
 	        }
+	        chat2(msg) {
+	            return __awaiter(this, void 0, void 0, function* () {
+	                try {
+	                    var decMsg = yield this.session.encPlain(msg);
+	                    var encMsg = yield this.session.decCipher(decMsg);
+	                    document.getElementById('stuff').innerHTML += '<hr>';
+	                    document.getElementById('stuff').innerHTML += ('<h3>Cipher</h3><p>' + decMsg + '</p>');
+	                    document.getElementById('stuff').innerHTML += ('<h3>TEXT</h3><p>' + encMsg + '</p>');
+	                }
+	                catch (err) {
+	                    alert(err);
+	                }
+	            });
+	        }
 	        set() {
 	            return __awaiter(this, void 0, void 0, function* () {
 	                /***** BEGIM TESTING **********/
-	                this.session = new session_1.Session.session();
-	                yield this.session.init();
-	                this.pubKey = this.session.pubKey;
-	                this.priKey = this.session.priKey;
-	                this.status = this.session.status;
-	                document.write('<h3>Status</h3><p>' + this.status + '</p>');
-	                document.write('<h3>PublicKey</h3><p>' + this.pubKey + '</p>');
-	                document.write('<h3>PrivateKey</h3><p>' + this.priKey + '</p>');
+	                try {
+	                    this.session = new session_1.Session.session();
+	                    yield this.session.init();
+	                    this.chatKey = yield this.session.genSymKey();
+	                    yield this.session.setCurrentKey(this.chatKey);
+	                    this.pubKey = this.session.pubKey;
+	                    this.priKey = this.session.priKey;
+	                    this.status = this.session.status;
+	                    this.decChatKey = this.session.currKey;
+	                    //this.encChatKey = await this.session.encKey(this.pubKey,"-d3czX2[F{p2pbU.3QsGloQp%4vIpv@-");
+	                    //await this.session.setCurrentKey(this.encChatKey);
+	                    //var decChatKey2 = this.session.currKey;
+	                    document.write('<h3>Status</h3><p>' + this.status + '</p>');
+	                    document.write('<h3>PublicKey</h3><p>' + this.pubKey + '</p>');
+	                    document.write('<h3>PrivateKey</h3><p>' + this.priKey + '</p>');
+	                    document.write('<h3>ChatKey</h3><p>' + this.chatKey + '</p>');
+	                    document.write('<h3>Decrypted ChatKey</h3><p>' + this.decChatKey + '</p>');
+	                }
+	                catch (err) {
+	                    alert(err);
+	                }
 	                /*this.km.initiate().then(()=>{
 	                    var promiseArray = [
 	                        this.km.pubKey,
@@ -133,9 +160,8 @@
 	    Plekryption.test = test;
 	    var t = new test();
 	    t.set();
-	    //var msg = (<HTMLInputElement>document.getElementById('val')).value;
 	    window.onload = function () {
-	        //addHtmlForm();
+	        addHtmlForm();
 	    };
 	    function addHtmlForm() {
 	        var txt = document.createElement("textarea");
@@ -146,7 +172,7 @@
 	        var button = document.createElement('button');
 	        button.innerText = "Send";
 	        button.onclick = function () {
-	            t.chat(txt.value);
+	            t.chat2(txt.value);
 	        };
 	        document.body.appendChild(button);
 	    }
@@ -167,7 +193,7 @@
 	            this.keyStorageId = lib_1.config.keyManagement.asymmetric.keyStorageId;
 	            this.cr = new lib_1.Crypto.AES();
 	        }
-	        initiate() {
+	        init() {
 	            const p = new Promise((resolve, reject) => {
 	                try {
 	                    var arrayOfPromise = [
@@ -346,10 +372,7 @@
 	                    reject(new Error(lib_1.config.keyManagement.asymmetric.errorMessages.localStorageNoSupport));
 	                }
 	                else {
-	                    //resolve(null);
-	                    this.removeKeys().then(() => {
-	                        resolve(null);
-	                    }).catch(err => { reject(err); });
+	                    resolve(null);
 	                }
 	            });
 	            return p;
@@ -724,15 +747,30 @@
 	    Cryptography.AES = AES;
 	    class RSA {
 	        constructor() {
+	            this.rsaEnc = new lib_1.JSEncrypt();
+	            this.rsaDec = new lib_1.JSEncrypt();
 	        }
-	        initiate(pubKey, priKey) {
+	        init(pubKey, priKey) {
 	            const p = new Promise((resolve, reject) => {
 	                try {
-	                    this.rsaEnc = new lib_1.JSEncrypt();
-	                    this.rsaDec = new lib_1.JSEncrypt();
 	                    this.rsaEnc.setPublicKey(pubKey);
 	                    this.rsaDec.setPrivateKey(priKey);
 	                    if (!!this.rsaEnc && !!this.rsaDec)
+	                        resolve();
+	                    else
+	                        reject(new Error(lib_1.config.crypto.RSA.errorMessages.initiationFialed));
+	                }
+	                catch (err) {
+	                    reject(err);
+	                }
+	            });
+	            return p;
+	        }
+	        singleInit(pubKey) {
+	            const p = new Promise((resolve, reject) => {
+	                try {
+	                    this.rsaEnc.setPublicKey(pubKey);
+	                    if (!!this.rsaEnc)
 	                        resolve();
 	                    else
 	                        reject(new Error(lib_1.config.crypto.RSA.errorMessages.initiationFialed));
@@ -6768,19 +6806,20 @@
 	const lib_1 = __webpack_require__(10);
 	var Session;
 	(function (Session) {
-	    var cr = new lib_1.Crypto.AES();
 	    class session {
 	        constructor() {
 	            this._status = 0 /* noAsymKeys */;
-	            this.kmA = new lib_1.Keymanager.asymmetric();
-	            this.kmS = new lib_1.Keymanager.symmetric();
+	            this.kmAsym = new lib_1.Keymanager.asymmetric();
+	            this.kmSym = new lib_1.Keymanager.symmetric();
+	            this.crAES = new lib_1.Crypto.AES();
+	            this.crRSA = new lib_1.Crypto.RSA();
 	        }
 	        init() {
 	            return __awaiter(this, void 0, void 0, function* () {
 	                try {
 	                    var currErr;
-	                    yield this.kmA.initiate().then(() => {
-	                        return this.kmA.status;
+	                    yield this.kmAsym.init().then(() => {
+	                        return this.kmAsym.status;
 	                    }).then(st => {
 	                        if (st === 1 /* KeysExist */) {
 	                            return null;
@@ -6789,13 +6828,13 @@
 	                            return st;
 	                    }).then((st) => {
 	                        if (st === 2 /* KeysDoesNotExist */)
-	                            return this.kmA.generateKeys();
+	                            return this.kmAsym.generateKeys();
 	                        else
 	                            return null;
 	                    }).then(() => {
 	                        var promiseArray = [
-	                            this.kmA.pubKey,
-	                            this.kmA.priKey
+	                            this.kmAsym.pubKey,
+	                            this.kmAsym.priKey
 	                        ];
 	                        Promise.all(promiseArray).then(val => {
 	                            if (!!val && !!val[0] && !!val[1]) {
@@ -6803,30 +6842,158 @@
 	                                this._priKey = val[1];
 	                                this._status = 1 /* aSymKeysSet */;
 	                            }
-	                            return;
+	                            return this.crRSA.init(this._pubKey, this._priKey);
 	                        }).catch(err => {
 	                            currErr = err;
-	                            return;
+	                            return null;
 	                        });
 	                    }).catch(err => {
 	                        currErr = err;
 	                    });
 	                    if (!!currErr)
-	                        throw currErr;
+	                        throw (currErr);
 	                }
 	                catch (err) {
-	                    alert(err);
+	                    throw (err);
 	                }
 	            });
 	        }
 	        get pubKey() {
-	            return this._pubKey;
+	            if (!!this._pubKey)
+	                return this._pubKey;
+	            else
+	                return null;
 	        }
 	        get priKey() {
-	            return this._priKey;
+	            if (!!this._priKey)
+	                return this._priKey;
+	            else
+	                return null;
+	        }
+	        get currKey() {
+	            if (!!this._currKey)
+	                return this._currKey;
+	            else
+	                return null;
 	        }
 	        get status() {
-	            return this._status;
+	            if (!!this._status)
+	                return this._status;
+	            else
+	                return null;
+	        }
+	        genSymKey() {
+	            return __awaiter(this, void 0, void 0, function* () {
+	                try {
+	                    var currErr;
+	                    var encryptedKey = null;
+	                    yield this.kmSym.generateKey().then(key => {
+	                        if (!!key) {
+	                            this._currKey = key;
+	                            return this.crRSA.encrypt(key);
+	                        }
+	                        else
+	                            return null;
+	                    }).then(encKey => {
+	                        if (!!encKey)
+	                            encryptedKey = encKey;
+	                    }).catch(err => {
+	                        currErr = err;
+	                    });
+	                    if (!!currErr)
+	                        throw (currErr);
+	                    return encryptedKey;
+	                }
+	                catch (err) {
+	                    throw (err);
+	                }
+	            });
+	        }
+	        setCurrentKey(encKey) {
+	            return __awaiter(this, void 0, void 0, function* () {
+	                try {
+	                    var currErr;
+	                    yield this.crRSA.decrypt(encKey).then(key => {
+	                        if (!!key)
+	                            this._currKey = key;
+	                    }).catch(err => {
+	                        currErr = err;
+	                    });
+	                    if (currErr)
+	                        throw (currErr);
+	                }
+	                catch (err) {
+	                    throw (err);
+	                }
+	            });
+	        }
+	        encKey(pubKey, key = this._currKey) {
+	            return __awaiter(this, void 0, void 0, function* () {
+	                try {
+	                    var currErr;
+	                    var tmpcrRSA = new lib_1.Crypto.RSA();
+	                    var encKey = null;
+	                    yield tmpcrRSA.singleInit(pubKey).then(() => {
+	                        return tmpcrRSA.encrypt(key);
+	                    }).then(val => {
+	                        if (!!val)
+	                            encKey = val;
+	                    }).catch(err => {
+	                        currErr = err;
+	                    });
+	                    if (currErr)
+	                        throw (currErr);
+	                    return encKey;
+	                }
+	                catch (err) {
+	                    throw (err);
+	                }
+	            });
+	        }
+	        encPlain(plain) {
+	            return __awaiter(this, void 0, void 0, function* () {
+	                try {
+	                    var currErr;
+	                    var encrypted = null;
+	                    yield this.crAES.setCredential(this._currKey).then(cred => {
+	                        if (!!cred)
+	                            return this.crAES.encrypt_CTR(cred, plain);
+	                        else
+	                            return null;
+	                    }).then(val => {
+	                        if (!!val)
+	                            encrypted = val;
+	                    }).catch(err => {
+	                        currErr = err;
+	                    });
+	                    if (currErr)
+	                        throw (currErr);
+	                    return encrypted;
+	                }
+	                catch (err) {
+	                    throw (err);
+	                }
+	            });
+	        }
+	        decCipher(cipher, key = this._currKey) {
+	            return __awaiter(this, void 0, void 0, function* () {
+	                try {
+	                    var currErr;
+	                    var decrypted = null;
+	                    yield this.crAES.decrypt_CTR(cipher, key).then(val => {
+	                        if (!!val)
+	                            decrypted = val;
+	                    }).catch(err => {
+	                        currErr = err;
+	                    });
+	                    if (currErr)
+	                        throw (currErr);
+	                    return decrypted;
+	                }
+	                catch (err) {
+	                    throw (err);
+	                }
+	            });
 	        }
 	    }
 	    Session.session = session;
