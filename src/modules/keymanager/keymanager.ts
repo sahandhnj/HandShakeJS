@@ -1,8 +1,7 @@
 import {config,JSEncrypt,store,Crypto} from './lib';
 
 export module Keymanager {
-    var cr = new Crypto.AES();
-    const enum Status {
+    export const enum Status {
         Initiated,
         KeysExist,
         KeysDoesNotExist,
@@ -13,14 +12,16 @@ export module Keymanager {
     export interface keyConfig {
         keySize: number;
     }
-    export class asymmetricKeys {
+    export class asymmetric {
         private _pubKey: string;
         private _priKey: string;
         private _status: Status = Status.Initiated;
-        private keyStorageId: string = config.keyManagement.asymmetricKeys.keyStorageId;
+        private keyStorageId: string = config.keyManagement.asymmetric.keyStorageId;
+        private cr:any;
+
 
         constructor(){
-
+            this.cr = new Crypto.AES();
         }
         initiate(): Promise<Error> {
             const p: Promise<Error> = new Promise (
@@ -36,11 +37,6 @@ export module Keymanager {
                             if(!!val[1] && !!val[2]) this._status = Status.KeysExist;
                             else this._status = Status.KeysDoesNotExist;
                         }).then(()=>{
-                            if(this._status === Status.KeysDoesNotExist){
-                                let keyGen = new genKeys();
-                                return this.storeKeys(keyGen.pubKey,keyGen.priKey);
-                            }
-                        }).then(()=>{
                            resolve();
                         }).catch((err: any)=>{
                             reject(err);
@@ -54,17 +50,37 @@ export module Keymanager {
             return p;
         }
 
+        generateKeys(): Promise<Error>{
+            const p: Promise<string | Error> = new Promise(
+                (resolve: () => void, reject: (err: Error)=>void) => {
+                    try{
+                        if(this._status === Status.KeysDoesNotExist) {
+                            let keyGen = new genKeys();
+
+                            this.storeKeys(keyGen.pubKey, keyGen.priKey).then(() => {
+                                if(!!this._priKey && !!this._priKey && this._status === Status.KeysGenerated){
+                                    this._status = Status.KeysExist;
+                                    resolve();
+                                } else {reject(new Error(config.keyManagement.asymmetric.errorMessages.keysNotGen))}
+                            }).catch((err) => {reject(err);})
+                        }
+                    } catch(err) {
+                        reject(err);
+                    }
+                });
+            return p;
+        }
         get pubKey(): Promise<string | Error> {
             const p: Promise<string | Error> = new Promise (
                 (resolve: (pubKey: string)=>void, reject: (err: Error)=>void) => {
                     try{
                         if(!!this._pubKey) {
-                            cr.decrypt(this._pubKey,config.keyManagement.asymmetricKeys.masterKey).then(val=>{
+                            this.cr.decrypt(this._pubKey,config.keyManagement.asymmetric.masterKey).then(val=>{
                                 let tmpPubKey:any = val;
                                 resolve(tmpPubKey);
                             }).catch(err=>{ reject(err); });
-                        } else throw new Error(config.keyManagement.asymmetricKeys.errorMessages.noPubKey);
-                    } catch(err){
+                        } else reject(new Error(config.keyManagement.asymmetric.errorMessages.noPubKey));
+                    } catch(err) {
                         reject(err);
                     }
                 }
@@ -77,11 +93,13 @@ export module Keymanager {
                 (resolve: (priKey: string)=>void, reject: (err: Error)=>void) => {
                     try{
                         if(!!this._priKey) {
-                            cr.decrypt(this._priKey,config.keyManagement.asymmetricKeys.masterKey).then(val=>{
+                            this.cr.decrypt(this._priKey, config.keyManagement.asymmetric.masterKey).then(val=> {
                                 let tmpPriKey:any = val;
                                 resolve(tmpPriKey);
-                            }).catch(err=>{ reject(err) });
-                        } else throw new Error(config.keyManagement.asymmetricKeys.errorMessages.noPriKey);
+                            }).catch(err=> {
+                                reject(err)
+                            });
+                        } else reject(new Error(config.keyManagement.asymmetric.errorMessages.noStatus));
                     } catch(err){
                         reject(err);
                     }
@@ -95,7 +113,7 @@ export module Keymanager {
                 (resolve: (status: number)=>void, reject: (err: Error)=>void) => {
                     try{
                         if(!!this._status) resolve(this._status);
-                        else throw new Error(config.keyManagement.asymmetricKeys.errorMessages.noStatus);
+                        else throw new Error(config.keyManagement.asymmetric.errorMessages.noStatus);
                     } catch(err){
                         reject(err);
                     }
@@ -160,13 +178,13 @@ export module Keymanager {
                     try{
                         if(!!pubKey && !!priKey ){
                             var promises: Promise<string | Error>[] = [
-                                cr.encrypt({key:config.keyManagement.asymmetricKeys.masterKey},priKey),
-                                cr.encrypt({key:config.keyManagement.asymmetricKeys.masterKey},pubKey)
+                                this.cr.encrypt({key:config.keyManagement.asymmetric.masterKey},priKey),
+                                this.cr.encrypt({key:config.keyManagement.asymmetric.masterKey},pubKey)
                             ];
 
                             Promise.all(promises).then(val =>{
                                 if(typeof val[0] !== "string" || typeof val[1] !== "string")
-                                  reject(new Error(config.keyManagement.asymmetricKeys.errorMessages.keyEncryptionFailed));
+                                  reject(new Error(config.keyManagement.asymmetric.errorMessages.keyEncryptionFailed));
 
                                 store.set(this.keyStorageId, { publicKey: val[1], privateKey: val[0]});
                                 this._pubKey = val[1].toString();
@@ -175,7 +193,7 @@ export module Keymanager {
                                 resolve();
                             }).catch(err => { reject(err); });
                         }
-                        else reject(new Error(config.keyManagement.asymmetricKeys.errorMessages.noSetKeyPairs))
+                        else reject(new Error(config.keyManagement.asymmetric.errorMessages.noSetKeyPairs))
                     } catch(err){
                         reject(err);
                     }
@@ -189,13 +207,13 @@ export module Keymanager {
                 (resolve: (n: any)=>void, reject: (err: Error)=>void) => {
                     if (!store.enabled){
                         this._status = Status.Failed;
-                        reject(new Error(config.keyManagement.asymmetricKeys.errorMessages.localStorageNoSupport));
+                        reject(new Error(config.keyManagement.asymmetric.errorMessages.localStorageNoSupport));
                     }
                     else{
-                        resolve(null);
-                        /*this.removeKeys().then(()=>{
+                        //resolve(null);
+                        this.removeKeys().then(()=>{
                             resolve(null);
-                        }).catch(err => { reject(err); });*/
+                        }).catch(err => { reject(err); });
                     }
                 }
             );
@@ -203,19 +221,19 @@ export module Keymanager {
         }
     }
 
-    export class asymmetricKey{
-        private KEY_LENGTH :number = config.keyManagement.symmetricKey.keyLength/8 || 32;
+    export class symmetric{
+        private KEY_LENGTH :number = config.keyManagement.symmetric.keyLength/8 || 32;
 
         generateKey(len:number = this.KEY_LENGTH ): Promise<string | Error>{
             const p: Promise<string | Error> = new Promise (
                 (resolve: (key: string)=>void, reject: (err: Error)=>void) => {
                     let key = "";
-                    let possible = config.keyManagement.symmetricKey.keyGenPossibilities;
+                    let possible = config.keyManagement.symmetric.keyGenPossibilities;
                     for( let i=0; i < len; i++ )
                         key += possible.charAt(Math.floor(Math.random() * possible.length));
 
                     if(!!key && key.length === this.KEY_LENGTH) resolve(key);
-                    else reject(new Error(config.keyManagement.symmetricKey.errorMessages.keyGen));
+                    else reject(new Error(config.keyManagement.symmetric.errorMessages.keyGen));
                 }
             );
             return p;
@@ -227,9 +245,9 @@ export module Keymanager {
         private _priKey: string;
 
         constructor(keySize: keyConfig = {keySize : 2048}) {
-            let crypt = new JSEncrypt();
-            this._pubKey = crypt.getPublicKey();
-            this._priKey = crypt.getPrivateKey();
+            let jsen = new JSEncrypt();
+            this._pubKey = jsen.getPublicKey();
+            this._priKey = jsen.getPrivateKey();
         }
 
         get pubKey(): string {

@@ -1,5 +1,5 @@
 var keyManagementJSON = {
-    asymmetricKeys:{
+    asymmetric:{
         masterKey: "J]oIc0M$A~*im+XOOK+K[2L4N6alEbk(",
         keyStorageId: "keys",
         errorMessages:  {
@@ -8,10 +8,11 @@ var keyManagementJSON = {
             keyEncryptionFailed: "Public and Private keys cannot be encrypted.",
             noPubKey: "No Public key is set",
             noPriKey: "No Private key is set",
-            noStatus: "No Status key is set"
+            noStatus: "No Status key is set",
+            keysNotGen: "Asymmetric keys can not be generated"
         }
     },
-    symmetricKey:{
+    symmetric:{
         keyLength:256,
         keyGenPossibilities:"!@$%^&*()_+=-[]{}`~,.?/|;:ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789",
         errorMessages:  {

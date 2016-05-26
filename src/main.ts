@@ -1,14 +1,17 @@
 import {Keymanager} from './modules/keymanager/keymanager';
 import {Cryptography} from './modules/cryptography/cryptography';
+import {Session} from './modules/session/session';
+
 
 
 export module Plekryption {
 
     export class test{
-        private km = new Keymanager.asymmetricKeys();
-        private kms = new Keymanager.asymmetricKey();
+        private km = new Keymanager.asymmetric();
+        private kms = new Keymanager.symmetric();
         private cr = new Cryptography.AES();
         private crr = new Cryptography.RSA();
+        private session:any;
 
         private tmpCred:any;
         private enc:any;
@@ -42,11 +45,18 @@ export module Plekryption {
             });
         }
 
-        public set():void {
+        public async set() {
             /***** BEGIM TESTING **********/
+            this.session = new Session.session();
+            await this.session.init();
+            this.pubKey = this.session.pubKey;
+            this.priKey= this.session.priKey;
+            this.status= this.session.status;
+            document.write('<h3>Status</h3><p>'+ this.status +'</p>');
+            document.write('<h3>PublicKey</h3><p>'+ this.pubKey +'</p>');
+            document.write('<h3>PrivateKey</h3><p>'+ this.priKey +'</p>');
 
-
-            this.km.initiate().then(()=>{
+            /*this.km.initiate().then(()=>{
                 var promiseArray = [
                     this.km.pubKey,
                     this.km.priKey,
@@ -78,7 +88,7 @@ export module Plekryption {
 
             }).catch((err) => {
                 alert(err);
-            });
+            });*/
             /***** END TESTING **********/
         }
     }
@@ -88,7 +98,7 @@ export module Plekryption {
 
 
     window.onload = function () {
-        addHtmlForm();
+        //addHtmlForm();
     };
     function addHtmlForm():any{
         var txt = document.createElement("textarea");
