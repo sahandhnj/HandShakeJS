@@ -54,8 +54,8 @@
 	    });
 	};
 	const keymanager_1 = __webpack_require__(1);
-	const cryptography_1 = __webpack_require__(6);
-	const session_1 = __webpack_require__(9);
+	const cryptography_1 = __webpack_require__(8);
+	const session_1 = __webpack_require__(10);
 	var Plekryption;
 	(function (Plekryption) {
 	    class test {
@@ -421,20 +421,39 @@
 
 	"use strict";
 	//noinspection TypeScriptCheckImport
-	const c = __webpack_require__(3);
-	exports.config = c;
+	const lib_1 = __webpack_require__(3);
+	exports.config = lib_1.config;
 	//noinspection TypeScriptCheckImport
-	const J = __webpack_require__(4);
-	exports.JSEncrypt = J;
+	const lib_2 = __webpack_require__(3);
+	exports.JSEncrypt = lib_2.JSEncrypt;
 	//noinspection TypeScriptCheckImport
-	const S = __webpack_require__(5);
-	exports.store = S;
-	const cryptography_1 = __webpack_require__(6);
+	const lib_3 = __webpack_require__(3);
+	exports.store = lib_3.store;
+	const cryptography_1 = __webpack_require__(8);
 	exports.Crypto = cryptography_1.Cryptography;
 
 
 /***/ },
 /* 3 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+	//noinspection TypeScriptCheckImport
+	const c = __webpack_require__(4);
+	exports.config = c;
+	//noinspection TypeScriptCheckImport
+	const J = __webpack_require__(5);
+	exports.JSEncrypt = J;
+	//noinspection TypeScriptCheckImport
+	const S = __webpack_require__(6);
+	exports.store = S;
+	//noinspection TypeScriptCheckImport
+	const cr = __webpack_require__(7);
+	exports.crypto = cr;
+
+
+/***/ },
+/* 4 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -492,7 +511,7 @@
 
 
 /***/ },
-/* 4 */
+/* 5 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/*! JSEncrypt v2.3.0 | https://npmcdn.com/jsencrypt@2.3.0/LICENSE.txt */
@@ -570,7 +589,7 @@
 	function(t){"use strict";function e(t,i){t instanceof e?(this.enc=t.enc,this.pos=t.pos):(this.enc=t,this.pos=i)}function i(t,e,i,r,s){this.stream=t,this.header=e,this.length=i,this.tag=r,this.sub=s}var r=100,s="…",n={tag:function(t,e){var i=document.createElement(t);return i.className=e,i},text:function(t){return document.createTextNode(t)}};e.prototype.get=function(e){if(e===t&&(e=this.pos++),e>=this.enc.length)throw"Requesting byte offset "+e+" on a stream of length "+this.enc.length;return this.enc[e]},e.prototype.hexDigits="0123456789ABCDEF",e.prototype.hexByte=function(t){return this.hexDigits.charAt(t>>4&15)+this.hexDigits.charAt(15&t)},e.prototype.hexDump=function(t,e,i){for(var r="",s=t;e>s;++s)if(r+=this.hexByte(this.get(s)),i!==!0)switch(15&s){case 7:r+="  ";break;case 15:r+="\n";break;default:r+=" "}return r},e.prototype.parseStringISO=function(t,e){for(var i="",r=t;e>r;++r)i+=String.fromCharCode(this.get(r));return i},e.prototype.parseStringUTF=function(t,e){for(var i="",r=t;e>r;){var s=this.get(r++);i+=128>s?String.fromCharCode(s):s>191&&224>s?String.fromCharCode((31&s)<<6|63&this.get(r++)):String.fromCharCode((15&s)<<12|(63&this.get(r++))<<6|63&this.get(r++))}return i},e.prototype.parseStringBMP=function(t,e){for(var i="",r=t;e>r;r+=2){var s=this.get(r),n=this.get(r+1);i+=String.fromCharCode((s<<8)+n)}return i},e.prototype.reTime=/^((?:1[89]|2\d)?\d\d)(0[1-9]|1[0-2])(0[1-9]|[12]\d|3[01])([01]\d|2[0-3])(?:([0-5]\d)(?:([0-5]\d)(?:[.,](\d{1,3}))?)?)?(Z|[-+](?:[0]\d|1[0-2])([0-5]\d)?)?$/,e.prototype.parseTime=function(t,e){var i=this.parseStringISO(t,e),r=this.reTime.exec(i);return r?(i=r[1]+"-"+r[2]+"-"+r[3]+" "+r[4],r[5]&&(i+=":"+r[5],r[6]&&(i+=":"+r[6],r[7]&&(i+="."+r[7]))),r[8]&&(i+=" UTC","Z"!=r[8]&&(i+=r[8],r[9]&&(i+=":"+r[9]))),i):"Unrecognized time: "+i},e.prototype.parseInteger=function(t,e){var i=e-t;if(i>4){i<<=3;var r=this.get(t);if(0===r)i-=8;else for(;128>r;)r<<=1,--i;return"("+i+" bit)"}for(var s=0,n=t;e>n;++n)s=s<<8|this.get(n);return s},e.prototype.parseBitString=function(t,e){var i=this.get(t),r=(e-t-1<<3)-i,s="("+r+" bit)";if(20>=r){var n=i;s+=" ";for(var o=e-1;o>t;--o){for(var h=this.get(o),a=n;8>a;++a)s+=h>>a&1?"1":"0";n=0}}return s},e.prototype.parseOctetString=function(t,e){var i=e-t,n="("+i+" byte) ";i>r&&(e=t+r);for(var o=t;e>o;++o)n+=this.hexByte(this.get(o));return i>r&&(n+=s),n},e.prototype.parseOID=function(t,e){for(var i="",r=0,s=0,n=t;e>n;++n){var o=this.get(n);if(r=r<<7|127&o,s+=7,!(128&o)){if(""===i){var h=80>r?40>r?0:1:2;i=h+"."+(r-40*h)}else i+="."+(s>=31?"bigint":r);r=s=0}}return i},i.prototype.typeName=function(){if(this.tag===t)return"unknown";var e=this.tag>>6,i=(this.tag>>5&1,31&this.tag);switch(e){case 0:switch(i){case 0:return"EOC";case 1:return"BOOLEAN";case 2:return"INTEGER";case 3:return"BIT_STRING";case 4:return"OCTET_STRING";case 5:return"NULL";case 6:return"OBJECT_IDENTIFIER";case 7:return"ObjectDescriptor";case 8:return"EXTERNAL";case 9:return"REAL";case 10:return"ENUMERATED";case 11:return"EMBEDDED_PDV";case 12:return"UTF8String";case 16:return"SEQUENCE";case 17:return"SET";case 18:return"NumericString";case 19:return"PrintableString";case 20:return"TeletexString";case 21:return"VideotexString";case 22:return"IA5String";case 23:return"UTCTime";case 24:return"GeneralizedTime";case 25:return"GraphicString";case 26:return"VisibleString";case 27:return"GeneralString";case 28:return"UniversalString";case 30:return"BMPString";default:return"Universal_"+i.toString(16)}case 1:return"Application_"+i.toString(16);case 2:return"["+i+"]";case 3:return"Private_"+i.toString(16)}},i.prototype.reSeemsASCII=/^[ -~]+$/,i.prototype.content=function(){if(this.tag===t)return null;var e=this.tag>>6,i=31&this.tag,n=this.posContent(),o=Math.abs(this.length);if(0!==e){if(null!==this.sub)return"("+this.sub.length+" elem)";var h=this.stream.parseStringISO(n,n+Math.min(o,r));return this.reSeemsASCII.test(h)?h.substring(0,2*r)+(h.length>2*r?s:""):this.stream.parseOctetString(n,n+o)}switch(i){case 1:return 0===this.stream.get(n)?"false":"true";case 2:return this.stream.parseInteger(n,n+o);case 3:return this.sub?"("+this.sub.length+" elem)":this.stream.parseBitString(n,n+o);case 4:return this.sub?"("+this.sub.length+" elem)":this.stream.parseOctetString(n,n+o);case 6:return this.stream.parseOID(n,n+o);case 16:case 17:return"("+this.sub.length+" elem)";case 12:return this.stream.parseStringUTF(n,n+o);case 18:case 19:case 20:case 21:case 22:case 26:return this.stream.parseStringISO(n,n+o);case 30:return this.stream.parseStringBMP(n,n+o);case 23:case 24:return this.stream.parseTime(n,n+o)}return null},i.prototype.toString=function(){return this.typeName()+"@"+this.stream.pos+"[header:"+this.header+",length:"+this.length+",sub:"+(null===this.sub?"null":this.sub.length)+"]"},i.prototype.print=function(e){if(e===t&&(e=""),document.writeln(e+this),null!==this.sub){e+="  ";for(var i=0,r=this.sub.length;r>i;++i)this.sub[i].print(e)}},i.prototype.toPrettyString=function(e){e===t&&(e="");var i=e+this.typeName()+" @"+this.stream.pos;if(this.length>=0&&(i+="+"),i+=this.length,32&this.tag?i+=" (constructed)":3!=this.tag&&4!=this.tag||null===this.sub||(i+=" (encapsulates)"),i+="\n",null!==this.sub){e+="  ";for(var r=0,s=this.sub.length;s>r;++r)i+=this.sub[r].toPrettyString(e)}return i},i.prototype.toDOM=function(){var t=n.tag("div","node");t.asn1=this;var e=n.tag("div","head"),i=this.typeName().replace(/_/g," ");e.innerHTML=i;var r=this.content();if(null!==r){r=String(r).replace(/</g,"&lt;");var s=n.tag("span","preview");s.appendChild(n.text(r)),e.appendChild(s)}t.appendChild(e),this.node=t,this.head=e;var o=n.tag("div","value");if(i="Offset: "+this.stream.pos+"<br/>",i+="Length: "+this.header+"+",i+=this.length>=0?this.length:-this.length+" (undefined)",32&this.tag?i+="<br/>(constructed)":3!=this.tag&&4!=this.tag||null===this.sub||(i+="<br/>(encapsulates)"),null!==r&&(i+="<br/>Value:<br/><b>"+r+"</b>","object"==typeof oids&&6==this.tag)){var h=oids[r];h&&(h.d&&(i+="<br/>"+h.d),h.c&&(i+="<br/>"+h.c),h.w&&(i+="<br/>(warning!)"))}o.innerHTML=i,t.appendChild(o);var a=n.tag("div","sub");if(null!==this.sub)for(var u=0,c=this.sub.length;c>u;++u)a.appendChild(this.sub[u].toDOM());return t.appendChild(a),e.onclick=function(){t.className="node collapsed"==t.className?"node":"node collapsed"},t},i.prototype.posStart=function(){return this.stream.pos},i.prototype.posContent=function(){return this.stream.pos+this.header},i.prototype.posEnd=function(){return this.stream.pos+this.header+Math.abs(this.length)},i.prototype.fakeHover=function(t){this.node.className+=" hover",t&&(this.head.className+=" hover")},i.prototype.fakeOut=function(t){var e=/ ?hover/;this.node.className=this.node.className.replace(e,""),t&&(this.head.className=this.head.className.replace(e,""))},i.prototype.toHexDOM_sub=function(t,e,i,r,s){if(!(r>=s)){var o=n.tag("span",e);o.appendChild(n.text(i.hexDump(r,s))),t.appendChild(o)}},i.prototype.toHexDOM=function(e){var i=n.tag("span","hex");if(e===t&&(e=i),this.head.hexNode=i,this.head.onmouseover=function(){this.hexNode.className="hexCurrent"},this.head.onmouseout=function(){this.hexNode.className="hex"},i.asn1=this,i.onmouseover=function(){var t=!e.selected;t&&(e.selected=this.asn1,this.className="hexCurrent"),this.asn1.fakeHover(t)},i.onmouseout=function(){var t=e.selected==this.asn1;this.asn1.fakeOut(t),t&&(e.selected=null,this.className="hex")},this.toHexDOM_sub(i,"tag",this.stream,this.posStart(),this.posStart()+1),this.toHexDOM_sub(i,this.length>=0?"dlen":"ulen",this.stream,this.posStart()+1,this.posContent()),null===this.sub)i.appendChild(n.text(this.stream.hexDump(this.posContent(),this.posEnd())));else if(this.sub.length>0){var r=this.sub[0],s=this.sub[this.sub.length-1];this.toHexDOM_sub(i,"intro",this.stream,this.posContent(),r.posStart());for(var o=0,h=this.sub.length;h>o;++o)i.appendChild(this.sub[o].toHexDOM(e));this.toHexDOM_sub(i,"outro",this.stream,s.posEnd(),this.posEnd())}return i},i.prototype.toHexString=function(t){return this.stream.hexDump(this.posStart(),this.posEnd(),!0)},i.decodeLength=function(t){var e=t.get(),i=127&e;if(i==e)return i;if(i>3)throw"Length over 24 bits not supported at position "+(t.pos-1);if(0===i)return-1;e=0;for(var r=0;i>r;++r)e=e<<8|t.get();return e},i.hasContent=function(t,r,s){if(32&t)return!0;if(3>t||t>4)return!1;var n=new e(s);3==t&&n.get();var o=n.get();if(o>>6&1)return!1;try{var h=i.decodeLength(n);return n.pos-s.pos+h==r}catch(a){return!1}},i.decode=function(t){t instanceof e||(t=new e(t,0));var r=new e(t),s=t.get(),n=i.decodeLength(t),o=t.pos-r.pos,h=null;if(i.hasContent(s,n,t)){var a=t.pos;if(3==s&&t.get(),h=[],n>=0){for(var u=a+n;t.pos<u;)h[h.length]=i.decode(t);if(t.pos!=u)throw"Content size is not correct for container starting at offset "+a}else try{for(;;){var c=i.decode(t);if(0===c.tag)break;h[h.length]=c}n=a-t.pos}catch(f){throw"Exception while decoding undefined length content: "+f}}else t.pos+=n;return new i(r,o,n,s,h)},i.test=function(){for(var t=[{value:[39],expected:39},{value:[129,201],expected:201},{value:[131,254,220,186],expected:16702650}],r=0,s=t.length;s>r;++r){var n=new e(t[r].value,0),o=i.decodeLength(n);o!=t[r].expected&&document.write("In test["+r+"] expected "+t[r].expected+" got "+o+"\n")}},window.ASN1=i}(),ASN1.prototype.getHexStringValue=function(){var t=this.toHexString(),e=2*this.header,i=2*this.length;return t.substr(e,i)},ue.prototype.parseKey=function(t){try{var e=0,i=0,r=/^\s*(?:[0-9A-Fa-f][0-9A-Fa-f]\s*)+$/,s=r.test(t)?Hex.decode(t):Base64.unarmor(t),n=ASN1.decode(s);if(3===n.sub.length&&(n=n.sub[2].sub[0]),9===n.sub.length){e=n.sub[1].getHexStringValue(),this.n=he(e,16),i=n.sub[2].getHexStringValue(),this.e=parseInt(i,16);var o=n.sub[3].getHexStringValue();this.d=he(o,16);var h=n.sub[4].getHexStringValue();this.p=he(h,16);var a=n.sub[5].getHexStringValue();this.q=he(a,16);var u=n.sub[6].getHexStringValue();this.dmp1=he(u,16);var c=n.sub[7].getHexStringValue();this.dmq1=he(c,16);var f=n.sub[8].getHexStringValue();this.coeff=he(f,16)}else{if(2!==n.sub.length)return!1;var p=n.sub[1],l=p.sub[0];e=l.sub[0].getHexStringValue(),this.n=he(e,16),i=l.sub[1].getHexStringValue(),this.e=parseInt(i,16)}return!0}catch(d){return!1}},ue.prototype.getPrivateBaseKey=function(){var t={array:[new KJUR.asn1.DERInteger({"int":0}),new KJUR.asn1.DERInteger({bigint:this.n}),new KJUR.asn1.DERInteger({"int":this.e}),new KJUR.asn1.DERInteger({bigint:this.d}),new KJUR.asn1.DERInteger({bigint:this.p}),new KJUR.asn1.DERInteger({bigint:this.q}),new KJUR.asn1.DERInteger({bigint:this.dmp1}),new KJUR.asn1.DERInteger({bigint:this.dmq1}),new KJUR.asn1.DERInteger({bigint:this.coeff})]},e=new KJUR.asn1.DERSequence(t);return e.getEncodedHex()},ue.prototype.getPrivateBaseKeyB64=function(){return be(this.getPrivateBaseKey())},ue.prototype.getPublicBaseKey=function(){var t={array:[new KJUR.asn1.DERObjectIdentifier({oid:"1.2.840.113549.1.1.1"}),new KJUR.asn1.DERNull]},e=new KJUR.asn1.DERSequence(t);t={array:[new KJUR.asn1.DERInteger({bigint:this.n}),new KJUR.asn1.DERInteger({"int":this.e})]};var i=new KJUR.asn1.DERSequence(t);t={hex:"00"+i.getEncodedHex()};var r=new KJUR.asn1.DERBitString(t);t={array:[e,r]};var s=new KJUR.asn1.DERSequence(t);return s.getEncodedHex()},ue.prototype.getPublicBaseKeyB64=function(){return be(this.getPublicBaseKey())},ue.prototype.wordwrap=function(t,e){if(e=e||64,!t)return t;var i="(.{1,"+e+"})( +|$\n?)|(.{1,"+e+"})";return t.match(RegExp(i,"g")).join("\n")},ue.prototype.getPrivateKey=function(){var t="-----BEGIN RSA PRIVATE KEY-----\n";return t+=this.wordwrap(this.getPrivateBaseKeyB64())+"\n",t+="-----END RSA PRIVATE KEY-----"},ue.prototype.getPublicKey=function(){var t="-----BEGIN PUBLIC KEY-----\n";return t+=this.wordwrap(this.getPublicBaseKeyB64())+"\n",t+="-----END PUBLIC KEY-----"},ue.prototype.hasPublicKeyProperty=function(t){return t=t||{},t.hasOwnProperty("n")&&t.hasOwnProperty("e")},ue.prototype.hasPrivateKeyProperty=function(t){return t=t||{},t.hasOwnProperty("n")&&t.hasOwnProperty("e")&&t.hasOwnProperty("d")&&t.hasOwnProperty("p")&&t.hasOwnProperty("q")&&t.hasOwnProperty("dmp1")&&t.hasOwnProperty("dmq1")&&t.hasOwnProperty("coeff")},ue.prototype.parsePropertiesFrom=function(t){this.n=t.n,this.e=t.e,t.hasOwnProperty("d")&&(this.d=t.d,this.p=t.p,this.q=t.q,this.dmp1=t.dmp1,this.dmq1=t.dmq1,this.coeff=t.coeff)};var _e=function(t){ue.call(this),t&&("string"==typeof t?this.parseKey(t):(this.hasPrivateKeyProperty(t)||this.hasPublicKeyProperty(t))&&this.parsePropertiesFrom(t))};_e.prototype=new ue,_e.prototype.constructor=_e;var ze=function(t){t=t||{},this.default_key_size=parseInt(t.default_key_size)||1024,this.default_public_exponent=t.default_public_exponent||"010001",this.log=t.log||!1,this.key=null};ze.prototype.setKey=function(t){this.log&&this.key&&console.warn("A key was already set, overriding existing."),this.key=new _e(t)},ze.prototype.setPrivateKey=function(t){this.setKey(t)},ze.prototype.setPublicKey=function(t){this.setKey(t)},ze.prototype.decrypt=function(t){try{return this.getKey().decrypt(Te(t))}catch(e){return!1}},ze.prototype.encrypt=function(t){try{return be(this.getKey().encrypt(t))}catch(e){return!1}},ze.prototype.getKey=function(t){if(!this.key){if(this.key=new _e,t&&"[object Function]"==={}.toString.call(t))return void this.key.generateAsync(this.default_key_size,this.default_public_exponent,t);this.key.generate(this.default_key_size,this.default_public_exponent)}return this.key},ze.prototype.getPrivateKey=function(){return this.getKey().getPrivateKey()},ze.prototype.getPrivateKeyB64=function(){return this.getKey().getPrivateBaseKeyB64()},ze.prototype.getPublicKey=function(){return this.getKey().getPublicKey()},ze.prototype.getPublicKeyB64=function(){return this.getKey().getPublicBaseKeyB64()},ze.version="2.3.0",t.JSEncrypt=ze}(JSEncryptExports),function(t,e){ true?module.exports=e:"function"==typeof define&&define.amd?define(e):t.JSEncrypt=e}(this,JSEncryptExports.JSEncrypt);
 
 /***/ },
-/* 5 */
+/* 6 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/* WEBPACK VAR INJECTION */(function(global) {/* Copyright (c) 2010-2013 Marcus Westin */
@@ -578,266 +597,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }())))
 
 /***/ },
-/* 6 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-	const lib_1 = __webpack_require__(7);
-	var Cryptography;
-	(function (Cryptography) {
-	    class AES {
-	        constructor() {
-	            this.NONCE_LENGTH = lib_1.config.crypto.AES.nonceLength / 8 || 12;
-	            this.KEY_LENGTH = lib_1.config.crypto.AES.keyLength / 8 || 32;
-	        }
-	        encrypt(cred, plaintext) {
-	            const p = new Promise((resolve, reject) => {
-	                try {
-	                    if (!cred.key && cred.key.length !== this.KEY_LENGTH)
-	                        reject(new Error(lib_1.config.crypto.AES.errorMessages.noKEY));
-	                    if (!!plaintext) {
-	                        //noinspection TypeScriptUnresolvedVariable
-	                        let cipher = lib_1.crypto.AES.encrypt(plaintext, cred.key);
-	                        cipher = cipher.toString();
-	                        (!!cipher) ? resolve(cipher) : reject(new Error(lib_1.config.crypto.AES.errorMessages.other));
-	                    }
-	                    else
-	                        reject(new Error(lib_1.config.crypto.AES.errorMessages.noPlainText));
-	                }
-	                catch (err) {
-	                    reject(err);
-	                }
-	            });
-	            return p;
-	        }
-	        encrypt_CTR(cred, plaintext) {
-	            const p = new Promise((resolve, reject) => {
-	                try {
-	                    var nonce;
-	                    if (!!cred.nonce) {
-	                        //noinspection TypeScriptUnresolvedVariable
-	                        nonce = lib_1.crypto.enc.Hex.parse(cred.nonce);
-	                    }
-	                    else
-	                        reject(new Error(lib_1.config.crypto.AES.errorMessages.noNONCE));
-	                    if (nonce.words.length !== this.NONCE_LENGTH / 4)
-	                        reject(new Error(lib_1.config.crypto.AES.errorMessages.badNONCESize));
-	                    if (!cred.key && cred.key.length !== this.KEY_LENGTH)
-	                        reject(new Error(lib_1.config.crypto.AES.errorMessages.noKEY));
-	                    if (!!plaintext) {
-	                        //noinspection TypeScriptUnresolvedVariable
-	                        let cipher = lib_1.crypto.AES.encrypt(plaintext, cred.key, { iv: nonce, mode: lib_1.crypto.mode.CTR, padding: lib_1.crypto.pad.NoPadding });
-	                        cipher = cred.nonce + cipher;
-	                        (!!cipher) ? resolve(cipher) : reject(new Error(lib_1.config.crypto.AES.errorMessages.other));
-	                    }
-	                    else
-	                        reject(new Error(lib_1.config.crypto.AES.errorMessages.noPlainText));
-	                }
-	                catch (err) {
-	                    reject(err);
-	                }
-	            });
-	            return p;
-	        }
-	        decrypt_CTR(cipher, key) {
-	            const p = new Promise((resolve, reject) => {
-	                try {
-	                    if (!!cipher && cipher.length > 0) {
-	                        var ex = this.extractNONCE(cipher);
-	                        if (typeof ex == "Error")
-	                            reject(ex);
-	                    }
-	                    else
-	                        reject(new Error(lib_1.config.crypto.AES.errorMessages.noCipher));
-	                    if (!!ex.nonce || (ex.nonce.length === this.NONCE_LENGTH * 2)) {
-	                        //noinspection TypeScriptUnresolvedVariable
-	                        var nonce = lib_1.crypto.enc.Hex.parse(ex.nonce);
-	                    }
-	                    else
-	                        reject(new Error(lib_1.config.crypto.AES.errorMessages.noNONCE));
-	                    if (!ex.cipher)
-	                        reject(new Error(lib_1.config.crypto.AES.errorMessages.noCipher));
-	                    if (!key && key.length !== this.KEY_LENGTH)
-	                        reject(new Error(lib_1.config.crypto.AES.errorMessages.noKEY));
-	                    //noinspection TypeScriptUnresolvedVariable
-	                    var plain = lib_1.crypto.AES.decrypt(ex.cipher, key, { iv: nonce, mode: lib_1.crypto.mode.CTR, padding: lib_1.crypto.pad.NoPadding });
-	                    //noinspection TypeScriptUnresolvedVariable
-	                    plain = plain.toString(lib_1.crypto.enc.Utf8);
-	                    (!!plain) ? resolve(plain) : reject(new Error(lib_1.config.crypto.AES.errorMessages.decryptionFailed));
-	                }
-	                catch (err) {
-	                    reject(err);
-	                }
-	            });
-	            return p;
-	        }
-	        decrypt(cipher, key) {
-	            const p = new Promise((resolve, reject) => {
-	                try {
-	                    if (!cipher)
-	                        reject(new Error(lib_1.config.crypto.AES.errorMessages.noCipher));
-	                    if (!key && key.length !== this.KEY_LENGTH)
-	                        reject(new Error(lib_1.config.crypto.AES.errorMessages.noKEY));
-	                    //noinspection TypeScriptUnresolvedVariable
-	                    let plain = lib_1.crypto.AES.decrypt(cipher, key);
-	                    //noinspection TypeScriptUnresolvedVariable
-	                    plain = plain.toString(lib_1.crypto.enc.Utf8);
-	                    (!!plain) ? resolve(plain) : reject(new Error(lib_1.config.crypto.AES.errorMessages.decryptionFailed));
-	                }
-	                catch (err) {
-	                    reject(err);
-	                }
-	            });
-	            return p;
-	        }
-	        extractNONCE(cipher) {
-	            try {
-	                var res = {
-	                    nonce: "",
-	                    cipher: ""
-	                };
-	                for (var i = 0; i < this.NONCE_LENGTH * 2; i++)
-	                    res.nonce += cipher[i];
-	                for (var j = this.NONCE_LENGTH * 2; j < cipher.length; j++)
-	                    res.cipher += cipher[j];
-	                if (res.nonce.length == this.NONCE_LENGTH * 2 && res.cipher.length > 0)
-	                    return (res);
-	                else
-	                    return (new Error(lib_1.config.crypto.AES.errorMessages.nonceExtractionFail));
-	            }
-	            catch (err) {
-	                return (err);
-	            }
-	        }
-	        generateRandomKey(len = this.KEY_LENGTH) {
-	            let key = "";
-	            let possible = lib_1.config.crypto.AES.keyGenPossibilities;
-	            for (let i = 0; i < len; i++)
-	                key += possible.charAt(Math.floor(Math.random() * possible.length));
-	            return key;
-	        }
-	        hex2a(hex) {
-	            var str = '';
-	            for (var i = 0; i < hex.length; i += 2)
-	                str += String.fromCharCode(parseInt(hex.substr(i, 2), 16));
-	            return str;
-	        }
-	        setCredential(key) {
-	            const p = new Promise((resolve, reject) => {
-	                try {
-	                    var cred = {
-	                        nonce: '',
-	                        key: ''
-	                    };
-	                    //noinspection TypeScriptUnresolvedVariable
-	                    cred.nonce = lib_1.crypto.lib.WordArray.random(this.NONCE_LENGTH).toString();
-	                    (!!key && key.length === this.KEY_LENGTH) ? cred.key = key : cred.key = this.generateRandomKey();
-	                    if (!!cred.key && !!cred.nonce)
-	                        resolve(cred);
-	                    else
-	                        reject(new Error(lib_1.config.crypto.AES.errorMessages.credGenFail));
-	                }
-	                catch (err) {
-	                    reject(err);
-	                }
-	            });
-	            return p;
-	        }
-	    }
-	    Cryptography.AES = AES;
-	    class RSA {
-	        constructor() {
-	            this.rsaEnc = new lib_1.JSEncrypt();
-	            this.rsaDec = new lib_1.JSEncrypt();
-	        }
-	        init(pubKey, priKey) {
-	            const p = new Promise((resolve, reject) => {
-	                try {
-	                    this.rsaEnc.setPublicKey(pubKey);
-	                    this.rsaDec.setPrivateKey(priKey);
-	                    if (!!this.rsaEnc && !!this.rsaDec)
-	                        resolve();
-	                    else
-	                        reject(new Error(lib_1.config.crypto.RSA.errorMessages.initiationFialed));
-	                }
-	                catch (err) {
-	                    reject(err);
-	                }
-	            });
-	            return p;
-	        }
-	        singleInit(pubKey) {
-	            const p = new Promise((resolve, reject) => {
-	                try {
-	                    this.rsaEnc.setPublicKey(pubKey);
-	                    if (!!this.rsaEnc)
-	                        resolve();
-	                    else
-	                        reject(new Error(lib_1.config.crypto.RSA.errorMessages.initiationFialed));
-	                }
-	                catch (err) {
-	                    reject(err);
-	                }
-	            });
-	            return p;
-	        }
-	        encrypt(plain) {
-	            const p = new Promise((resolve, reject) => {
-	                try {
-	                    if (!this.rsaEnc)
-	                        reject(new Error(lib_1.config.crypto.RSA.errorMessages.noPubKey));
-	                    var encrypted = this.rsaEnc.encrypt(plain);
-	                    if (!!encrypted)
-	                        resolve(encrypted);
-	                    else
-	                        reject(new Error(lib_1.config.crypto.RSA.errorMessages.encFailed));
-	                }
-	                catch (err) {
-	                    reject(err);
-	                }
-	            });
-	            return p;
-	        }
-	        decrypt(cipher) {
-	            const p = new Promise((resolve, reject) => {
-	                try {
-	                    if (!this.rsaEnc)
-	                        reject(new Error(lib_1.config.crypto.RSA.errorMessages.noPriKey));
-	                    var decrypted = this.rsaDec.decrypt(cipher);
-	                    if (!!decrypted)
-	                        resolve(decrypted);
-	                    else
-	                        reject(new Error(lib_1.config.crypto.RSA.errorMessages.decFailed));
-	                }
-	                catch (err) {
-	                    reject(err);
-	                }
-	            });
-	            return p;
-	        }
-	    }
-	    Cryptography.RSA = RSA;
-	})(Cryptography = exports.Cryptography || (exports.Cryptography = {}));
-
-
-/***/ },
 /* 7 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-	//noinspection TypeScriptCheckImport
-	const c = __webpack_require__(3);
-	exports.config = c;
-	//noinspection TypeScriptCheckImport
-	const cr = __webpack_require__(8);
-	exports.crypto = cr;
-	//noinspection TypeScriptCheckImport
-	const J = __webpack_require__(4);
-	exports.JSEncrypt = J;
-
-
-/***/ },
-/* 8 */
 /***/ function(module, exports, __webpack_require__) {
 
 	;(function (root, factory) {
@@ -6791,7 +6551,269 @@
 	}));
 
 /***/ },
+/* 8 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+	const lib_1 = __webpack_require__(9);
+	var Cryptography;
+	(function (Cryptography) {
+	    class AES {
+	        constructor() {
+	            this.NONCE_LENGTH = lib_1.config.crypto.AES.nonceLength / 8 || 12;
+	            this.KEY_LENGTH = lib_1.config.crypto.AES.keyLength / 8 || 32;
+	        }
+	        encrypt(cred, plaintext) {
+	            const p = new Promise((resolve, reject) => {
+	                try {
+	                    if (!cred.key && cred.key.length !== this.KEY_LENGTH)
+	                        reject(new Error(lib_1.config.crypto.AES.errorMessages.noKEY));
+	                    if (!!plaintext) {
+	                        //noinspection TypeScriptUnresolvedVariable
+	                        let cipher = lib_1.crypto.AES.encrypt(plaintext, cred.key);
+	                        cipher = cipher.toString();
+	                        (!!cipher) ? resolve(cipher) : reject(new Error(lib_1.config.crypto.AES.errorMessages.other));
+	                    }
+	                    else
+	                        reject(new Error(lib_1.config.crypto.AES.errorMessages.noPlainText));
+	                }
+	                catch (err) {
+	                    reject(err);
+	                }
+	            });
+	            return p;
+	        }
+	        encrypt_CTR(cred, plaintext) {
+	            const p = new Promise((resolve, reject) => {
+	                try {
+	                    var nonce;
+	                    if (!!cred.nonce) {
+	                        //noinspection TypeScriptUnresolvedVariable
+	                        nonce = lib_1.crypto.enc.Hex.parse(cred.nonce);
+	                    }
+	                    else
+	                        reject(new Error(lib_1.config.crypto.AES.errorMessages.noNONCE));
+	                    if (nonce.words.length !== this.NONCE_LENGTH / 4)
+	                        reject(new Error(lib_1.config.crypto.AES.errorMessages.badNONCESize));
+	                    if (!cred.key && cred.key.length !== this.KEY_LENGTH)
+	                        reject(new Error(lib_1.config.crypto.AES.errorMessages.noKEY));
+	                    if (!!plaintext) {
+	                        //noinspection TypeScriptUnresolvedVariable
+	                        let cipher = lib_1.crypto.AES.encrypt(plaintext, cred.key, { iv: nonce, mode: lib_1.crypto.mode.CTR, padding: lib_1.crypto.pad.NoPadding });
+	                        cipher = cred.nonce + cipher;
+	                        (!!cipher) ? resolve(cipher) : reject(new Error(lib_1.config.crypto.AES.errorMessages.other));
+	                    }
+	                    else
+	                        reject(new Error(lib_1.config.crypto.AES.errorMessages.noPlainText));
+	                }
+	                catch (err) {
+	                    reject(err);
+	                }
+	            });
+	            return p;
+	        }
+	        decrypt_CTR(cipher, key) {
+	            const p = new Promise((resolve, reject) => {
+	                try {
+	                    if (!!cipher && cipher.length > 0) {
+	                        var ex = this.extractNONCE(cipher);
+	                        if (typeof ex == "Error")
+	                            reject(ex);
+	                    }
+	                    else
+	                        reject(new Error(lib_1.config.crypto.AES.errorMessages.noCipher));
+	                    if (!!ex.nonce || (ex.nonce.length === this.NONCE_LENGTH * 2)) {
+	                        //noinspection TypeScriptUnresolvedVariable
+	                        var nonce = lib_1.crypto.enc.Hex.parse(ex.nonce);
+	                    }
+	                    else
+	                        reject(new Error(lib_1.config.crypto.AES.errorMessages.noNONCE));
+	                    if (!ex.cipher)
+	                        reject(new Error(lib_1.config.crypto.AES.errorMessages.noCipher));
+	                    if (!key && key.length !== this.KEY_LENGTH)
+	                        reject(new Error(lib_1.config.crypto.AES.errorMessages.noKEY));
+	                    //noinspection TypeScriptUnresolvedVariable
+	                    var plain = lib_1.crypto.AES.decrypt(ex.cipher, key, { iv: nonce, mode: lib_1.crypto.mode.CTR, padding: lib_1.crypto.pad.NoPadding });
+	                    //noinspection TypeScriptUnresolvedVariable
+	                    plain = plain.toString(lib_1.crypto.enc.Utf8);
+	                    (!!plain) ? resolve(plain) : reject(new Error(lib_1.config.crypto.AES.errorMessages.decryptionFailed));
+	                }
+	                catch (err) {
+	                    reject(err);
+	                }
+	            });
+	            return p;
+	        }
+	        decrypt(cipher, key) {
+	            const p = new Promise((resolve, reject) => {
+	                try {
+	                    if (!cipher)
+	                        reject(new Error(lib_1.config.crypto.AES.errorMessages.noCipher));
+	                    if (!key && key.length !== this.KEY_LENGTH)
+	                        reject(new Error(lib_1.config.crypto.AES.errorMessages.noKEY));
+	                    //noinspection TypeScriptUnresolvedVariable
+	                    let plain = lib_1.crypto.AES.decrypt(cipher, key);
+	                    //noinspection TypeScriptUnresolvedVariable
+	                    plain = plain.toString(lib_1.crypto.enc.Utf8);
+	                    (!!plain) ? resolve(plain) : reject(new Error(lib_1.config.crypto.AES.errorMessages.decryptionFailed));
+	                }
+	                catch (err) {
+	                    reject(err);
+	                }
+	            });
+	            return p;
+	        }
+	        extractNONCE(cipher) {
+	            try {
+	                var res = {
+	                    nonce: "",
+	                    cipher: ""
+	                };
+	                for (var i = 0; i < this.NONCE_LENGTH * 2; i++)
+	                    res.nonce += cipher[i];
+	                for (var j = this.NONCE_LENGTH * 2; j < cipher.length; j++)
+	                    res.cipher += cipher[j];
+	                if (res.nonce.length == this.NONCE_LENGTH * 2 && res.cipher.length > 0)
+	                    return (res);
+	                else
+	                    return (new Error(lib_1.config.crypto.AES.errorMessages.nonceExtractionFail));
+	            }
+	            catch (err) {
+	                return (err);
+	            }
+	        }
+	        generateRandomKey(len = this.KEY_LENGTH) {
+	            let key = "";
+	            let possible = lib_1.config.crypto.AES.keyGenPossibilities;
+	            for (let i = 0; i < len; i++)
+	                key += possible.charAt(Math.floor(Math.random() * possible.length));
+	            return key;
+	        }
+	        hex2a(hex) {
+	            var str = '';
+	            for (var i = 0; i < hex.length; i += 2)
+	                str += String.fromCharCode(parseInt(hex.substr(i, 2), 16));
+	            return str;
+	        }
+	        setCredential(key) {
+	            const p = new Promise((resolve, reject) => {
+	                try {
+	                    var cred = {
+	                        nonce: '',
+	                        key: ''
+	                    };
+	                    //noinspection TypeScriptUnresolvedVariable
+	                    cred.nonce = lib_1.crypto.lib.WordArray.random(this.NONCE_LENGTH).toString();
+	                    (!!key && key.length === this.KEY_LENGTH) ? cred.key = key : cred.key = this.generateRandomKey();
+	                    if (!!cred.key && !!cred.nonce)
+	                        resolve(cred);
+	                    else
+	                        reject(new Error(lib_1.config.crypto.AES.errorMessages.credGenFail));
+	                }
+	                catch (err) {
+	                    reject(err);
+	                }
+	            });
+	            return p;
+	        }
+	    }
+	    Cryptography.AES = AES;
+	    class RSA {
+	        constructor() {
+	            this.rsaEnc = new lib_1.JSEncrypt();
+	            this.rsaDec = new lib_1.JSEncrypt();
+	        }
+	        init(pubKey, priKey) {
+	            const p = new Promise((resolve, reject) => {
+	                try {
+	                    this.rsaEnc.setPublicKey(pubKey);
+	                    this.rsaDec.setPrivateKey(priKey);
+	                    if (!!this.rsaEnc && !!this.rsaDec)
+	                        resolve();
+	                    else
+	                        reject(new Error(lib_1.config.crypto.RSA.errorMessages.initiationFialed));
+	                }
+	                catch (err) {
+	                    reject(err);
+	                }
+	            });
+	            return p;
+	        }
+	        singleInit(pubKey) {
+	            const p = new Promise((resolve, reject) => {
+	                try {
+	                    this.rsaEnc.setPublicKey(pubKey);
+	                    if (!!this.rsaEnc)
+	                        resolve();
+	                    else
+	                        reject(new Error(lib_1.config.crypto.RSA.errorMessages.initiationFialed));
+	                }
+	                catch (err) {
+	                    reject(err);
+	                }
+	            });
+	            return p;
+	        }
+	        encrypt(plain) {
+	            const p = new Promise((resolve, reject) => {
+	                try {
+	                    if (!this.rsaEnc)
+	                        reject(new Error(lib_1.config.crypto.RSA.errorMessages.noPubKey));
+	                    var encrypted = this.rsaEnc.encrypt(plain);
+	                    if (!!encrypted)
+	                        resolve(encrypted);
+	                    else
+	                        reject(new Error(lib_1.config.crypto.RSA.errorMessages.encFailed));
+	                }
+	                catch (err) {
+	                    reject(err);
+	                }
+	            });
+	            return p;
+	        }
+	        decrypt(cipher) {
+	            const p = new Promise((resolve, reject) => {
+	                try {
+	                    if (!this.rsaEnc)
+	                        reject(new Error(lib_1.config.crypto.RSA.errorMessages.noPriKey));
+	                    var decrypted = this.rsaDec.decrypt(cipher);
+	                    if (!!decrypted)
+	                        resolve(decrypted);
+	                    else
+	                        reject(new Error(lib_1.config.crypto.RSA.errorMessages.decFailed));
+	                }
+	                catch (err) {
+	                    reject(err);
+	                }
+	            });
+	            return p;
+	        }
+	    }
+	    Cryptography.RSA = RSA;
+	})(Cryptography = exports.Cryptography || (exports.Cryptography = {}));
+
+
+/***/ },
 /* 9 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+	//noinspection TypeScriptCheckImport
+	const lib_1 = __webpack_require__(3);
+	exports.crypto = lib_1.crypto;
+	//noinspection TypeScriptCheckImport
+	const lib_2 = __webpack_require__(3);
+	exports.config = lib_2.config;
+	//noinspection TypeScriptCheckImport
+	const lib_3 = __webpack_require__(3);
+	exports.JSEncrypt = lib_3.JSEncrypt;
+	//noinspection TypeScriptCheckImport
+	const lib_4 = __webpack_require__(3);
+	exports.store = lib_4.store;
+
+
+/***/ },
+/* 10 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -6803,7 +6825,7 @@
 	        step((generator = generator.apply(thisArg, _arguments)).next());
 	    });
 	};
-	const lib_1 = __webpack_require__(10);
+	const lib_1 = __webpack_require__(11);
 	var Session;
 	(function (Session) {
 	    class session {
@@ -7001,11 +7023,11 @@
 
 
 /***/ },
-/* 10 */
+/* 11 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
-	const cryptography_1 = __webpack_require__(6);
+	const cryptography_1 = __webpack_require__(8);
 	exports.Crypto = cryptography_1.Cryptography;
 	const keymanager_1 = __webpack_require__(1);
 	exports.Keymanager = keymanager_1.Keymanager;

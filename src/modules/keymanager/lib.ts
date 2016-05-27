@@ -1,18 +1,18 @@
 declare var Promise: PromiseConstructor;
 
 //noinspection TypeScriptCheckImport
-import * as c from '../../config'
+import {config} from '../../lib'
 
 //noinspection TypeScriptCheckImport
-import * as J from '../../lib/jsencrypt.min'
+import {JSEncrypt} from '../../lib'
 
 //noinspection TypeScriptCheckImport
-import * as S from '../../lib/store.min'
+import {store} from '../../lib'
 
 import {Cryptography} from '../cryptography/cryptography'
 
-export  {c as config} ;
-export  {J as JSEncrypt};
-export  {S as store};
+export  {config as config} ;
+export  {JSEncrypt as JSEncrypt};
+export  {store as store};
 export  {Cryptography as Crypto};
 
