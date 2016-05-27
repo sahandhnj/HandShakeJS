@@ -1,9 +1,10 @@
 module.exports = {
-    entry: './src/main.ts',
+    entry: './src/main',
     output: {
         path: "dist",
         filename: 'plekryption.js',
-        chunkFilename: '[id].bundle.js'
+        libraryTarget:  'var',
+        library: "Plekryption"
     },
     resolve: {
         extensions: ['', '.webpack.js', '.web.js', '.ts', '.js' , '.json']

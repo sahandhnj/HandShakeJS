@@ -4,6 +4,31 @@
     <script src="../dist/plekryption.js"></script>
 </head>
 <body>
+<script>
+    function Timer(callback, delay) {
+        var timerId, start, remaining = delay;
+
+        this.pause = function() {
+            window.clearTimeout(timerId);
+            remaining -= new Date() - start;
+        };
+
+        this.resume = function() {
+            start = new Date();
+            window.clearTimeout(timerId);
+            timerId = window.setTimeout(callback, remaining);
+        };
+
+        this.resume();
+    }
+    var session = new Plekryption.session();
+    session.init();
+
+    var timer = new Timer(function() {
+        console.log(session.pubKey);
+    }, 1000);
+
+</script>
 <div id="stuff"></div>
 </body>
 </html>

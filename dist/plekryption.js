@@ -1,3 +1,4 @@
+var Plekryption =
 /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
@@ -53,130 +54,207 @@
 	        step((generator = generator.apply(thisArg, _arguments)).next());
 	    });
 	};
-	const keymanager_1 = __webpack_require__(1);
-	const cryptography_1 = __webpack_require__(8);
-	const session_1 = __webpack_require__(10);
-	var Plekryption;
-	(function (Plekryption) {
-	    class test {
-	        constructor() {
-	            this.km = new keymanager_1.Keymanager.asymmetric();
-	            this.kms = new keymanager_1.Keymanager.symmetric();
-	            this.cr = new cryptography_1.Cryptography.AES();
-	            this.crr = new cryptography_1.Cryptography.RSA();
-	        }
-	        chat(msg) {
-	            this.cr.setCredential(this.decChatKey).then(val => {
-	                this.tmpCred = val;
-	                return this.cr.encrypt_CTR(val, msg);
-	            }).then(encs => {
-	                this.enc = encs;
-	                document.getElementById('stuff').innerHTML += '<hr>';
-	                document.getElementById('stuff').innerHTML += ('<h3>Cipher</h3><p>' + this.enc + '</p>');
-	                document.getElementById('stuff').innerHTML += ('<h3>NONCE</h3><p>' + this.tmpCred.nonce.toString() + '</p>');
-	                return this.cr.decrypt_CTR(encs.toString(), this.tmpCred.key);
-	            }).then((res) => {
-	                this.dec = res;
-	                document.getElementById('stuff').innerHTML += ('<h3>Decrypted</h3><p>' + this.dec + '</p>');
-	            }).catch(err => {
-	                alert(err);
-	            });
-	        }
-	        chat2(msg) {
-	            return __awaiter(this, void 0, void 0, function* () {
-	                try {
-	                    var decMsg = yield this.session.encPlain(msg);
-	                    var encMsg = yield this.session.decCipher(decMsg);
-	                    document.getElementById('stuff').innerHTML += '<hr>';
-	                    document.getElementById('stuff').innerHTML += ('<h3>Cipher</h3><p>' + decMsg + '</p>');
-	                    document.getElementById('stuff').innerHTML += ('<h3>TEXT</h3><p>' + encMsg + '</p>');
-	                }
-	                catch (err) {
-	                    alert(err);
-	                }
-	            });
-	        }
-	        set() {
-	            return __awaiter(this, void 0, void 0, function* () {
-	                /***** BEGIM TESTING **********/
-	                try {
-	                    this.session = new session_1.Session.session();
-	                    yield this.session.init();
-	                    this.chatKey = yield this.session.genSymKey();
-	                    yield this.session.setCurrentKey(this.chatKey);
-	                    this.pubKey = this.session.pubKey;
-	                    this.priKey = this.session.priKey;
-	                    this.status = this.session.status;
-	                    this.decChatKey = this.session.currKey;
-	                    //this.encChatKey = await this.session.encKey(this.pubKey,"-d3czX2[F{p2pbU.3QsGloQp%4vIpv@-");
-	                    //await this.session.setCurrentKey(this.encChatKey);
-	                    //var decChatKey2 = this.session.currKey;
-	                    document.write('<h3>Status</h3><p>' + this.status + '</p>');
-	                    document.write('<h3>PublicKey</h3><p>' + this.pubKey + '</p>');
-	                    document.write('<h3>PrivateKey</h3><p>' + this.priKey + '</p>');
-	                    document.write('<h3>ChatKey</h3><p>' + this.chatKey + '</p>');
-	                    document.write('<h3>Decrypted ChatKey</h3><p>' + this.decChatKey + '</p>');
-	                }
-	                catch (err) {
-	                    alert(err);
-	                }
-	                /*this.km.initiate().then(()=>{
+	const lib_1 = __webpack_require__(1);
+	class session {
+	    constructor() {
+	        this._status = 0 /* noAsymKeys */;
+	        this.kmAsym = new lib_1.Keymanager.asymmetric();
+	        this.kmSym = new lib_1.Keymanager.symmetric();
+	        this.crAES = new lib_1.Crypto.AES();
+	        this.crRSA = new lib_1.Crypto.RSA();
+	    }
+	    init() {
+	        return __awaiter(this, void 0, void 0, function* () {
+	            try {
+	                var currErr;
+	                yield this.kmAsym.init().then(() => {
+	                    return this.kmAsym.status;
+	                }).then(st => {
+	                    if (st === 1 /* KeysExist */) {
+	                        return null;
+	                    }
+	                    else
+	                        return st;
+	                }).then((st) => {
+	                    if (st === 2 /* KeysDoesNotExist */)
+	                        return this.kmAsym.generateKeys();
+	                    else
+	                        return null;
+	                }).then(() => {
 	                    var promiseArray = [
-	                        this.km.pubKey,
-	                        this.km.priKey,
-	                        this.km.status
+	                        this.kmAsym.pubKey,
+	                        this.kmAsym.priKey
 	                    ];
-	                    return Promise.all(promiseArray);
-	    
+	                    Promise.all(promiseArray).then(val => {
+	                        if (!!val && !!val[0] && !!val[1]) {
+	                            this._pubKey = val[0];
+	                            this._priKey = val[1];
+	                            this._status = 1 /* aSymKeysSet */;
+	                        }
+	                        return this.crRSA.init(this._pubKey, this._priKey);
+	                    }).catch(err => {
+	                        currErr = err;
+	                        return null;
+	                    });
+	                }).catch(err => {
+	                    currErr = err;
+	                });
+	                if (!!currErr)
+	                    throw (currErr);
+	            }
+	            catch (err) {
+	                throw (err);
+	            }
+	        });
+	    }
+	    get pubKey() {
+	        if (!!this._pubKey)
+	            return this._pubKey;
+	        else
+	            return null;
+	    }
+	    get priKey() {
+	        if (!!this._priKey)
+	            return this._priKey;
+	        else
+	            return null;
+	    }
+	    get currKey() {
+	        if (!!this._currKey)
+	            return this._currKey;
+	        else
+	            return null;
+	    }
+	    get status() {
+	        if (!!this._status)
+	            return this._status;
+	        else
+	            return null;
+	    }
+	    genSymKey() {
+	        return __awaiter(this, void 0, void 0, function* () {
+	            try {
+	                var currErr;
+	                var encryptedKey = null;
+	                yield this.kmSym.generateKey().then(key => {
+	                    if (!!key) {
+	                        this._currKey = key;
+	                        if (this._status === 1 /* aSymKeysSet */)
+	                            this._status = 3 /* allKeysSet */;
+	                        else
+	                            this._status = 2 /* symKeySet */;
+	                        return this.crRSA.encrypt(key);
+	                    }
+	                    else
+	                        return null;
+	                }).then(encKey => {
+	                    if (!!encKey)
+	                        encryptedKey = encKey;
+	                }).catch(err => {
+	                    currErr = err;
+	                });
+	                if (!!currErr)
+	                    throw (currErr);
+	                return encryptedKey;
+	            }
+	            catch (err) {
+	                throw (err);
+	            }
+	        });
+	    }
+	    setCurrentKey(encKey) {
+	        return __awaiter(this, void 0, void 0, function* () {
+	            try {
+	                var currErr;
+	                yield this.crRSA.decrypt(encKey).then(key => {
+	                    if (!!key) {
+	                        this._currKey = key;
+	                        if (this._status === 1 /* aSymKeysSet */)
+	                            this._status = 3 /* allKeysSet */;
+	                        else
+	                            this._status = 2 /* symKeySet */;
+	                    }
+	                }).catch(err => {
+	                    currErr = err;
+	                });
+	                if (currErr)
+	                    throw (currErr);
+	            }
+	            catch (err) {
+	                throw (err);
+	            }
+	        });
+	    }
+	    encKey(pubKey, key = this._currKey) {
+	        return __awaiter(this, void 0, void 0, function* () {
+	            try {
+	                var currErr;
+	                var tmpcrRSA = new lib_1.Crypto.RSA();
+	                var encKey = null;
+	                yield tmpcrRSA.singleInit(pubKey).then(() => {
+	                    return tmpcrRSA.encrypt(key);
 	                }).then(val => {
-	                    this.pubKey = val[0];
-	                    this.priKey= val[1];
-	                    this.status= val[2];
-	                    document.write('<h3>Status</h3><p>'+ this.status +'</p>');
-	                    document.write('<h3>PublicKey</h3><p>'+ this.pubKey +'</p>');
-	                    document.write('<h3>PrivateKey</h3><p>'+ this.priKey +'</p>');
-	    
-	                    return this.kms.generateKey();
-	                }).then((val) =>{
-	                    this.chatKey = val;
-	                    document.write('<h3>ChatKey</h3><p>'+ this.chatKey +'</p>');
-	                    return this.crr.initiate(this.pubKey,this.priKey);
-	                }).then(() =>{
-	                    return this.crr.encrypt(this.chatKey);
-	                }).then((val) =>{
-	                    this.encChatKey = val;
-	                    document.write('<h3>Encrypted ChatKey</h3><p>'+ this.encChatKey +'</p>');
-	                    return this.crr.decrypt(this.encChatKey);
-	                }).then((val) =>{
-	                    this.decChatKey = val;
-	    
-	                }).catch((err) => {
-	                    alert(err);
-	                });*/
-	                /***** END TESTING **********/
-	            });
-	        }
+	                    if (!!val)
+	                        encKey = val;
+	                }).catch(err => {
+	                    currErr = err;
+	                });
+	                if (currErr)
+	                    throw (currErr);
+	                return encKey;
+	            }
+	            catch (err) {
+	                throw (err);
+	            }
+	        });
 	    }
-	    Plekryption.test = test;
-	    var t = new test();
-	    t.set();
-	    window.onload = function () {
-	        addHtmlForm();
-	    };
-	    function addHtmlForm() {
-	        var txt = document.createElement("textarea");
-	        txt.rows = 10;
-	        txt.cols = 100;
-	        txt.id = "msg"; // set the CSS class
-	        document.body.appendChild(txt); // p
-	        var button = document.createElement('button');
-	        button.innerText = "Send";
-	        button.onclick = function () {
-	            t.chat2(txt.value);
-	        };
-	        document.body.appendChild(button);
+	    encPlain(plain) {
+	        return __awaiter(this, void 0, void 0, function* () {
+	            try {
+	                var currErr;
+	                var encrypted = null;
+	                yield this.crAES.setCredential(this._currKey).then(cred => {
+	                    if (!!cred)
+	                        return this.crAES.encrypt_CTR(cred, plain);
+	                    else
+	                        return null;
+	                }).then(val => {
+	                    if (!!val)
+	                        encrypted = val;
+	                }).catch(err => {
+	                    currErr = err;
+	                });
+	                if (currErr)
+	                    throw (currErr);
+	                return encrypted;
+	            }
+	            catch (err) {
+	                throw (err);
+	            }
+	        });
 	    }
-	})(Plekryption = exports.Plekryption || (exports.Plekryption = {}));
+	    decCipher(cipher, key = this._currKey) {
+	        return __awaiter(this, void 0, void 0, function* () {
+	            try {
+	                var currErr;
+	                var decrypted = null;
+	                yield this.crAES.decrypt_CTR(cipher, key).then(val => {
+	                    if (!!val)
+	                        decrypted = val;
+	                }).catch(err => {
+	                    currErr = err;
+	                });
+	                if (currErr)
+	                    throw (currErr);
+	                return decrypted;
+	            }
+	            catch (err) {
+	                throw (err);
+	            }
+	        });
+	    }
+	}
+	exports.session = session;
 
 
 /***/ },
@@ -184,276 +262,26 @@
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
-	const lib_1 = __webpack_require__(2);
-	var Keymanager;
-	(function (Keymanager) {
-	    class asymmetric {
-	        constructor() {
-	            this._status = 0 /* Initiated */;
-	            this.keyStorageId = lib_1.config.keyManagement.asymmetric.keyStorageId;
-	            this.cr = new lib_1.Crypto.AES();
-	        }
-	        init() {
-	            const p = new Promise((resolve, reject) => {
-	                try {
-	                    var arrayOfPromise = [
-	                        this.initialChecks(),
-	                        this.retrievePubKey(),
-	                        this.retrievePriKey()
-	                    ];
-	                    Promise.all(arrayOfPromise).then(val => {
-	                        if (!!val[1] && !!val[2])
-	                            this._status = 1 /* KeysExist */;
-	                        else
-	                            this._status = 2 /* KeysDoesNotExist */;
-	                    }).then(() => {
-	                        resolve();
-	                    }).catch((err) => {
-	                        reject(err);
-	                    });
-	                }
-	                catch (err) {
-	                    reject(err);
-	                }
-	            });
-	            return p;
-	        }
-	        generateKeys() {
-	            const p = new Promise((resolve, reject) => {
-	                try {
-	                    if (this._status === 2 /* KeysDoesNotExist */) {
-	                        let keyGen = new genKeys();
-	                        this.storeKeys(keyGen.pubKey, keyGen.priKey).then(() => {
-	                            if (!!this._priKey && !!this._priKey && this._status === 3 /* KeysGenerated */) {
-	                                this._status = 1 /* KeysExist */;
-	                                resolve();
-	                            }
-	                            else {
-	                                reject(new Error(lib_1.config.keyManagement.asymmetric.errorMessages.keysNotGen));
-	                            }
-	                        }).catch((err) => { reject(err); });
-	                    }
-	                }
-	                catch (err) {
-	                    reject(err);
-	                }
-	            });
-	            return p;
-	        }
-	        get pubKey() {
-	            const p = new Promise((resolve, reject) => {
-	                try {
-	                    if (!!this._pubKey) {
-	                        this.cr.decrypt(this._pubKey, lib_1.config.keyManagement.asymmetric.masterKey).then(val => {
-	                            let tmpPubKey = val;
-	                            resolve(tmpPubKey);
-	                        }).catch(err => { reject(err); });
-	                    }
-	                    else
-	                        reject(new Error(lib_1.config.keyManagement.asymmetric.errorMessages.noPubKey));
-	                }
-	                catch (err) {
-	                    reject(err);
-	                }
-	            });
-	            return p;
-	        }
-	        get priKey() {
-	            const p = new Promise((resolve, reject) => {
-	                try {
-	                    if (!!this._priKey) {
-	                        this.cr.decrypt(this._priKey, lib_1.config.keyManagement.asymmetric.masterKey).then(val => {
-	                            let tmpPriKey = val;
-	                            resolve(tmpPriKey);
-	                        }).catch(err => {
-	                            reject(err);
-	                        });
-	                    }
-	                    else
-	                        reject(new Error(lib_1.config.keyManagement.asymmetric.errorMessages.noStatus));
-	                }
-	                catch (err) {
-	                    reject(err);
-	                }
-	            });
-	            return p;
-	        }
-	        get status() {
-	            const p = new Promise((resolve, reject) => {
-	                try {
-	                    if (!!this._status)
-	                        resolve(this._status);
-	                    else
-	                        throw new Error(lib_1.config.keyManagement.asymmetric.errorMessages.noStatus);
-	                }
-	                catch (err) {
-	                    reject(err);
-	                }
-	            });
-	            return p;
-	        }
-	        retrievePubKey() {
-	            const p = new Promise((resolve, reject) => {
-	                try {
-	                    let res = lib_1.store.get(this.keyStorageId);
-	                    if (!!res && !!res.publicKey) {
-	                        this._pubKey = res.publicKey;
-	                        resolve(res.publicKey);
-	                    }
-	                    else
-	                        resolve(null);
-	                }
-	                catch (err) {
-	                    reject(err);
-	                }
-	            });
-	            return p;
-	        }
-	        retrievePriKey() {
-	            const p = new Promise((resolve, reject) => {
-	                try {
-	                    let res = lib_1.store.get(this.keyStorageId);
-	                    if (!!res && !!res.privateKey) {
-	                        this._priKey = res.privateKey;
-	                        resolve(res.privateKey);
-	                    }
-	                    else
-	                        resolve(null);
-	                }
-	                catch (err) {
-	                    reject(err);
-	                }
-	            });
-	            return p;
-	        }
-	        removeKeys() {
-	            const p = new Promise((resolve, reject) => {
-	                try {
-	                    lib_1.store.remove(this.keyStorageId);
-	                    resolve();
-	                }
-	                catch (err) {
-	                    reject(err);
-	                }
-	            });
-	            return p;
-	        }
-	        storeKeys(pubKey, priKey) {
-	            const p = new Promise((resolve, reject) => {
-	                try {
-	                    if (!!pubKey && !!priKey) {
-	                        var promises = [
-	                            this.cr.encrypt({ key: lib_1.config.keyManagement.asymmetric.masterKey }, priKey),
-	                            this.cr.encrypt({ key: lib_1.config.keyManagement.asymmetric.masterKey }, pubKey)
-	                        ];
-	                        Promise.all(promises).then(val => {
-	                            if (typeof val[0] !== "string" || typeof val[1] !== "string")
-	                                reject(new Error(lib_1.config.keyManagement.asymmetric.errorMessages.keyEncryptionFailed));
-	                            lib_1.store.set(this.keyStorageId, { publicKey: val[1], privateKey: val[0] });
-	                            this._pubKey = val[1].toString();
-	                            this._priKey = val[0].toString();
-	                            this._status = 3 /* KeysGenerated */;
-	                            resolve();
-	                        }).catch(err => { reject(err); });
-	                    }
-	                    else
-	                        reject(new Error(lib_1.config.keyManagement.asymmetric.errorMessages.noSetKeyPairs));
-	                }
-	                catch (err) {
-	                    reject(err);
-	                }
-	            });
-	            return p;
-	        }
-	        initialChecks() {
-	            const p = new Promise((resolve, reject) => {
-	                if (!lib_1.store.enabled) {
-	                    this._status = 5 /* Failed */;
-	                    reject(new Error(lib_1.config.keyManagement.asymmetric.errorMessages.localStorageNoSupport));
-	                }
-	                else {
-	                    resolve(null);
-	                }
-	            });
-	            return p;
-	        }
-	    }
-	    Keymanager.asymmetric = asymmetric;
-	    class symmetric {
-	        constructor() {
-	            this.KEY_LENGTH = lib_1.config.keyManagement.symmetric.keyLength / 8 || 32;
-	        }
-	        generateKey(len = this.KEY_LENGTH) {
-	            const p = new Promise((resolve, reject) => {
-	                let key = "";
-	                let possible = lib_1.config.keyManagement.symmetric.keyGenPossibilities;
-	                for (let i = 0; i < len; i++)
-	                    key += possible.charAt(Math.floor(Math.random() * possible.length));
-	                if (!!key && key.length === this.KEY_LENGTH)
-	                    resolve(key);
-	                else
-	                    reject(new Error(lib_1.config.keyManagement.symmetric.errorMessages.keyGen));
-	            });
-	            return p;
-	        }
-	    }
-	    Keymanager.symmetric = symmetric;
-	    class genKeys {
-	        constructor(keySize = { keySize: 2048 }) {
-	            let jsen = new lib_1.JSEncrypt();
-	            this._pubKey = jsen.getPublicKey();
-	            this._priKey = jsen.getPrivateKey();
-	        }
-	        get pubKey() {
-	            return this._pubKey;
-	        }
-	        get priKey() {
-	            return this._priKey;
-	        }
-	    }
-	})(Keymanager = exports.Keymanager || (exports.Keymanager = {}));
-	;
+	//noinspection TypeScriptCheckImport
+	const c = __webpack_require__(2);
+	exports.config = c;
+	//noinspection TypeScriptCheckImport
+	const J = __webpack_require__(3);
+	exports.JSEncrypt = J;
+	//noinspection TypeScriptCheckImport
+	const S = __webpack_require__(4);
+	exports.store = S;
+	//noinspection TypeScriptCheckImport
+	const cr = __webpack_require__(5);
+	exports.crypto = cr;
+	const cryptography_1 = __webpack_require__(6);
+	exports.Crypto = cryptography_1.Cryptography;
+	const keymanager_1 = __webpack_require__(8);
+	exports.Keymanager = keymanager_1.Keymanager;
 
 
 /***/ },
 /* 2 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-	//noinspection TypeScriptCheckImport
-	const lib_1 = __webpack_require__(3);
-	exports.config = lib_1.config;
-	//noinspection TypeScriptCheckImport
-	const lib_2 = __webpack_require__(3);
-	exports.JSEncrypt = lib_2.JSEncrypt;
-	//noinspection TypeScriptCheckImport
-	const lib_3 = __webpack_require__(3);
-	exports.store = lib_3.store;
-	const cryptography_1 = __webpack_require__(8);
-	exports.Crypto = cryptography_1.Cryptography;
-
-
-/***/ },
-/* 3 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-	//noinspection TypeScriptCheckImport
-	const c = __webpack_require__(4);
-	exports.config = c;
-	//noinspection TypeScriptCheckImport
-	const J = __webpack_require__(5);
-	exports.JSEncrypt = J;
-	//noinspection TypeScriptCheckImport
-	const S = __webpack_require__(6);
-	exports.store = S;
-	//noinspection TypeScriptCheckImport
-	const cr = __webpack_require__(7);
-	exports.crypto = cr;
-
-
-/***/ },
-/* 4 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -511,7 +339,7 @@
 
 
 /***/ },
-/* 5 */
+/* 3 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/*! JSEncrypt v2.3.0 | https://npmcdn.com/jsencrypt@2.3.0/LICENSE.txt */
@@ -589,7 +417,7 @@
 	function(t){"use strict";function e(t,i){t instanceof e?(this.enc=t.enc,this.pos=t.pos):(this.enc=t,this.pos=i)}function i(t,e,i,r,s){this.stream=t,this.header=e,this.length=i,this.tag=r,this.sub=s}var r=100,s="…",n={tag:function(t,e){var i=document.createElement(t);return i.className=e,i},text:function(t){return document.createTextNode(t)}};e.prototype.get=function(e){if(e===t&&(e=this.pos++),e>=this.enc.length)throw"Requesting byte offset "+e+" on a stream of length "+this.enc.length;return this.enc[e]},e.prototype.hexDigits="0123456789ABCDEF",e.prototype.hexByte=function(t){return this.hexDigits.charAt(t>>4&15)+this.hexDigits.charAt(15&t)},e.prototype.hexDump=function(t,e,i){for(var r="",s=t;e>s;++s)if(r+=this.hexByte(this.get(s)),i!==!0)switch(15&s){case 7:r+="  ";break;case 15:r+="\n";break;default:r+=" "}return r},e.prototype.parseStringISO=function(t,e){for(var i="",r=t;e>r;++r)i+=String.fromCharCode(this.get(r));return i},e.prototype.parseStringUTF=function(t,e){for(var i="",r=t;e>r;){var s=this.get(r++);i+=128>s?String.fromCharCode(s):s>191&&224>s?String.fromCharCode((31&s)<<6|63&this.get(r++)):String.fromCharCode((15&s)<<12|(63&this.get(r++))<<6|63&this.get(r++))}return i},e.prototype.parseStringBMP=function(t,e){for(var i="",r=t;e>r;r+=2){var s=this.get(r),n=this.get(r+1);i+=String.fromCharCode((s<<8)+n)}return i},e.prototype.reTime=/^((?:1[89]|2\d)?\d\d)(0[1-9]|1[0-2])(0[1-9]|[12]\d|3[01])([01]\d|2[0-3])(?:([0-5]\d)(?:([0-5]\d)(?:[.,](\d{1,3}))?)?)?(Z|[-+](?:[0]\d|1[0-2])([0-5]\d)?)?$/,e.prototype.parseTime=function(t,e){var i=this.parseStringISO(t,e),r=this.reTime.exec(i);return r?(i=r[1]+"-"+r[2]+"-"+r[3]+" "+r[4],r[5]&&(i+=":"+r[5],r[6]&&(i+=":"+r[6],r[7]&&(i+="."+r[7]))),r[8]&&(i+=" UTC","Z"!=r[8]&&(i+=r[8],r[9]&&(i+=":"+r[9]))),i):"Unrecognized time: "+i},e.prototype.parseInteger=function(t,e){var i=e-t;if(i>4){i<<=3;var r=this.get(t);if(0===r)i-=8;else for(;128>r;)r<<=1,--i;return"("+i+" bit)"}for(var s=0,n=t;e>n;++n)s=s<<8|this.get(n);return s},e.prototype.parseBitString=function(t,e){var i=this.get(t),r=(e-t-1<<3)-i,s="("+r+" bit)";if(20>=r){var n=i;s+=" ";for(var o=e-1;o>t;--o){for(var h=this.get(o),a=n;8>a;++a)s+=h>>a&1?"1":"0";n=0}}return s},e.prototype.parseOctetString=function(t,e){var i=e-t,n="("+i+" byte) ";i>r&&(e=t+r);for(var o=t;e>o;++o)n+=this.hexByte(this.get(o));return i>r&&(n+=s),n},e.prototype.parseOID=function(t,e){for(var i="",r=0,s=0,n=t;e>n;++n){var o=this.get(n);if(r=r<<7|127&o,s+=7,!(128&o)){if(""===i){var h=80>r?40>r?0:1:2;i=h+"."+(r-40*h)}else i+="."+(s>=31?"bigint":r);r=s=0}}return i},i.prototype.typeName=function(){if(this.tag===t)return"unknown";var e=this.tag>>6,i=(this.tag>>5&1,31&this.tag);switch(e){case 0:switch(i){case 0:return"EOC";case 1:return"BOOLEAN";case 2:return"INTEGER";case 3:return"BIT_STRING";case 4:return"OCTET_STRING";case 5:return"NULL";case 6:return"OBJECT_IDENTIFIER";case 7:return"ObjectDescriptor";case 8:return"EXTERNAL";case 9:return"REAL";case 10:return"ENUMERATED";case 11:return"EMBEDDED_PDV";case 12:return"UTF8String";case 16:return"SEQUENCE";case 17:return"SET";case 18:return"NumericString";case 19:return"PrintableString";case 20:return"TeletexString";case 21:return"VideotexString";case 22:return"IA5String";case 23:return"UTCTime";case 24:return"GeneralizedTime";case 25:return"GraphicString";case 26:return"VisibleString";case 27:return"GeneralString";case 28:return"UniversalString";case 30:return"BMPString";default:return"Universal_"+i.toString(16)}case 1:return"Application_"+i.toString(16);case 2:return"["+i+"]";case 3:return"Private_"+i.toString(16)}},i.prototype.reSeemsASCII=/^[ -~]+$/,i.prototype.content=function(){if(this.tag===t)return null;var e=this.tag>>6,i=31&this.tag,n=this.posContent(),o=Math.abs(this.length);if(0!==e){if(null!==this.sub)return"("+this.sub.length+" elem)";var h=this.stream.parseStringISO(n,n+Math.min(o,r));return this.reSeemsASCII.test(h)?h.substring(0,2*r)+(h.length>2*r?s:""):this.stream.parseOctetString(n,n+o)}switch(i){case 1:return 0===this.stream.get(n)?"false":"true";case 2:return this.stream.parseInteger(n,n+o);case 3:return this.sub?"("+this.sub.length+" elem)":this.stream.parseBitString(n,n+o);case 4:return this.sub?"("+this.sub.length+" elem)":this.stream.parseOctetString(n,n+o);case 6:return this.stream.parseOID(n,n+o);case 16:case 17:return"("+this.sub.length+" elem)";case 12:return this.stream.parseStringUTF(n,n+o);case 18:case 19:case 20:case 21:case 22:case 26:return this.stream.parseStringISO(n,n+o);case 30:return this.stream.parseStringBMP(n,n+o);case 23:case 24:return this.stream.parseTime(n,n+o)}return null},i.prototype.toString=function(){return this.typeName()+"@"+this.stream.pos+"[header:"+this.header+",length:"+this.length+",sub:"+(null===this.sub?"null":this.sub.length)+"]"},i.prototype.print=function(e){if(e===t&&(e=""),document.writeln(e+this),null!==this.sub){e+="  ";for(var i=0,r=this.sub.length;r>i;++i)this.sub[i].print(e)}},i.prototype.toPrettyString=function(e){e===t&&(e="");var i=e+this.typeName()+" @"+this.stream.pos;if(this.length>=0&&(i+="+"),i+=this.length,32&this.tag?i+=" (constructed)":3!=this.tag&&4!=this.tag||null===this.sub||(i+=" (encapsulates)"),i+="\n",null!==this.sub){e+="  ";for(var r=0,s=this.sub.length;s>r;++r)i+=this.sub[r].toPrettyString(e)}return i},i.prototype.toDOM=function(){var t=n.tag("div","node");t.asn1=this;var e=n.tag("div","head"),i=this.typeName().replace(/_/g," ");e.innerHTML=i;var r=this.content();if(null!==r){r=String(r).replace(/</g,"&lt;");var s=n.tag("span","preview");s.appendChild(n.text(r)),e.appendChild(s)}t.appendChild(e),this.node=t,this.head=e;var o=n.tag("div","value");if(i="Offset: "+this.stream.pos+"<br/>",i+="Length: "+this.header+"+",i+=this.length>=0?this.length:-this.length+" (undefined)",32&this.tag?i+="<br/>(constructed)":3!=this.tag&&4!=this.tag||null===this.sub||(i+="<br/>(encapsulates)"),null!==r&&(i+="<br/>Value:<br/><b>"+r+"</b>","object"==typeof oids&&6==this.tag)){var h=oids[r];h&&(h.d&&(i+="<br/>"+h.d),h.c&&(i+="<br/>"+h.c),h.w&&(i+="<br/>(warning!)"))}o.innerHTML=i,t.appendChild(o);var a=n.tag("div","sub");if(null!==this.sub)for(var u=0,c=this.sub.length;c>u;++u)a.appendChild(this.sub[u].toDOM());return t.appendChild(a),e.onclick=function(){t.className="node collapsed"==t.className?"node":"node collapsed"},t},i.prototype.posStart=function(){return this.stream.pos},i.prototype.posContent=function(){return this.stream.pos+this.header},i.prototype.posEnd=function(){return this.stream.pos+this.header+Math.abs(this.length)},i.prototype.fakeHover=function(t){this.node.className+=" hover",t&&(this.head.className+=" hover")},i.prototype.fakeOut=function(t){var e=/ ?hover/;this.node.className=this.node.className.replace(e,""),t&&(this.head.className=this.head.className.replace(e,""))},i.prototype.toHexDOM_sub=function(t,e,i,r,s){if(!(r>=s)){var o=n.tag("span",e);o.appendChild(n.text(i.hexDump(r,s))),t.appendChild(o)}},i.prototype.toHexDOM=function(e){var i=n.tag("span","hex");if(e===t&&(e=i),this.head.hexNode=i,this.head.onmouseover=function(){this.hexNode.className="hexCurrent"},this.head.onmouseout=function(){this.hexNode.className="hex"},i.asn1=this,i.onmouseover=function(){var t=!e.selected;t&&(e.selected=this.asn1,this.className="hexCurrent"),this.asn1.fakeHover(t)},i.onmouseout=function(){var t=e.selected==this.asn1;this.asn1.fakeOut(t),t&&(e.selected=null,this.className="hex")},this.toHexDOM_sub(i,"tag",this.stream,this.posStart(),this.posStart()+1),this.toHexDOM_sub(i,this.length>=0?"dlen":"ulen",this.stream,this.posStart()+1,this.posContent()),null===this.sub)i.appendChild(n.text(this.stream.hexDump(this.posContent(),this.posEnd())));else if(this.sub.length>0){var r=this.sub[0],s=this.sub[this.sub.length-1];this.toHexDOM_sub(i,"intro",this.stream,this.posContent(),r.posStart());for(var o=0,h=this.sub.length;h>o;++o)i.appendChild(this.sub[o].toHexDOM(e));this.toHexDOM_sub(i,"outro",this.stream,s.posEnd(),this.posEnd())}return i},i.prototype.toHexString=function(t){return this.stream.hexDump(this.posStart(),this.posEnd(),!0)},i.decodeLength=function(t){var e=t.get(),i=127&e;if(i==e)return i;if(i>3)throw"Length over 24 bits not supported at position "+(t.pos-1);if(0===i)return-1;e=0;for(var r=0;i>r;++r)e=e<<8|t.get();return e},i.hasContent=function(t,r,s){if(32&t)return!0;if(3>t||t>4)return!1;var n=new e(s);3==t&&n.get();var o=n.get();if(o>>6&1)return!1;try{var h=i.decodeLength(n);return n.pos-s.pos+h==r}catch(a){return!1}},i.decode=function(t){t instanceof e||(t=new e(t,0));var r=new e(t),s=t.get(),n=i.decodeLength(t),o=t.pos-r.pos,h=null;if(i.hasContent(s,n,t)){var a=t.pos;if(3==s&&t.get(),h=[],n>=0){for(var u=a+n;t.pos<u;)h[h.length]=i.decode(t);if(t.pos!=u)throw"Content size is not correct for container starting at offset "+a}else try{for(;;){var c=i.decode(t);if(0===c.tag)break;h[h.length]=c}n=a-t.pos}catch(f){throw"Exception while decoding undefined length content: "+f}}else t.pos+=n;return new i(r,o,n,s,h)},i.test=function(){for(var t=[{value:[39],expected:39},{value:[129,201],expected:201},{value:[131,254,220,186],expected:16702650}],r=0,s=t.length;s>r;++r){var n=new e(t[r].value,0),o=i.decodeLength(n);o!=t[r].expected&&document.write("In test["+r+"] expected "+t[r].expected+" got "+o+"\n")}},window.ASN1=i}(),ASN1.prototype.getHexStringValue=function(){var t=this.toHexString(),e=2*this.header,i=2*this.length;return t.substr(e,i)},ue.prototype.parseKey=function(t){try{var e=0,i=0,r=/^\s*(?:[0-9A-Fa-f][0-9A-Fa-f]\s*)+$/,s=r.test(t)?Hex.decode(t):Base64.unarmor(t),n=ASN1.decode(s);if(3===n.sub.length&&(n=n.sub[2].sub[0]),9===n.sub.length){e=n.sub[1].getHexStringValue(),this.n=he(e,16),i=n.sub[2].getHexStringValue(),this.e=parseInt(i,16);var o=n.sub[3].getHexStringValue();this.d=he(o,16);var h=n.sub[4].getHexStringValue();this.p=he(h,16);var a=n.sub[5].getHexStringValue();this.q=he(a,16);var u=n.sub[6].getHexStringValue();this.dmp1=he(u,16);var c=n.sub[7].getHexStringValue();this.dmq1=he(c,16);var f=n.sub[8].getHexStringValue();this.coeff=he(f,16)}else{if(2!==n.sub.length)return!1;var p=n.sub[1],l=p.sub[0];e=l.sub[0].getHexStringValue(),this.n=he(e,16),i=l.sub[1].getHexStringValue(),this.e=parseInt(i,16)}return!0}catch(d){return!1}},ue.prototype.getPrivateBaseKey=function(){var t={array:[new KJUR.asn1.DERInteger({"int":0}),new KJUR.asn1.DERInteger({bigint:this.n}),new KJUR.asn1.DERInteger({"int":this.e}),new KJUR.asn1.DERInteger({bigint:this.d}),new KJUR.asn1.DERInteger({bigint:this.p}),new KJUR.asn1.DERInteger({bigint:this.q}),new KJUR.asn1.DERInteger({bigint:this.dmp1}),new KJUR.asn1.DERInteger({bigint:this.dmq1}),new KJUR.asn1.DERInteger({bigint:this.coeff})]},e=new KJUR.asn1.DERSequence(t);return e.getEncodedHex()},ue.prototype.getPrivateBaseKeyB64=function(){return be(this.getPrivateBaseKey())},ue.prototype.getPublicBaseKey=function(){var t={array:[new KJUR.asn1.DERObjectIdentifier({oid:"1.2.840.113549.1.1.1"}),new KJUR.asn1.DERNull]},e=new KJUR.asn1.DERSequence(t);t={array:[new KJUR.asn1.DERInteger({bigint:this.n}),new KJUR.asn1.DERInteger({"int":this.e})]};var i=new KJUR.asn1.DERSequence(t);t={hex:"00"+i.getEncodedHex()};var r=new KJUR.asn1.DERBitString(t);t={array:[e,r]};var s=new KJUR.asn1.DERSequence(t);return s.getEncodedHex()},ue.prototype.getPublicBaseKeyB64=function(){return be(this.getPublicBaseKey())},ue.prototype.wordwrap=function(t,e){if(e=e||64,!t)return t;var i="(.{1,"+e+"})( +|$\n?)|(.{1,"+e+"})";return t.match(RegExp(i,"g")).join("\n")},ue.prototype.getPrivateKey=function(){var t="-----BEGIN RSA PRIVATE KEY-----\n";return t+=this.wordwrap(this.getPrivateBaseKeyB64())+"\n",t+="-----END RSA PRIVATE KEY-----"},ue.prototype.getPublicKey=function(){var t="-----BEGIN PUBLIC KEY-----\n";return t+=this.wordwrap(this.getPublicBaseKeyB64())+"\n",t+="-----END PUBLIC KEY-----"},ue.prototype.hasPublicKeyProperty=function(t){return t=t||{},t.hasOwnProperty("n")&&t.hasOwnProperty("e")},ue.prototype.hasPrivateKeyProperty=function(t){return t=t||{},t.hasOwnProperty("n")&&t.hasOwnProperty("e")&&t.hasOwnProperty("d")&&t.hasOwnProperty("p")&&t.hasOwnProperty("q")&&t.hasOwnProperty("dmp1")&&t.hasOwnProperty("dmq1")&&t.hasOwnProperty("coeff")},ue.prototype.parsePropertiesFrom=function(t){this.n=t.n,this.e=t.e,t.hasOwnProperty("d")&&(this.d=t.d,this.p=t.p,this.q=t.q,this.dmp1=t.dmp1,this.dmq1=t.dmq1,this.coeff=t.coeff)};var _e=function(t){ue.call(this),t&&("string"==typeof t?this.parseKey(t):(this.hasPrivateKeyProperty(t)||this.hasPublicKeyProperty(t))&&this.parsePropertiesFrom(t))};_e.prototype=new ue,_e.prototype.constructor=_e;var ze=function(t){t=t||{},this.default_key_size=parseInt(t.default_key_size)||1024,this.default_public_exponent=t.default_public_exponent||"010001",this.log=t.log||!1,this.key=null};ze.prototype.setKey=function(t){this.log&&this.key&&console.warn("A key was already set, overriding existing."),this.key=new _e(t)},ze.prototype.setPrivateKey=function(t){this.setKey(t)},ze.prototype.setPublicKey=function(t){this.setKey(t)},ze.prototype.decrypt=function(t){try{return this.getKey().decrypt(Te(t))}catch(e){return!1}},ze.prototype.encrypt=function(t){try{return be(this.getKey().encrypt(t))}catch(e){return!1}},ze.prototype.getKey=function(t){if(!this.key){if(this.key=new _e,t&&"[object Function]"==={}.toString.call(t))return void this.key.generateAsync(this.default_key_size,this.default_public_exponent,t);this.key.generate(this.default_key_size,this.default_public_exponent)}return this.key},ze.prototype.getPrivateKey=function(){return this.getKey().getPrivateKey()},ze.prototype.getPrivateKeyB64=function(){return this.getKey().getPrivateBaseKeyB64()},ze.prototype.getPublicKey=function(){return this.getKey().getPublicKey()},ze.prototype.getPublicKeyB64=function(){return this.getKey().getPublicBaseKeyB64()},ze.version="2.3.0",t.JSEncrypt=ze}(JSEncryptExports),function(t,e){ true?module.exports=e:"function"==typeof define&&define.amd?define(e):t.JSEncrypt=e}(this,JSEncryptExports.JSEncrypt);
 
 /***/ },
-/* 6 */
+/* 4 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/* WEBPACK VAR INJECTION */(function(global) {/* Copyright (c) 2010-2013 Marcus Westin */
@@ -597,7 +425,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }())))
 
 /***/ },
-/* 7 */
+/* 5 */
 /***/ function(module, exports, __webpack_require__) {
 
 	;(function (root, factory) {
@@ -6551,11 +6379,11 @@
 	}));
 
 /***/ },
-/* 8 */
+/* 6 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
-	const lib_1 = __webpack_require__(9);
+	const lib_1 = __webpack_require__(7);
 	var Cryptography;
 	(function (Cryptography) {
 	    class AES {
@@ -6794,243 +6622,276 @@
 
 
 /***/ },
+/* 7 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+	//noinspection TypeScriptCheckImport
+	const lib_1 = __webpack_require__(1);
+	exports.crypto = lib_1.crypto;
+	//noinspection TypeScriptCheckImport
+	const lib_2 = __webpack_require__(1);
+	exports.config = lib_2.config;
+	//noinspection TypeScriptCheckImport
+	const lib_3 = __webpack_require__(1);
+	exports.JSEncrypt = lib_3.JSEncrypt;
+	//noinspection TypeScriptCheckImport
+	const lib_4 = __webpack_require__(1);
+	exports.store = lib_4.store;
+
+
+/***/ },
+/* 8 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+	const lib_1 = __webpack_require__(9);
+	var Keymanager;
+	(function (Keymanager) {
+	    class asymmetric {
+	        constructor() {
+	            this._status = 0 /* Initiated */;
+	            this.keyStorageId = lib_1.config.keyManagement.asymmetric.keyStorageId;
+	            this.cr = new lib_1.Crypto.AES();
+	        }
+	        init() {
+	            const p = new Promise((resolve, reject) => {
+	                try {
+	                    var arrayOfPromise = [
+	                        this.initialChecks(),
+	                        this.retrievePubKey(),
+	                        this.retrievePriKey()
+	                    ];
+	                    Promise.all(arrayOfPromise).then(val => {
+	                        if (!!val[1] && !!val[2])
+	                            this._status = 1 /* KeysExist */;
+	                        else
+	                            this._status = 2 /* KeysDoesNotExist */;
+	                    }).then(() => {
+	                        resolve();
+	                    }).catch((err) => {
+	                        reject(err);
+	                    });
+	                }
+	                catch (err) {
+	                    reject(err);
+	                }
+	            });
+	            return p;
+	        }
+	        generateKeys() {
+	            const p = new Promise((resolve, reject) => {
+	                try {
+	                    if (this._status === 2 /* KeysDoesNotExist */) {
+	                        let keyGen = new genKeys();
+	                        this.storeKeys(keyGen.pubKey, keyGen.priKey).then(() => {
+	                            if (!!this._priKey && !!this._priKey && this._status === 3 /* KeysGenerated */) {
+	                                this._status = 1 /* KeysExist */;
+	                                resolve();
+	                            }
+	                            else {
+	                                reject(new Error(lib_1.config.keyManagement.asymmetric.errorMessages.keysNotGen));
+	                            }
+	                        }).catch((err) => { reject(err); });
+	                    }
+	                }
+	                catch (err) {
+	                    reject(err);
+	                }
+	            });
+	            return p;
+	        }
+	        get pubKey() {
+	            const p = new Promise((resolve, reject) => {
+	                try {
+	                    if (!!this._pubKey) {
+	                        this.cr.decrypt(this._pubKey, lib_1.config.keyManagement.asymmetric.masterKey).then(val => {
+	                            let tmpPubKey = val;
+	                            resolve(tmpPubKey);
+	                        }).catch(err => { reject(err); });
+	                    }
+	                    else
+	                        reject(new Error(lib_1.config.keyManagement.asymmetric.errorMessages.noPubKey));
+	                }
+	                catch (err) {
+	                    reject(err);
+	                }
+	            });
+	            return p;
+	        }
+	        get priKey() {
+	            const p = new Promise((resolve, reject) => {
+	                try {
+	                    if (!!this._priKey) {
+	                        this.cr.decrypt(this._priKey, lib_1.config.keyManagement.asymmetric.masterKey).then(val => {
+	                            let tmpPriKey = val;
+	                            resolve(tmpPriKey);
+	                        }).catch(err => {
+	                            reject(err);
+	                        });
+	                    }
+	                    else
+	                        reject(new Error(lib_1.config.keyManagement.asymmetric.errorMessages.noStatus));
+	                }
+	                catch (err) {
+	                    reject(err);
+	                }
+	            });
+	            return p;
+	        }
+	        get status() {
+	            const p = new Promise((resolve, reject) => {
+	                try {
+	                    if (!!this._status)
+	                        resolve(this._status);
+	                    else
+	                        throw new Error(lib_1.config.keyManagement.asymmetric.errorMessages.noStatus);
+	                }
+	                catch (err) {
+	                    reject(err);
+	                }
+	            });
+	            return p;
+	        }
+	        retrievePubKey() {
+	            const p = new Promise((resolve, reject) => {
+	                try {
+	                    let res = lib_1.store.get(this.keyStorageId);
+	                    if (!!res && !!res.publicKey) {
+	                        this._pubKey = res.publicKey;
+	                        resolve(res.publicKey);
+	                    }
+	                    else
+	                        resolve(null);
+	                }
+	                catch (err) {
+	                    reject(err);
+	                }
+	            });
+	            return p;
+	        }
+	        retrievePriKey() {
+	            const p = new Promise((resolve, reject) => {
+	                try {
+	                    let res = lib_1.store.get(this.keyStorageId);
+	                    if (!!res && !!res.privateKey) {
+	                        this._priKey = res.privateKey;
+	                        resolve(res.privateKey);
+	                    }
+	                    else
+	                        resolve(null);
+	                }
+	                catch (err) {
+	                    reject(err);
+	                }
+	            });
+	            return p;
+	        }
+	        removeKeys() {
+	            const p = new Promise((resolve, reject) => {
+	                try {
+	                    lib_1.store.remove(this.keyStorageId);
+	                    resolve();
+	                }
+	                catch (err) {
+	                    reject(err);
+	                }
+	            });
+	            return p;
+	        }
+	        storeKeys(pubKey, priKey) {
+	            const p = new Promise((resolve, reject) => {
+	                try {
+	                    if (!!pubKey && !!priKey) {
+	                        var promises = [
+	                            this.cr.encrypt({ key: lib_1.config.keyManagement.asymmetric.masterKey }, priKey),
+	                            this.cr.encrypt({ key: lib_1.config.keyManagement.asymmetric.masterKey }, pubKey)
+	                        ];
+	                        Promise.all(promises).then(val => {
+	                            if (typeof val[0] !== "string" || typeof val[1] !== "string")
+	                                reject(new Error(lib_1.config.keyManagement.asymmetric.errorMessages.keyEncryptionFailed));
+	                            lib_1.store.set(this.keyStorageId, { publicKey: val[1], privateKey: val[0] });
+	                            this._pubKey = val[1].toString();
+	                            this._priKey = val[0].toString();
+	                            this._status = 3 /* KeysGenerated */;
+	                            resolve();
+	                        }).catch(err => { reject(err); });
+	                    }
+	                    else
+	                        reject(new Error(lib_1.config.keyManagement.asymmetric.errorMessages.noSetKeyPairs));
+	                }
+	                catch (err) {
+	                    reject(err);
+	                }
+	            });
+	            return p;
+	        }
+	        initialChecks() {
+	            const p = new Promise((resolve, reject) => {
+	                if (!lib_1.store.enabled) {
+	                    this._status = 5 /* Failed */;
+	                    reject(new Error(lib_1.config.keyManagement.asymmetric.errorMessages.localStorageNoSupport));
+	                }
+	                else {
+	                    resolve(null);
+	                }
+	            });
+	            return p;
+	        }
+	    }
+	    Keymanager.asymmetric = asymmetric;
+	    class symmetric {
+	        constructor() {
+	            this.KEY_LENGTH = lib_1.config.keyManagement.symmetric.keyLength / 8 || 32;
+	        }
+	        generateKey(len = this.KEY_LENGTH) {
+	            const p = new Promise((resolve, reject) => {
+	                let key = "";
+	                let possible = lib_1.config.keyManagement.symmetric.keyGenPossibilities;
+	                for (let i = 0; i < len; i++)
+	                    key += possible.charAt(Math.floor(Math.random() * possible.length));
+	                if (!!key && key.length === this.KEY_LENGTH)
+	                    resolve(key);
+	                else
+	                    reject(new Error(lib_1.config.keyManagement.symmetric.errorMessages.keyGen));
+	            });
+	            return p;
+	        }
+	    }
+	    Keymanager.symmetric = symmetric;
+	    class genKeys {
+	        constructor(keySize = { keySize: 2048 }) {
+	            let jsen = new lib_1.JSEncrypt();
+	            this._pubKey = jsen.getPublicKey();
+	            this._priKey = jsen.getPrivateKey();
+	        }
+	        get pubKey() {
+	            return this._pubKey;
+	        }
+	        get priKey() {
+	            return this._priKey;
+	        }
+	    }
+	})(Keymanager = exports.Keymanager || (exports.Keymanager = {}));
+	;
+
+
+/***/ },
 /* 9 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
 	//noinspection TypeScriptCheckImport
-	const lib_1 = __webpack_require__(3);
-	exports.crypto = lib_1.crypto;
+	const lib_1 = __webpack_require__(1);
+	exports.config = lib_1.config;
 	//noinspection TypeScriptCheckImport
-	const lib_2 = __webpack_require__(3);
-	exports.config = lib_2.config;
+	const lib_2 = __webpack_require__(1);
+	exports.JSEncrypt = lib_2.JSEncrypt;
 	//noinspection TypeScriptCheckImport
-	const lib_3 = __webpack_require__(3);
-	exports.JSEncrypt = lib_3.JSEncrypt;
-	//noinspection TypeScriptCheckImport
-	const lib_4 = __webpack_require__(3);
-	exports.store = lib_4.store;
-
-
-/***/ },
-/* 10 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-	var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-	    return new (P || (P = Promise))(function (resolve, reject) {
-	        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-	        function rejected(value) { try { step(generator.throw(value)); } catch (e) { reject(e); } }
-	        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
-	        step((generator = generator.apply(thisArg, _arguments)).next());
-	    });
-	};
-	const lib_1 = __webpack_require__(11);
-	var Session;
-	(function (Session) {
-	    class session {
-	        constructor() {
-	            this._status = 0 /* noAsymKeys */;
-	            this.kmAsym = new lib_1.Keymanager.asymmetric();
-	            this.kmSym = new lib_1.Keymanager.symmetric();
-	            this.crAES = new lib_1.Crypto.AES();
-	            this.crRSA = new lib_1.Crypto.RSA();
-	        }
-	        init() {
-	            return __awaiter(this, void 0, void 0, function* () {
-	                try {
-	                    var currErr;
-	                    yield this.kmAsym.init().then(() => {
-	                        return this.kmAsym.status;
-	                    }).then(st => {
-	                        if (st === 1 /* KeysExist */) {
-	                            return null;
-	                        }
-	                        else
-	                            return st;
-	                    }).then((st) => {
-	                        if (st === 2 /* KeysDoesNotExist */)
-	                            return this.kmAsym.generateKeys();
-	                        else
-	                            return null;
-	                    }).then(() => {
-	                        var promiseArray = [
-	                            this.kmAsym.pubKey,
-	                            this.kmAsym.priKey
-	                        ];
-	                        Promise.all(promiseArray).then(val => {
-	                            if (!!val && !!val[0] && !!val[1]) {
-	                                this._pubKey = val[0];
-	                                this._priKey = val[1];
-	                                this._status = 1 /* aSymKeysSet */;
-	                            }
-	                            return this.crRSA.init(this._pubKey, this._priKey);
-	                        }).catch(err => {
-	                            currErr = err;
-	                            return null;
-	                        });
-	                    }).catch(err => {
-	                        currErr = err;
-	                    });
-	                    if (!!currErr)
-	                        throw (currErr);
-	                }
-	                catch (err) {
-	                    throw (err);
-	                }
-	            });
-	        }
-	        get pubKey() {
-	            if (!!this._pubKey)
-	                return this._pubKey;
-	            else
-	                return null;
-	        }
-	        get priKey() {
-	            if (!!this._priKey)
-	                return this._priKey;
-	            else
-	                return null;
-	        }
-	        get currKey() {
-	            if (!!this._currKey)
-	                return this._currKey;
-	            else
-	                return null;
-	        }
-	        get status() {
-	            if (!!this._status)
-	                return this._status;
-	            else
-	                return null;
-	        }
-	        genSymKey() {
-	            return __awaiter(this, void 0, void 0, function* () {
-	                try {
-	                    var currErr;
-	                    var encryptedKey = null;
-	                    yield this.kmSym.generateKey().then(key => {
-	                        if (!!key) {
-	                            this._currKey = key;
-	                            return this.crRSA.encrypt(key);
-	                        }
-	                        else
-	                            return null;
-	                    }).then(encKey => {
-	                        if (!!encKey)
-	                            encryptedKey = encKey;
-	                    }).catch(err => {
-	                        currErr = err;
-	                    });
-	                    if (!!currErr)
-	                        throw (currErr);
-	                    return encryptedKey;
-	                }
-	                catch (err) {
-	                    throw (err);
-	                }
-	            });
-	        }
-	        setCurrentKey(encKey) {
-	            return __awaiter(this, void 0, void 0, function* () {
-	                try {
-	                    var currErr;
-	                    yield this.crRSA.decrypt(encKey).then(key => {
-	                        if (!!key)
-	                            this._currKey = key;
-	                    }).catch(err => {
-	                        currErr = err;
-	                    });
-	                    if (currErr)
-	                        throw (currErr);
-	                }
-	                catch (err) {
-	                    throw (err);
-	                }
-	            });
-	        }
-	        encKey(pubKey, key = this._currKey) {
-	            return __awaiter(this, void 0, void 0, function* () {
-	                try {
-	                    var currErr;
-	                    var tmpcrRSA = new lib_1.Crypto.RSA();
-	                    var encKey = null;
-	                    yield tmpcrRSA.singleInit(pubKey).then(() => {
-	                        return tmpcrRSA.encrypt(key);
-	                    }).then(val => {
-	                        if (!!val)
-	                            encKey = val;
-	                    }).catch(err => {
-	                        currErr = err;
-	                    });
-	                    if (currErr)
-	                        throw (currErr);
-	                    return encKey;
-	                }
-	                catch (err) {
-	                    throw (err);
-	                }
-	            });
-	        }
-	        encPlain(plain) {
-	            return __awaiter(this, void 0, void 0, function* () {
-	                try {
-	                    var currErr;
-	                    var encrypted = null;
-	                    yield this.crAES.setCredential(this._currKey).then(cred => {
-	                        if (!!cred)
-	                            return this.crAES.encrypt_CTR(cred, plain);
-	                        else
-	                            return null;
-	                    }).then(val => {
-	                        if (!!val)
-	                            encrypted = val;
-	                    }).catch(err => {
-	                        currErr = err;
-	                    });
-	                    if (currErr)
-	                        throw (currErr);
-	                    return encrypted;
-	                }
-	                catch (err) {
-	                    throw (err);
-	                }
-	            });
-	        }
-	        decCipher(cipher, key = this._currKey) {
-	            return __awaiter(this, void 0, void 0, function* () {
-	                try {
-	                    var currErr;
-	                    var decrypted = null;
-	                    yield this.crAES.decrypt_CTR(cipher, key).then(val => {
-	                        if (!!val)
-	                            decrypted = val;
-	                    }).catch(err => {
-	                        currErr = err;
-	                    });
-	                    if (currErr)
-	                        throw (currErr);
-	                    return decrypted;
-	                }
-	                catch (err) {
-	                    throw (err);
-	                }
-	            });
-	        }
-	    }
-	    Session.session = session;
-	})(Session = exports.Session || (exports.Session = {}));
-
-
-/***/ },
-/* 11 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-	const cryptography_1 = __webpack_require__(8);
+	const lib_3 = __webpack_require__(1);
+	exports.store = lib_3.store;
+	const cryptography_1 = __webpack_require__(6);
 	exports.Crypto = cryptography_1.Cryptography;
-	const keymanager_1 = __webpack_require__(1);
-	exports.Keymanager = keymanager_1.Keymanager;
 
 
 /***/ }
