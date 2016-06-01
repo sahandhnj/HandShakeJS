@@ -24,10 +24,10 @@ export class session{
         this.crAES = new Crypto.AES();
         this.crRSA = new Crypto.RSA();
     }
-    async init(){
+    init(){
         try {
             var currErr:Error;
-            await this.kmAsym.init().then(()=>{
+            this.kmAsym.init().then(()=>{
                 return this.kmAsym.status
 
             }).then(st => {
@@ -82,11 +82,11 @@ export class session{
         else return null;
     }
 
-    async genSymKey() {
+    genSymKey() {
         try{
             var currErr:Error;
             var encryptedKey:string = null;
-            await this.kmSym.generateKey().then(key =>{
+            this.kmSym.generateKey().then(key =>{
                 if(!!key) {
                     this._currKey = key;
                     if(this._status === Status.aSymKeysSet)
@@ -109,10 +109,10 @@ export class session{
         }
     }
 
-    async setCurrentKey(encKey: string) {
+    setCurrentKey(encKey: string) {
         try{
             var currErr:Error;
-            await this.crRSA.decrypt(encKey).then(key => {
+            this.crRSA.decrypt(encKey).then(key => {
                 if(!!key) {
                     this._currKey = key;
                     if(this._status === Status.aSymKeysSet)
@@ -129,12 +129,12 @@ export class session{
         }
     }
 
-    async encKey(pubKey:string, key:string = this._currKey){
+    encKey(pubKey:string, key:string = this._currKey){
         try{
             var currErr:Error;
             var tmpcrRSA:any = new Crypto.RSA();
             var encKey:string = null;
-            await tmpcrRSA.singleInit(pubKey).then(()=>{
+            tmpcrRSA.singleInit(pubKey).then(()=>{
                 return tmpcrRSA.encrypt(key);
             }).then(val => {
                 if(!!val) encKey = val;
@@ -148,12 +148,12 @@ export class session{
         }
     }
 
-    async encPlain(plain:string){
+    encPlain(plain:string){
         try{
             var currErr:Error;
             var encrypted:string = null;
 
-            await this.crAES.setCredential(this._currKey).then(cred => {
+            this.crAES.setCredential(this._currKey).then(cred => {
                 if (!!cred) return this.crAES.encrypt_CTR(cred, plain);
                 else return null;
             }).then(val => {
@@ -168,12 +168,12 @@ export class session{
         }
     }
 
-    async decCipher(cipher:string, key:string = this._currKey){
+    decCipher(cipher:string, key:string = this._currKey){
         try{
             var currErr:Error;
             var decrypted:string = null;
 
-            await this.crAES.decrypt_CTR(cipher,key).then(val => {
+            this.crAES.decrypt_CTR(cipher,key).then(val => {
                 if (!!val) decrypted = val;
             }).catch(err => {
                 currErr = err;

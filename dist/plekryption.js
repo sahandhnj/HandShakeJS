@@ -46,214 +46,217 @@ var Plekryption =
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
-	var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-	    return new (P || (P = Promise))(function (resolve, reject) {
-	        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-	        function rejected(value) { try { step(generator.throw(value)); } catch (e) { reject(e); } }
-	        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
-	        step((generator = generator.apply(thisArg, _arguments)).next());
-	    });
-	};
-	const lib_1 = __webpack_require__(1);
-	class session {
-	    constructor() {
+	var lib_1 = __webpack_require__(1);
+	var session = (function () {
+	    function session() {
 	        this._status = 0 /* noAsymKeys */;
 	        this.kmAsym = new lib_1.Keymanager.asymmetric();
 	        this.kmSym = new lib_1.Keymanager.symmetric();
 	        this.crAES = new lib_1.Crypto.AES();
 	        this.crRSA = new lib_1.Crypto.RSA();
 	    }
-	    init() {
-	        return __awaiter(this, void 0, void 0, function* () {
-	            try {
-	                var currErr;
-	                yield this.kmAsym.init().then(() => {
-	                    return this.kmAsym.status;
-	                }).then(st => {
-	                    if (st === 1 /* KeysExist */) {
-	                        return null;
+	    session.prototype.init = function () {
+	        var _this = this;
+	        try {
+	            var currErr;
+	            this.kmAsym.init().then(function () {
+	                return _this.kmAsym.status;
+	            }).then(function (st) {
+	                if (st === 1 /* KeysExist */) {
+	                    return null;
+	                }
+	                else
+	                    return st;
+	            }).then(function (st) {
+	                if (st === 2 /* KeysDoesNotExist */)
+	                    return _this.kmAsym.generateKeys();
+	                else
+	                    return null;
+	            }).then(function () {
+	                var promiseArray = [
+	                    _this.kmAsym.pubKey,
+	                    _this.kmAsym.priKey
+	                ];
+	                Promise.all(promiseArray).then(function (val) {
+	                    if (!!val && !!val[0] && !!val[1]) {
+	                        _this._pubKey = val[0];
+	                        _this._priKey = val[1];
+	                        _this._status = 1 /* aSymKeysSet */;
 	                    }
+	                    return _this.crRSA.init(_this._pubKey, _this._priKey);
+	                }).catch(function (err) {
+	                    currErr = err;
+	                    return null;
+	                });
+	            }).catch(function (err) {
+	                currErr = err;
+	            });
+	            if (!!currErr)
+	                throw (currErr);
+	        }
+	        catch (err) {
+	            throw (err);
+	        }
+	    };
+	    Object.defineProperty(session.prototype, "pubKey", {
+	        get: function () {
+	            if (!!this._pubKey)
+	                return this._pubKey;
+	            else
+	                return null;
+	        },
+	        enumerable: true,
+	        configurable: true
+	    });
+	    Object.defineProperty(session.prototype, "priKey", {
+	        get: function () {
+	            if (!!this._priKey)
+	                return this._priKey;
+	            else
+	                return null;
+	        },
+	        enumerable: true,
+	        configurable: true
+	    });
+	    Object.defineProperty(session.prototype, "currKey", {
+	        get: function () {
+	            if (!!this._currKey)
+	                return this._currKey;
+	            else
+	                return null;
+	        },
+	        enumerable: true,
+	        configurable: true
+	    });
+	    Object.defineProperty(session.prototype, "status", {
+	        get: function () {
+	            if (!!this._status)
+	                return this._status;
+	            else
+	                return null;
+	        },
+	        enumerable: true,
+	        configurable: true
+	    });
+	    session.prototype.genSymKey = function () {
+	        var _this = this;
+	        try {
+	            var currErr;
+	            var encryptedKey = null;
+	            this.kmSym.generateKey().then(function (key) {
+	                if (!!key) {
+	                    _this._currKey = key;
+	                    if (_this._status === 1 /* aSymKeysSet */)
+	                        _this._status = 3 /* allKeysSet */;
 	                    else
-	                        return st;
-	                }).then((st) => {
-	                    if (st === 2 /* KeysDoesNotExist */)
-	                        return this.kmAsym.generateKeys();
+	                        _this._status = 2 /* symKeySet */;
+	                    return _this.crRSA.encrypt(key);
+	                }
+	                else
+	                    return null;
+	            }).then(function (encKey) {
+	                if (!!encKey)
+	                    encryptedKey = encKey;
+	            }).catch(function (err) {
+	                currErr = err;
+	            });
+	            if (!!currErr)
+	                throw (currErr);
+	            return encryptedKey;
+	        }
+	        catch (err) {
+	            throw (err);
+	        }
+	    };
+	    session.prototype.setCurrentKey = function (encKey) {
+	        var _this = this;
+	        try {
+	            var currErr;
+	            this.crRSA.decrypt(encKey).then(function (key) {
+	                if (!!key) {
+	                    _this._currKey = key;
+	                    if (_this._status === 1 /* aSymKeysSet */)
+	                        _this._status = 3 /* allKeysSet */;
 	                    else
-	                        return null;
-	                }).then(() => {
-	                    var promiseArray = [
-	                        this.kmAsym.pubKey,
-	                        this.kmAsym.priKey
-	                    ];
-	                    Promise.all(promiseArray).then(val => {
-	                        if (!!val && !!val[0] && !!val[1]) {
-	                            this._pubKey = val[0];
-	                            this._priKey = val[1];
-	                            this._status = 1 /* aSymKeysSet */;
-	                        }
-	                        return this.crRSA.init(this._pubKey, this._priKey);
-	                    }).catch(err => {
-	                        currErr = err;
-	                        return null;
-	                    });
-	                }).catch(err => {
-	                    currErr = err;
-	                });
-	                if (!!currErr)
-	                    throw (currErr);
-	            }
-	            catch (err) {
-	                throw (err);
-	            }
-	        });
-	    }
-	    get pubKey() {
-	        if (!!this._pubKey)
-	            return this._pubKey;
-	        else
-	            return null;
-	    }
-	    get priKey() {
-	        if (!!this._priKey)
-	            return this._priKey;
-	        else
-	            return null;
-	    }
-	    get currKey() {
-	        if (!!this._currKey)
-	            return this._currKey;
-	        else
-	            return null;
-	    }
-	    get status() {
-	        if (!!this._status)
-	            return this._status;
-	        else
-	            return null;
-	    }
-	    genSymKey() {
-	        return __awaiter(this, void 0, void 0, function* () {
-	            try {
-	                var currErr;
-	                var encryptedKey = null;
-	                yield this.kmSym.generateKey().then(key => {
-	                    if (!!key) {
-	                        this._currKey = key;
-	                        if (this._status === 1 /* aSymKeysSet */)
-	                            this._status = 3 /* allKeysSet */;
-	                        else
-	                            this._status = 2 /* symKeySet */;
-	                        return this.crRSA.encrypt(key);
-	                    }
-	                    else
-	                        return null;
-	                }).then(encKey => {
-	                    if (!!encKey)
-	                        encryptedKey = encKey;
-	                }).catch(err => {
-	                    currErr = err;
-	                });
-	                if (!!currErr)
-	                    throw (currErr);
-	                return encryptedKey;
-	            }
-	            catch (err) {
-	                throw (err);
-	            }
-	        });
-	    }
-	    setCurrentKey(encKey) {
-	        return __awaiter(this, void 0, void 0, function* () {
-	            try {
-	                var currErr;
-	                yield this.crRSA.decrypt(encKey).then(key => {
-	                    if (!!key) {
-	                        this._currKey = key;
-	                        if (this._status === 1 /* aSymKeysSet */)
-	                            this._status = 3 /* allKeysSet */;
-	                        else
-	                            this._status = 2 /* symKeySet */;
-	                    }
-	                }).catch(err => {
-	                    currErr = err;
-	                });
-	                if (currErr)
-	                    throw (currErr);
-	            }
-	            catch (err) {
-	                throw (err);
-	            }
-	        });
-	    }
-	    encKey(pubKey, key = this._currKey) {
-	        return __awaiter(this, void 0, void 0, function* () {
-	            try {
-	                var currErr;
-	                var tmpcrRSA = new lib_1.Crypto.RSA();
-	                var encKey = null;
-	                yield tmpcrRSA.singleInit(pubKey).then(() => {
-	                    return tmpcrRSA.encrypt(key);
-	                }).then(val => {
-	                    if (!!val)
-	                        encKey = val;
-	                }).catch(err => {
-	                    currErr = err;
-	                });
-	                if (currErr)
-	                    throw (currErr);
-	                return encKey;
-	            }
-	            catch (err) {
-	                throw (err);
-	            }
-	        });
-	    }
-	    encPlain(plain) {
-	        return __awaiter(this, void 0, void 0, function* () {
-	            try {
-	                var currErr;
-	                var encrypted = null;
-	                yield this.crAES.setCredential(this._currKey).then(cred => {
-	                    if (!!cred)
-	                        return this.crAES.encrypt_CTR(cred, plain);
-	                    else
-	                        return null;
-	                }).then(val => {
-	                    if (!!val)
-	                        encrypted = val;
-	                }).catch(err => {
-	                    currErr = err;
-	                });
-	                if (currErr)
-	                    throw (currErr);
-	                return encrypted;
-	            }
-	            catch (err) {
-	                throw (err);
-	            }
-	        });
-	    }
-	    decCipher(cipher, key = this._currKey) {
-	        return __awaiter(this, void 0, void 0, function* () {
-	            try {
-	                var currErr;
-	                var decrypted = null;
-	                yield this.crAES.decrypt_CTR(cipher, key).then(val => {
-	                    if (!!val)
-	                        decrypted = val;
-	                }).catch(err => {
-	                    currErr = err;
-	                });
-	                if (currErr)
-	                    throw (currErr);
-	                return decrypted;
-	            }
-	            catch (err) {
-	                throw (err);
-	            }
-	        });
-	    }
-	}
+	                        _this._status = 2 /* symKeySet */;
+	                }
+	            }).catch(function (err) {
+	                currErr = err;
+	            });
+	            if (currErr)
+	                throw (currErr);
+	        }
+	        catch (err) {
+	            throw (err);
+	        }
+	    };
+	    session.prototype.encKey = function (pubKey, key) {
+	        if (key === void 0) { key = this._currKey; }
+	        try {
+	            var currErr;
+	            var tmpcrRSA = new lib_1.Crypto.RSA();
+	            var encKey = null;
+	            tmpcrRSA.singleInit(pubKey).then(function () {
+	                return tmpcrRSA.encrypt(key);
+	            }).then(function (val) {
+	                if (!!val)
+	                    encKey = val;
+	            }).catch(function (err) {
+	                currErr = err;
+	            });
+	            if (currErr)
+	                throw (currErr);
+	            return encKey;
+	        }
+	        catch (err) {
+	            throw (err);
+	        }
+	    };
+	    session.prototype.encPlain = function (plain) {
+	        var _this = this;
+	        try {
+	            var currErr;
+	            var encrypted = null;
+	            this.crAES.setCredential(this._currKey).then(function (cred) {
+	                if (!!cred)
+	                    return _this.crAES.encrypt_CTR(cred, plain);
+	                else
+	                    return null;
+	            }).then(function (val) {
+	                if (!!val)
+	                    encrypted = val;
+	            }).catch(function (err) {
+	                currErr = err;
+	            });
+	            if (currErr)
+	                throw (currErr);
+	            return encrypted;
+	        }
+	        catch (err) {
+	            throw (err);
+	        }
+	    };
+	    session.prototype.decCipher = function (cipher, key) {
+	        if (key === void 0) { key = this._currKey; }
+	        try {
+	            var currErr;
+	            var decrypted = null;
+	            this.crAES.decrypt_CTR(cipher, key).then(function (val) {
+	                if (!!val)
+	                    decrypted = val;
+	            }).catch(function (err) {
+	                currErr = err;
+	            });
+	            if (currErr)
+	                throw (currErr);
+	            return decrypted;
+	        }
+	        catch (err) {
+	            throw (err);
+	        }
+	    };
+	    return session;
+	}());
 	exports.session = session;
 
 
@@ -263,20 +266,20 @@ var Plekryption =
 
 	"use strict";
 	//noinspection TypeScriptCheckImport
-	const c = __webpack_require__(2);
+	var c = __webpack_require__(2);
 	exports.config = c;
 	//noinspection TypeScriptCheckImport
-	const J = __webpack_require__(3);
+	var J = __webpack_require__(3);
 	exports.JSEncrypt = J;
 	//noinspection TypeScriptCheckImport
-	const S = __webpack_require__(4);
+	var S = __webpack_require__(4);
 	exports.store = S;
 	//noinspection TypeScriptCheckImport
-	const cr = __webpack_require__(5);
+	var cr = __webpack_require__(5);
 	exports.crypto = cr;
-	const cryptography_1 = __webpack_require__(6);
+	var cryptography_1 = __webpack_require__(6);
 	exports.Crypto = cryptography_1.Cryptography;
-	const keymanager_1 = __webpack_require__(8);
+	var keymanager_1 = __webpack_require__(8);
 	exports.Keymanager = keymanager_1.Keymanager;
 
 
@@ -6383,22 +6386,23 @@ var Plekryption =
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
-	const lib_1 = __webpack_require__(7);
+	var lib_1 = __webpack_require__(7);
 	var Cryptography;
 	(function (Cryptography) {
-	    class AES {
-	        constructor() {
+	    var AES = (function () {
+	        function AES() {
 	            this.NONCE_LENGTH = lib_1.config.crypto.AES.nonceLength / 8 || 12;
 	            this.KEY_LENGTH = lib_1.config.crypto.AES.keyLength / 8 || 32;
 	        }
-	        encrypt(cred, plaintext) {
-	            const p = new Promise((resolve, reject) => {
+	        AES.prototype.encrypt = function (cred, plaintext) {
+	            var _this = this;
+	            var p = new Promise(function (resolve, reject) {
 	                try {
-	                    if (!cred.key && cred.key.length !== this.KEY_LENGTH)
+	                    if (!cred.key && cred.key.length !== _this.KEY_LENGTH)
 	                        reject(new Error(lib_1.config.crypto.AES.errorMessages.noKEY));
 	                    if (!!plaintext) {
 	                        //noinspection TypeScriptUnresolvedVariable
-	                        let cipher = lib_1.crypto.AES.encrypt(plaintext, cred.key);
+	                        var cipher = lib_1.crypto.AES.encrypt(plaintext, cred.key);
 	                        cipher = cipher.toString();
 	                        (!!cipher) ? resolve(cipher) : reject(new Error(lib_1.config.crypto.AES.errorMessages.other));
 	                    }
@@ -6410,9 +6414,10 @@ var Plekryption =
 	                }
 	            });
 	            return p;
-	        }
-	        encrypt_CTR(cred, plaintext) {
-	            const p = new Promise((resolve, reject) => {
+	        };
+	        AES.prototype.encrypt_CTR = function (cred, plaintext) {
+	            var _this = this;
+	            var p = new Promise(function (resolve, reject) {
 	                try {
 	                    var nonce;
 	                    if (!!cred.nonce) {
@@ -6421,13 +6426,13 @@ var Plekryption =
 	                    }
 	                    else
 	                        reject(new Error(lib_1.config.crypto.AES.errorMessages.noNONCE));
-	                    if (nonce.words.length !== this.NONCE_LENGTH / 4)
+	                    if (nonce.words.length !== _this.NONCE_LENGTH / 4)
 	                        reject(new Error(lib_1.config.crypto.AES.errorMessages.badNONCESize));
-	                    if (!cred.key && cred.key.length !== this.KEY_LENGTH)
+	                    if (!cred.key && cred.key.length !== _this.KEY_LENGTH)
 	                        reject(new Error(lib_1.config.crypto.AES.errorMessages.noKEY));
 	                    if (!!plaintext) {
 	                        //noinspection TypeScriptUnresolvedVariable
-	                        let cipher = lib_1.crypto.AES.encrypt(plaintext, cred.key, { iv: nonce, mode: lib_1.crypto.mode.CTR, padding: lib_1.crypto.pad.NoPadding });
+	                        var cipher = lib_1.crypto.AES.encrypt(plaintext, cred.key, { iv: nonce, mode: lib_1.crypto.mode.CTR, padding: lib_1.crypto.pad.NoPadding });
 	                        cipher = cred.nonce + cipher;
 	                        (!!cipher) ? resolve(cipher) : reject(new Error(lib_1.config.crypto.AES.errorMessages.other));
 	                    }
@@ -6439,18 +6444,19 @@ var Plekryption =
 	                }
 	            });
 	            return p;
-	        }
-	        decrypt_CTR(cipher, key) {
-	            const p = new Promise((resolve, reject) => {
+	        };
+	        AES.prototype.decrypt_CTR = function (cipher, key) {
+	            var _this = this;
+	            var p = new Promise(function (resolve, reject) {
 	                try {
 	                    if (!!cipher && cipher.length > 0) {
-	                        var ex = this.extractNONCE(cipher);
+	                        var ex = _this.extractNONCE(cipher);
 	                        if (typeof ex == "Error")
 	                            reject(ex);
 	                    }
 	                    else
 	                        reject(new Error(lib_1.config.crypto.AES.errorMessages.noCipher));
-	                    if (!!ex.nonce || (ex.nonce.length === this.NONCE_LENGTH * 2)) {
+	                    if (!!ex.nonce || (ex.nonce.length === _this.NONCE_LENGTH * 2)) {
 	                        //noinspection TypeScriptUnresolvedVariable
 	                        var nonce = lib_1.crypto.enc.Hex.parse(ex.nonce);
 	                    }
@@ -6458,7 +6464,7 @@ var Plekryption =
 	                        reject(new Error(lib_1.config.crypto.AES.errorMessages.noNONCE));
 	                    if (!ex.cipher)
 	                        reject(new Error(lib_1.config.crypto.AES.errorMessages.noCipher));
-	                    if (!key && key.length !== this.KEY_LENGTH)
+	                    if (!key && key.length !== _this.KEY_LENGTH)
 	                        reject(new Error(lib_1.config.crypto.AES.errorMessages.noKEY));
 	                    //noinspection TypeScriptUnresolvedVariable
 	                    var plain = lib_1.crypto.AES.decrypt(ex.cipher, key, { iv: nonce, mode: lib_1.crypto.mode.CTR, padding: lib_1.crypto.pad.NoPadding });
@@ -6471,16 +6477,17 @@ var Plekryption =
 	                }
 	            });
 	            return p;
-	        }
-	        decrypt(cipher, key) {
-	            const p = new Promise((resolve, reject) => {
+	        };
+	        AES.prototype.decrypt = function (cipher, key) {
+	            var _this = this;
+	            var p = new Promise(function (resolve, reject) {
 	                try {
 	                    if (!cipher)
 	                        reject(new Error(lib_1.config.crypto.AES.errorMessages.noCipher));
-	                    if (!key && key.length !== this.KEY_LENGTH)
+	                    if (!key && key.length !== _this.KEY_LENGTH)
 	                        reject(new Error(lib_1.config.crypto.AES.errorMessages.noKEY));
 	                    //noinspection TypeScriptUnresolvedVariable
-	                    let plain = lib_1.crypto.AES.decrypt(cipher, key);
+	                    var plain = lib_1.crypto.AES.decrypt(cipher, key);
 	                    //noinspection TypeScriptUnresolvedVariable
 	                    plain = plain.toString(lib_1.crypto.enc.Utf8);
 	                    (!!plain) ? resolve(plain) : reject(new Error(lib_1.config.crypto.AES.errorMessages.decryptionFailed));
@@ -6490,8 +6497,8 @@ var Plekryption =
 	                }
 	            });
 	            return p;
-	        }
-	        extractNONCE(cipher) {
+	        };
+	        AES.prototype.extractNONCE = function (cipher) {
 	            try {
 	                var res = {
 	                    nonce: "",
@@ -6509,30 +6516,32 @@ var Plekryption =
 	            catch (err) {
 	                return (err);
 	            }
-	        }
-	        generateRandomKey(len = this.KEY_LENGTH) {
-	            let key = "";
-	            let possible = lib_1.config.crypto.AES.keyGenPossibilities;
-	            for (let i = 0; i < len; i++)
+	        };
+	        AES.prototype.generateRandomKey = function (len) {
+	            if (len === void 0) { len = this.KEY_LENGTH; }
+	            var key = "";
+	            var possible = lib_1.config.crypto.AES.keyGenPossibilities;
+	            for (var i = 0; i < len; i++)
 	                key += possible.charAt(Math.floor(Math.random() * possible.length));
 	            return key;
-	        }
-	        hex2a(hex) {
+	        };
+	        AES.prototype.hex2a = function (hex) {
 	            var str = '';
 	            for (var i = 0; i < hex.length; i += 2)
 	                str += String.fromCharCode(parseInt(hex.substr(i, 2), 16));
 	            return str;
-	        }
-	        setCredential(key) {
-	            const p = new Promise((resolve, reject) => {
+	        };
+	        AES.prototype.setCredential = function (key) {
+	            var _this = this;
+	            var p = new Promise(function (resolve, reject) {
 	                try {
 	                    var cred = {
 	                        nonce: '',
 	                        key: ''
 	                    };
 	                    //noinspection TypeScriptUnresolvedVariable
-	                    cred.nonce = lib_1.crypto.lib.WordArray.random(this.NONCE_LENGTH).toString();
-	                    (!!key && key.length === this.KEY_LENGTH) ? cred.key = key : cred.key = this.generateRandomKey();
+	                    cred.nonce = lib_1.crypto.lib.WordArray.random(_this.NONCE_LENGTH).toString();
+	                    (!!key && key.length === _this.KEY_LENGTH) ? cred.key = key : cred.key = _this.generateRandomKey();
 	                    if (!!cred.key && !!cred.nonce)
 	                        resolve(cred);
 	                    else
@@ -6543,20 +6552,22 @@ var Plekryption =
 	                }
 	            });
 	            return p;
-	        }
-	    }
+	        };
+	        return AES;
+	    }());
 	    Cryptography.AES = AES;
-	    class RSA {
-	        constructor() {
+	    var RSA = (function () {
+	        function RSA() {
 	            this.rsaEnc = new lib_1.JSEncrypt();
 	            this.rsaDec = new lib_1.JSEncrypt();
 	        }
-	        init(pubKey, priKey) {
-	            const p = new Promise((resolve, reject) => {
+	        RSA.prototype.init = function (pubKey, priKey) {
+	            var _this = this;
+	            var p = new Promise(function (resolve, reject) {
 	                try {
-	                    this.rsaEnc.setPublicKey(pubKey);
-	                    this.rsaDec.setPrivateKey(priKey);
-	                    if (!!this.rsaEnc && !!this.rsaDec)
+	                    _this.rsaEnc.setPublicKey(pubKey);
+	                    _this.rsaDec.setPrivateKey(priKey);
+	                    if (!!_this.rsaEnc && !!_this.rsaDec)
 	                        resolve();
 	                    else
 	                        reject(new Error(lib_1.config.crypto.RSA.errorMessages.initiationFialed));
@@ -6566,12 +6577,13 @@ var Plekryption =
 	                }
 	            });
 	            return p;
-	        }
-	        singleInit(pubKey) {
-	            const p = new Promise((resolve, reject) => {
+	        };
+	        RSA.prototype.singleInit = function (pubKey) {
+	            var _this = this;
+	            var p = new Promise(function (resolve, reject) {
 	                try {
-	                    this.rsaEnc.setPublicKey(pubKey);
-	                    if (!!this.rsaEnc)
+	                    _this.rsaEnc.setPublicKey(pubKey);
+	                    if (!!_this.rsaEnc)
 	                        resolve();
 	                    else
 	                        reject(new Error(lib_1.config.crypto.RSA.errorMessages.initiationFialed));
@@ -6581,13 +6593,14 @@ var Plekryption =
 	                }
 	            });
 	            return p;
-	        }
-	        encrypt(plain) {
-	            const p = new Promise((resolve, reject) => {
+	        };
+	        RSA.prototype.encrypt = function (plain) {
+	            var _this = this;
+	            var p = new Promise(function (resolve, reject) {
 	                try {
-	                    if (!this.rsaEnc)
+	                    if (!_this.rsaEnc)
 	                        reject(new Error(lib_1.config.crypto.RSA.errorMessages.noPubKey));
-	                    var encrypted = this.rsaEnc.encrypt(plain);
+	                    var encrypted = _this.rsaEnc.encrypt(plain);
 	                    if (!!encrypted)
 	                        resolve(encrypted);
 	                    else
@@ -6598,13 +6611,14 @@ var Plekryption =
 	                }
 	            });
 	            return p;
-	        }
-	        decrypt(cipher) {
-	            const p = new Promise((resolve, reject) => {
+	        };
+	        RSA.prototype.decrypt = function (cipher) {
+	            var _this = this;
+	            var p = new Promise(function (resolve, reject) {
 	                try {
-	                    if (!this.rsaEnc)
+	                    if (!_this.rsaEnc)
 	                        reject(new Error(lib_1.config.crypto.RSA.errorMessages.noPriKey));
-	                    var decrypted = this.rsaDec.decrypt(cipher);
+	                    var decrypted = _this.rsaDec.decrypt(cipher);
 	                    if (!!decrypted)
 	                        resolve(decrypted);
 	                    else
@@ -6615,8 +6629,9 @@ var Plekryption =
 	                }
 	            });
 	            return p;
-	        }
-	    }
+	        };
+	        return RSA;
+	    }());
 	    Cryptography.RSA = RSA;
 	})(Cryptography = exports.Cryptography || (exports.Cryptography = {}));
 
@@ -6627,16 +6642,16 @@ var Plekryption =
 
 	"use strict";
 	//noinspection TypeScriptCheckImport
-	const lib_1 = __webpack_require__(1);
+	var lib_1 = __webpack_require__(1);
 	exports.crypto = lib_1.crypto;
 	//noinspection TypeScriptCheckImport
-	const lib_2 = __webpack_require__(1);
+	var lib_2 = __webpack_require__(1);
 	exports.config = lib_2.config;
 	//noinspection TypeScriptCheckImport
-	const lib_3 = __webpack_require__(1);
+	var lib_3 = __webpack_require__(1);
 	exports.JSEncrypt = lib_3.JSEncrypt;
 	//noinspection TypeScriptCheckImport
-	const lib_4 = __webpack_require__(1);
+	var lib_4 = __webpack_require__(1);
 	exports.store = lib_4.store;
 
 
@@ -6645,31 +6660,32 @@ var Plekryption =
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
-	const lib_1 = __webpack_require__(9);
+	var lib_1 = __webpack_require__(9);
 	var Keymanager;
 	(function (Keymanager) {
-	    class asymmetric {
-	        constructor() {
+	    var asymmetric = (function () {
+	        function asymmetric() {
 	            this._status = 0 /* Initiated */;
 	            this.keyStorageId = lib_1.config.keyManagement.asymmetric.keyStorageId;
 	            this.cr = new lib_1.Crypto.AES();
 	        }
-	        init() {
-	            const p = new Promise((resolve, reject) => {
+	        asymmetric.prototype.init = function () {
+	            var _this = this;
+	            var p = new Promise(function (resolve, reject) {
 	                try {
 	                    var arrayOfPromise = [
-	                        this.initialChecks(),
-	                        this.retrievePubKey(),
-	                        this.retrievePriKey()
+	                        _this.initialChecks(),
+	                        _this.retrievePubKey(),
+	                        _this.retrievePriKey()
 	                    ];
-	                    Promise.all(arrayOfPromise).then(val => {
+	                    Promise.all(arrayOfPromise).then(function (val) {
 	                        if (!!val[1] && !!val[2])
-	                            this._status = 1 /* KeysExist */;
+	                            _this._status = 1 /* KeysExist */;
 	                        else
-	                            this._status = 2 /* KeysDoesNotExist */;
-	                    }).then(() => {
+	                            _this._status = 2 /* KeysDoesNotExist */;
+	                    }).then(function () {
 	                        resolve();
-	                    }).catch((err) => {
+	                    }).catch(function (err) {
 	                        reject(err);
 	                    });
 	                }
@@ -6678,21 +6694,22 @@ var Plekryption =
 	                }
 	            });
 	            return p;
-	        }
-	        generateKeys() {
-	            const p = new Promise((resolve, reject) => {
+	        };
+	        asymmetric.prototype.generateKeys = function () {
+	            var _this = this;
+	            var p = new Promise(function (resolve, reject) {
 	                try {
-	                    if (this._status === 2 /* KeysDoesNotExist */) {
-	                        let keyGen = new genKeys();
-	                        this.storeKeys(keyGen.pubKey, keyGen.priKey).then(() => {
-	                            if (!!this._priKey && !!this._priKey && this._status === 3 /* KeysGenerated */) {
-	                                this._status = 1 /* KeysExist */;
+	                    if (_this._status === 2 /* KeysDoesNotExist */) {
+	                        var keyGen = new genKeys();
+	                        _this.storeKeys(keyGen.pubKey, keyGen.priKey).then(function () {
+	                            if (!!_this._priKey && !!_this._priKey && _this._status === 3 /* KeysGenerated */) {
+	                                _this._status = 1 /* KeysExist */;
 	                                resolve();
 	                            }
 	                            else {
 	                                reject(new Error(lib_1.config.keyManagement.asymmetric.errorMessages.keysNotGen));
 	                            }
-	                        }).catch((err) => { reject(err); });
+	                        }).catch(function (err) { reject(err); });
 	                    }
 	                }
 	                catch (err) {
@@ -6700,65 +6717,81 @@ var Plekryption =
 	                }
 	            });
 	            return p;
-	        }
-	        get pubKey() {
-	            const p = new Promise((resolve, reject) => {
-	                try {
-	                    if (!!this._pubKey) {
-	                        this.cr.decrypt(this._pubKey, lib_1.config.keyManagement.asymmetric.masterKey).then(val => {
-	                            let tmpPubKey = val;
-	                            resolve(tmpPubKey);
-	                        }).catch(err => { reject(err); });
+	        };
+	        Object.defineProperty(asymmetric.prototype, "pubKey", {
+	            get: function () {
+	                var _this = this;
+	                var p = new Promise(function (resolve, reject) {
+	                    try {
+	                        if (!!_this._pubKey) {
+	                            _this.cr.decrypt(_this._pubKey, lib_1.config.keyManagement.asymmetric.masterKey).then(function (val) {
+	                                var tmpPubKey = val;
+	                                resolve(tmpPubKey);
+	                            }).catch(function (err) { reject(err); });
+	                        }
+	                        else
+	                            reject(new Error(lib_1.config.keyManagement.asymmetric.errorMessages.noPubKey));
 	                    }
-	                    else
-	                        reject(new Error(lib_1.config.keyManagement.asymmetric.errorMessages.noPubKey));
-	                }
-	                catch (err) {
-	                    reject(err);
-	                }
-	            });
-	            return p;
-	        }
-	        get priKey() {
-	            const p = new Promise((resolve, reject) => {
-	                try {
-	                    if (!!this._priKey) {
-	                        this.cr.decrypt(this._priKey, lib_1.config.keyManagement.asymmetric.masterKey).then(val => {
-	                            let tmpPriKey = val;
-	                            resolve(tmpPriKey);
-	                        }).catch(err => {
-	                            reject(err);
-	                        });
+	                    catch (err) {
+	                        reject(err);
 	                    }
-	                    else
-	                        reject(new Error(lib_1.config.keyManagement.asymmetric.errorMessages.noStatus));
-	                }
-	                catch (err) {
-	                    reject(err);
-	                }
-	            });
-	            return p;
-	        }
-	        get status() {
-	            const p = new Promise((resolve, reject) => {
+	                });
+	                return p;
+	            },
+	            enumerable: true,
+	            configurable: true
+	        });
+	        Object.defineProperty(asymmetric.prototype, "priKey", {
+	            get: function () {
+	                var _this = this;
+	                var p = new Promise(function (resolve, reject) {
+	                    try {
+	                        if (!!_this._priKey) {
+	                            _this.cr.decrypt(_this._priKey, lib_1.config.keyManagement.asymmetric.masterKey).then(function (val) {
+	                                var tmpPriKey = val;
+	                                resolve(tmpPriKey);
+	                            }).catch(function (err) {
+	                                reject(err);
+	                            });
+	                        }
+	                        else
+	                            reject(new Error(lib_1.config.keyManagement.asymmetric.errorMessages.noStatus));
+	                    }
+	                    catch (err) {
+	                        reject(err);
+	                    }
+	                });
+	                return p;
+	            },
+	            enumerable: true,
+	            configurable: true
+	        });
+	        Object.defineProperty(asymmetric.prototype, "status", {
+	            get: function () {
+	                var _this = this;
+	                var p = new Promise(function (resolve, reject) {
+	                    try {
+	                        if (!!_this._status)
+	                            resolve(_this._status);
+	                        else
+	                            throw new Error(lib_1.config.keyManagement.asymmetric.errorMessages.noStatus);
+	                    }
+	                    catch (err) {
+	                        reject(err);
+	                    }
+	                });
+	                return p;
+	            },
+	            enumerable: true,
+	            configurable: true
+	        });
+	        asymmetric.prototype.retrievePubKey = function () {
+	            var _this = this;
+	            var p = new Promise(function (resolve, reject) {
 	                try {
-	                    if (!!this._status)
-	                        resolve(this._status);
-	                    else
-	                        throw new Error(lib_1.config.keyManagement.asymmetric.errorMessages.noStatus);
-	                }
-	                catch (err) {
-	                    reject(err);
-	                }
-	            });
-	            return p;
-	        }
-	        retrievePubKey() {
-	            const p = new Promise((resolve, reject) => {
-	                try {
-	                    let res = lib_1.store.get(this.keyStorageId);
+	                    var res = lib_1.store.get(_this.keyStorageId);
 	                    if (!!res && !!res.publicKey) {
-	                        this._pubKey = res.publicKey;
+	                        _this._pubKey = res.publicKey;
 	                        resolve(res.publicKey);
 	                    }
 	                    else
@@ -6769,13 +6802,14 @@ var Plekryption =
 	                }
 	            });
 	            return p;
-	        }
-	        retrievePriKey() {
-	            const p = new Promise((resolve, reject) => {
+	        };
+	        asymmetric.prototype.retrievePriKey = function () {
+	            var _this = this;
+	            var p = new Promise(function (resolve, reject) {
 	                try {
-	                    let res = lib_1.store.get(this.keyStorageId);
+	                    var res = lib_1.store.get(_this.keyStorageId);
 	                    if (!!res && !!res.privateKey) {
-	                        this._priKey = res.privateKey;
+	                        _this._priKey = res.privateKey;
 	                        resolve(res.privateKey);
 	                    }
 	                    else
@@ -6786,11 +6820,12 @@ var Plekryption =
 	                }
 	            });
 	            return p;
-	        }
-	        removeKeys() {
-	            const p = new Promise((resolve, reject) => {
+	        };
+	        asymmetric.prototype.removeKeys = function () {
+	            var _this = this;
+	            var p = new Promise(function (resolve, reject) {
 	                try {
-	                    lib_1.store.remove(this.keyStorageId);
+	                    lib_1.store.remove(_this.keyStorageId);
 	                    resolve();
 	                }
 	                catch (err) {
@@ -6798,24 +6833,25 @@ var Plekryption =
 	                }
 	            });
 	            return p;
-	        }
-	        storeKeys(pubKey, priKey) {
-	            const p = new Promise((resolve, reject) => {
+	        };
+	        asymmetric.prototype.storeKeys = function (pubKey, priKey) {
+	            var _this = this;
+	            var p = new Promise(function (resolve, reject) {
 	                try {
 	                    if (!!pubKey && !!priKey) {
 	                        var promises = [
-	                            this.cr.encrypt({ key: lib_1.config.keyManagement.asymmetric.masterKey }, priKey),
-	                            this.cr.encrypt({ key: lib_1.config.keyManagement.asymmetric.masterKey }, pubKey)
+	                            _this.cr.encrypt({ key: lib_1.config.keyManagement.asymmetric.masterKey }, priKey),
+	                            _this.cr.encrypt({ key: lib_1.config.keyManagement.asymmetric.masterKey }, pubKey)
 	                        ];
-	                        Promise.all(promises).then(val => {
+	                        Promise.all(promises).then(function (val) {
 	                            if (typeof val[0] !== "string" || typeof val[1] !== "string")
 	                                reject(new Error(lib_1.config.keyManagement.asymmetric.errorMessages.keyEncryptionFailed));
-	                            lib_1.store.set(this.keyStorageId, { publicKey: val[1], privateKey: val[0] });
-	                            this._pubKey = val[1].toString();
-	                            this._priKey = val[0].toString();
-	                            this._status = 3 /* KeysGenerated */;
+	                            lib_1.store.set(_this.keyStorageId, { publicKey: val[1], privateKey: val[0] });
+	                            _this._pubKey = val[1].toString();
+	                            _this._priKey = val[0].toString();
+	                            _this._status = 3 /* KeysGenerated */;
 	                            resolve();
-	                        }).catch(err => { reject(err); });
+	                        }).catch(function (err) { reject(err); });
 	                    }
 	                    else
 	                        reject(new Error(lib_1.config.keyManagement.asymmetric.errorMessages.noSetKeyPairs));
@@ -6825,11 +6861,12 @@ var Plekryption =
 	                }
 	            });
 	            return p;
-	        }
-	        initialChecks() {
-	            const p = new Promise((resolve, reject) => {
+	        };
+	        asymmetric.prototype.initialChecks = function () {
+	            var _this = this;
+	            var p = new Promise(function (resolve, reject) {
 	                if (!lib_1.store.enabled) {
-	                    this._status = 5 /* Failed */;
+	                    _this._status = 5 /* Failed */;
 	                    reject(new Error(lib_1.config.keyManagement.asymmetric.errorMessages.localStorageNoSupport));
 	                }
 	                else {
@@ -6837,41 +6874,55 @@ var Plekryption =
 	                }
 	            });
 	            return p;
-	        }
-	    }
+	        };
+	        return asymmetric;
+	    }());
 	    Keymanager.asymmetric = asymmetric;
-	    class symmetric {
-	        constructor() {
+	    var symmetric = (function () {
+	        function symmetric() {
 	            this.KEY_LENGTH = lib_1.config.keyManagement.symmetric.keyLength / 8 || 32;
 	        }
-	        generateKey(len = this.KEY_LENGTH) {
-	            const p = new Promise((resolve, reject) => {
-	                let key = "";
-	                let possible = lib_1.config.keyManagement.symmetric.keyGenPossibilities;
-	                for (let i = 0; i < len; i++)
+	        symmetric.prototype.generateKey = function (len) {
+	            var _this = this;
+	            if (len === void 0) { len = this.KEY_LENGTH; }
+	            var p = new Promise(function (resolve, reject) {
+	                var key = "";
+	                var possible = lib_1.config.keyManagement.symmetric.keyGenPossibilities;
+	                for (var i = 0; i < len; i++)
 	                    key += possible.charAt(Math.floor(Math.random() * possible.length));
-	                if (!!key && key.length === this.KEY_LENGTH)
+	                if (!!key && key.length === _this.KEY_LENGTH)
 	                    resolve(key);
 	                else
 	                    reject(new Error(lib_1.config.keyManagement.symmetric.errorMessages.keyGen));
 	            });
 	            return p;
-	        }
-	    }
+	        };
+	        return symmetric;
+	    }());
 	    Keymanager.symmetric = symmetric;
-	    class genKeys {
-	        constructor(keySize = { keySize: 2048 }) {
-	            let jsen = new lib_1.JSEncrypt();
+	    var genKeys = (function () {
+	        function genKeys(keySize) {
+	            if (keySize === void 0) { keySize = { keySize: 2048 }; }
+	            var jsen = new lib_1.JSEncrypt();
 	            this._pubKey = jsen.getPublicKey();
 	            this._priKey = jsen.getPrivateKey();
 	        }
-	        get pubKey() {
-	            return this._pubKey;
-	        }
-	        get priKey() {
-	            return this._priKey;
-	        }
-	    }
+	        Object.defineProperty(genKeys.prototype, "pubKey", {
+	            get: function () {
+	                return this._pubKey;
+	            },
+	            enumerable: true,
+	            configurable: true
+	        });
+	        Object.defineProperty(genKeys.prototype, "priKey", {
+	            get: function () {
+	                return this._priKey;
+	            },
+	            enumerable: true,
+	            configurable: true
+	        });
+	        return genKeys;
+	    }());
 	})(Keymanager = exports.Keymanager || (exports.Keymanager = {}));
 	;
 
@@ -6882,15 +6933,15 @@ var Plekryption =
 
 	"use strict";
 	//noinspection TypeScriptCheckImport
-	const lib_1 = __webpack_require__(1);
+	var lib_1 = __webpack_require__(1);
 	exports.config = lib_1.config;
 	//noinspection TypeScriptCheckImport
-	const lib_2 = __webpack_require__(1);
+	var lib_2 = __webpack_require__(1);
 	exports.JSEncrypt = lib_2.JSEncrypt;
 	//noinspection TypeScriptCheckImport
-	const lib_3 = __webpack_require__(1);
+	var lib_3 = __webpack_require__(1);
 	exports.store = lib_3.store;
-	const cryptography_1 = __webpack_require__(6);
+	var cryptography_1 = __webpack_require__(6);
 	exports.Crypto = cryptography_1.Cryptography;
 
 

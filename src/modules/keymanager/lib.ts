@@ -1,5 +1,3 @@
-declare var Promise: PromiseConstructor;
-
 //noinspection TypeScriptCheckImport
 import {config} from '../../lib'
 

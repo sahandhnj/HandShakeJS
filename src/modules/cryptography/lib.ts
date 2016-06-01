@@ -1,5 +1,3 @@
-declare var Promise: PromiseConstructor;
-
 //noinspection TypeScriptCheckImport
 import {crypto} from '../../lib'
 
