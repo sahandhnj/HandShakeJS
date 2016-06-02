@@ -3,7 +3,7 @@ module.exports = {
     output: {
         path: "dist",
         filename: 'plekryption.js',
-        libraryTarget:  'var',
+        libraryTarget:  'umd',
         library: "Plekryption"
     },
     resolve: {
