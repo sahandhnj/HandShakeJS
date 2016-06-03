@@ -6,7 +6,7 @@
         "listFiles": true,
         "watch": true,
         "allowSyntheticDefaultImports":false,
-        "target": "ES5",
+        "target": "es5",
         "module": "commonjs",
         "moduleResolution": "classic",
         "sourceMap": true,

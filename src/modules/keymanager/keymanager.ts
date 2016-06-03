@@ -25,7 +25,7 @@ export module Keymanager {
         }
 
         init(): Promise<Error> {
-            const p: Promise<Error> = new Promise (
+            const p: Promise<Error> = new Promise<Error> (
                 (resolve: ()=>void, reject: (err: Error)=>void) => {
                     try{
                         var arrayOfPromise = [
@@ -51,8 +51,8 @@ export module Keymanager {
             return p;
         }
 
-        generateKeys(): Promise<Error>{
-            const p: Promise<string | Error> = new Promise(
+        generateKeys(): Promise<string | Error> {
+            const p: Promise<string | Error> = new Promise<string | Error> (
                 (resolve: () => void, reject: (err: Error)=>void) => {
                     try{
                         if(this._status === Status.KeysDoesNotExist) {
@@ -73,7 +73,7 @@ export module Keymanager {
         }
 
         get pubKey(): Promise<string | Error> {
-            const p: Promise<string | Error> = new Promise (
+            const p: Promise<string | Error> = new Promise<string | Error> (
                 (resolve: (pubKey: string)=>void, reject: (err: Error)=>void) => {
                     try{
                         if(!!this._pubKey) {
@@ -91,7 +91,7 @@ export module Keymanager {
         }
 
         get priKey(): Promise<string | Error> {
-            const p: Promise<string | Error> = new Promise (
+            const p: Promise<string | Error> = new Promise<string | Error> (
                 (resolve: (priKey: string)=>void, reject: (err: Error)=>void) => {
                     try{
                         if(!!this._priKey) {
@@ -111,7 +111,7 @@ export module Keymanager {
         }
 
         get status(): Promise<number | Error> {
-            const p: Promise<number | Error> = new Promise (
+            const p: Promise<number | Error> = new Promise<number | Error> (
                 (resolve: (status: number)=>void, reject: (err: Error)=>void) => {
                     try{
                         if(!!this._status) resolve(this._status);
@@ -125,7 +125,7 @@ export module Keymanager {
         }
 
         retrievePubKey(): Promise<string | Error> {
-            const p: Promise<string | Error> = new Promise (
+            const p: Promise<string | Error> = new Promise<string | Error> (
                 (resolve: (str: string)=>void, reject: (err: Error)=>void) => {
                     try{
                         let res = store.get(this.keyStorageId);
@@ -143,7 +143,7 @@ export module Keymanager {
         }
 
         retrievePriKey(): Promise<string | Error> {
-            const p: Promise<string | Error> = new Promise (
+            const p: Promise<string | Error> = new Promise<string | Error> (
                 (resolve: (str: string)=>void, reject: (err: Error)=>void) => {
                     try{
                         let res = store.get(this.keyStorageId);
@@ -161,7 +161,7 @@ export module Keymanager {
         }
 
         removeKeys(): Promise<Error> {
-            const p: Promise<Error> = new Promise (
+            const p: Promise<Error> = new Promise<Error> (
                 (resolve: ()=>void, reject: (err: Error)=>void) => {
                     try{
                         store.remove(this.keyStorageId);
@@ -175,7 +175,7 @@ export module Keymanager {
         }
 
         storeKeys(pubKey: string, priKey: string): Promise<Error> {
-            const p: Promise<Error> = new Promise (
+            const p: Promise<Error> = new Promise<Error> (
                 (resolve: ()=>void, reject: (err: Error)=>void) => {
                     try{
                         if(!!pubKey && !!priKey ){
@@ -205,7 +205,7 @@ export module Keymanager {
         }
 
         initialChecks() : Promise<Error> {
-            const p: Promise<Error> = new Promise (
+            const p: Promise<Error> = new Promise<Error> (
                 (resolve: (n: any)=>void, reject: (err: Error)=>void) => {
                     if (!store.enabled){
                         this._status = Status.Failed;
@@ -213,7 +213,7 @@ export module Keymanager {
                     }
                     else{
                         resolve(null);
-                        /*this.removeKeys().then(()=>{
+                       /* this.removeKeys().then(()=>{
                             resolve(null);
                         }).catch(err => { reject(err); });*/
                     }
@@ -227,7 +227,7 @@ export module Keymanager {
         private KEY_LENGTH :number = config.keyManagement.symmetric.keyLength/8 || 32;
 
         generateKey(len:number = this.KEY_LENGTH ): Promise<string | Error>{
-            const p: Promise<string | Error> = new Promise (
+            const p: Promise<string | Error> = new Promise<string | Error> (
                 (resolve: (key: string)=>void, reject: (err: Error)=>void) => {
                     let key = "";
                     let possible = config.keyManagement.symmetric.keyGenPossibilities;

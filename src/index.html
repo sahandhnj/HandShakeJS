@@ -4,6 +4,68 @@
 </head>
 <body>
 <script>
+    function go(session)
+    {
+        /***** BEGIM TESTING **********/
+        var pubKey = null;
+        var priKey = null;
+        var status = null;
+        var decChatKey = null;
+        var decChatKey2 = null;
+
+        try {
+            session.init().then(function(){
+                console.log("Set public/private");
+                return session.genSymKey();
+
+            }).then(function(chatKey){
+                console.log("chatKey",chatKey);
+
+                return session.setCurrentKey(chatKey);
+            }).catch(function(err){
+                console.log(err);
+            });
+
+
+        } catch (err) {
+            console.log(err);
+        }
+    }
+    function chat(msg){
+        try{
+            var decMsg = session.encPlain(msg);
+            var encMsg = session.decCipher(decMsg);
+
+            document.getElementById('stuff').innerHTML += '<hr>';
+            document.getElementById('stuff').innerHTML += ('<h3>Cipher</h3><p>'+ decMsg +'</p>');
+            document.getElementById('stuff').innerHTML +=('<h3>TEXT</h3><p>'+ encMsg +'</p>');
+
+        } catch (err) {
+            console.log(err);
+        }
+    }
+    var session = new Plekryption.session();
+
+    go(session);
+
+
+    window.onload = function () {
+        addHtmlForm();
+    };
+    function addHtmlForm(){
+        var txt = document.createElement("textarea");
+        txt.rows = 10;
+        txt.cols = 100;
+        txt.id = "msg"; // set the CSS class
+        document.body.appendChild(txt); // p
+
+        var button = document.createElement('button');
+        button.innerText = "Send";
+        button.onclick = function () {
+            chat(txt.value);
+        };
+        document.body.appendChild(button);
+    }
     function Timer(callback, delay) {
         var timerId, start, remaining = delay;
 
@@ -22,11 +84,16 @@
     }
 
     var session = new Plekryption.session();
-    session.init();
-
-    var timer = new Timer(function() {
+   /* session.init().then(function () {
         console.log(session.pubKey);
-    }, 1000);
+        return session.genSymKey();
+    }).then(function (val){
+        console.log(val);
+    });*/
+
+    /*var timer = new Timer(function() {
+        console.log(session.pubKey);
+    }, 1000);*/
 
 </script>
 <div id="stuff"></div>

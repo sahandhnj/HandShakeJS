@@ -6,6 +6,7 @@ const enum Status {
     symKeySet,
     allKeysSet
 }
+
 export class session{
     private _pubKey:string;
     private _priKey:string;
@@ -24,46 +25,47 @@ export class session{
         this.crAES = new Crypto.AES();
         this.crRSA = new Crypto.RSA();
     }
-    init(){
-        try {
-            var currErr:Error;
-            this.kmAsym.init().then(()=>{
-                return this.kmAsym.status
+    init(): Promise<Error>{
+        const p: Promise<Error> = new Promise<Error> (
+            (resolve: ()=>void, reject: (err: Error)=>void) => {
+                var currErr:Error;
+                this.kmAsym.init().then(()=>{
+                    return this.kmAsym.status
 
-            }).then(st => {
-                if(st === Keymanager.Status.KeysExist) {
-                    return null;
-                } else return st;
+                }).then(st => {
+                    if(st === Keymanager.Status.KeysExist)
+                        return null;
+                    else return st;
 
-            }).then((st)=>{
-                if (st === Keymanager.Status.KeysDoesNotExist)
-                    return this.kmAsym.generateKeys();
-                else return null;
+                }).then((st)=>{
+                    if (st === Keymanager.Status.KeysDoesNotExist)
+                        return this.kmAsym.generateKeys();
+                    else return null;
 
-            }).then(()=>{
-                var promiseArray = [
-                    this.kmAsym.pubKey,
-                    this.kmAsym.priKey
-                ];
-                Promise.all(promiseArray).then(val => {
-                    if (!!val && !!val[0] && !!val[1]) {
-                        this._pubKey = val[0];
-                        this._priKey = val[1];
-                        this._status = Status.aSymKeysSet;
-                    }
-                    return this.crRSA.init(this._pubKey,this._priKey);
+                }).then(()=>{
+                    var promiseArray = [
+                        this.kmAsym.pubKey,
+                        this.kmAsym.priKey
+                    ];
+                    Promise.all(promiseArray).then(val => {
+                        if (!!val && !!val[0] && !!val[1]) {
+                            this._pubKey = val[0];
+                            this._priKey = val[1];
+
+                            this._status = Status.aSymKeysSet;
+                        }
+                        return this.crRSA.init(this._pubKey,this._priKey);
+                    }).then(() =>{
+                        resolve();
+                    }).catch(err => {
+                        reject(err);
+                    });
                 }).catch(err => {
-                    currErr = err;
-                    return null;
-                })
-            }).catch(err => {
-                currErr = err;
-            });
-            if (!!currErr) throw(currErr);
-        } catch(err){
-            throw(err);
-        }
-
+                    reject(err);
+                });
+            }
+        );
+        return p;
     }
     get pubKey():string{
         if(!!this._pubKey) return this._pubKey;
@@ -82,70 +84,83 @@ export class session{
         else return null;
     }
 
-    genSymKey() {
-        try{
-            var currErr:Error;
-            var encryptedKey:string = null;
-            this.kmSym.generateKey().then(key =>{
-                if(!!key) {
-                    this._currKey = key;
-                    if(this._status === Status.aSymKeysSet)
-                        this._status = Status.allKeysSet;
-                    else
-                        this._status = Status.symKeySet;
+    genSymKey():Promise<string | Error> {
+        const p: Promise<string | Error> = new Promise<string | Error> (
+            (resolve: (enKey: string)=>void, reject: (err: Error)=>void) => {
 
-                    return this.crRSA.encrypt(key);
-                } else
-                    return null;
-            }).then(encKey => {
-                if(!!encKey) encryptedKey = encKey;
-            }).catch(err =>{
-                currErr = err;
-            });
-            if (!!currErr) throw(currErr);
-            return encryptedKey;
-        } catch (err) {
-            throw (err);
-        }
+                var encryptedKey:string = null;
+                return this.kmSym.generateKey().then(key =>{
+                    if(!!key) {
+                        this._currKey = key;
+                        if(this._status === Status.aSymKeysSet)
+                            this._status = Status.allKeysSet;
+                        else
+                            this._status = Status.symKeySet;
+
+                        return this.crRSA.encrypt(key);
+                    } else
+                        return null;
+                }).then(encKey => {
+                    if(!!encKey) encryptedKey = encKey;
+                    resolve(encryptedKey);
+                }).catch(err =>{
+                    reject(err);
+                });
+            }
+        );
+        return p;
     }
 
-    setCurrentKey(encKey: string) {
-        try{
-            var currErr:Error;
-            this.crRSA.decrypt(encKey).then(key => {
-                if(!!key) {
-                    this._currKey = key;
-                    if(this._status === Status.aSymKeysSet)
-                        this._status = Status.allKeysSet;
-                    else
-                        this._status = Status.symKeySet;
-                }
-            }).catch(err => {
-                currErr = err;
-            });
-            if(currErr) throw (currErr);
-        } catch (err) {
-            throw (err);
-        }
+    setCurrentKey(encKey: string):Promise<string | Error> {
+        const p: Promise<string | Error> = new Promise<string | Error> (
+            (resolve: (enKey: string)=>void, reject: (err: Error)=>void) => {
+                this.crRSA.decrypt(encKey,this._priKey).then(key => {
+                    if(!!key) {
+                        this._currKey = key;
+                        if(this._status === Status.aSymKeysSet)
+                            this._status = Status.allKeysSet;
+                        else
+                            this._status = Status.symKeySet;
+                        resolve(this._currKey);
+                    } else resolve(null);
+                }).catch(err => {
+                    reject(err);
+                });
+            }
+        );
+        return p;
     }
 
-    encKey(pubKey:string, key:string = this._currKey){
-        try{
-            var currErr:Error;
-            var tmpcrRSA:any = new Crypto.RSA();
-            var encKey:string = null;
-            tmpcrRSA.singleInit(pubKey).then(()=>{
-                return tmpcrRSA.encrypt(key);
-            }).then(val => {
-                if(!!val) encKey = val;
-            }).catch(err => {
-                currErr = err;
-            });
-            if(currErr) throw (currErr);
-            return encKey;
-        } catch (err) {
-            throw (err);
-        }
+    encKey(pubKey:string){
+        const p: Promise<string | Error> = new Promise<string> (
+            (resolve: (enKey: string)=>void) => {
+                var tmpcrRSA:any = new Crypto.RSA();
+                tmpcrRSA.singleInit(pubKey).then(()=>{
+                    return tmpcrRSA.encrypt(this._currKey);
+                }).then(encKey => {
+                    if(!!encKey) resolve(encKey);
+                    else resolve(null);
+                });
+            }
+        );
+        return p;
+    }
+
+    updateEncKey(pubKey:string, key){
+        const p: Promise<string | Error> = new Promise<string> (
+            (resolve: (enKey: string)=>void) => {
+                var tmpcrRSA:any = new Crypto.RSA();
+                tmpcrRSA.init(pubKey,this._priKey).then(()=>{
+                    return tmpcrRSA.decrypt(key);
+                }).then((decKey)=>{
+                    return tmpcrRSA.encrypt(decKey);
+                }).then(encKey => {
+                    if(!!encKey) resolve(encKey);
+                    else resolve(null);
+                });
+            }
+        );
+        return p;
     }
 
     encPlain(plain:string){

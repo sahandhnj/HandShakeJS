@@ -2,7 +2,7 @@
 import * as c from './config'
 
 //noinspection TypeScriptCheckImport
-import * as J from '../bower_components/jsencrypt/bin/jsencrypt.min'
+import * as J from './lib/jsencrypt.min'
 
 //noinspection TypeScriptCheckImport
 import * as S from './lib/store.min'

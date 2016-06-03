@@ -9,7 +9,7 @@ export module Cryptography{
 
         }
         encrypt(cred: any,plaintext: string): Promise<string | Error>{
-            const p: Promise<string | Error> = new Promise (
+            const p: Promise<string | Error> = new Promise<string | Error> (
                 (resolve: (cipher: string)=>void, reject: (err: Error)=>void) => {
                     try{
                         if(!cred.key && cred.key.length !== this.KEY_LENGTH)
@@ -31,7 +31,7 @@ export module Cryptography{
             return p;
         }
         encrypt_CTR(cred: any,plaintext: string): Promise<string | Error>{
-            const p: Promise<string | Error> = new Promise (
+            const p: Promise<string | Error> = new Promise<string | Error> (
                 (resolve: (cipher: string)=>void, reject: (err: Error)=>void) => {
                     try{
                         var nonce:any;
@@ -62,7 +62,7 @@ export module Cryptography{
             return p;
         }
         decrypt_CTR(cipher: string, key:string): Promise<string | Error>{
-            const p: Promise<string | Error> = new Promise (
+            const p: Promise<string | Error> = new Promise<string | Error> (
                 (resolve: (cipher: string)=>void, reject: (err: Error)=>void) => {
                     try{
                         if(!!cipher && cipher.length > 0){
@@ -97,7 +97,7 @@ export module Cryptography{
             return p;
         }
         decrypt(cipher: string, key:string): Promise<string | Error>{
-            const p: Promise<string | Error> = new Promise (
+            const p: Promise<string | Error> = new Promise<string | Error> (
                 (resolve: (cipher: string)=>void, reject: (err: Error)=>void) => {
                     try{
                         if(!cipher) reject(new Error(config.crypto.AES.errorMessages.noCipher));
@@ -151,7 +151,7 @@ export module Cryptography{
             return str;
         }
         setCredential(key?:string) : Promise<Object | Error>{
-            const p: Promise<Object | Error> = new Promise (
+            const p: Promise<Object | Error> = new Promise<Object | Error> (
                 (resolve: (cred: Object)=>void, reject: (err: Error)=>void) => {
                     try{
                         var cred = {
@@ -181,7 +181,7 @@ export module Cryptography{
             this.rsaDec = new JSEncrypt();
         }
         init(pubKey:string, priKey:string): Promise<Error>{
-            const p: Promise<Error> = new Promise (
+            const p: Promise<Error> = new Promise<Error> (
                 (resolve: ()=>void, reject: (err: Error)=>void) => {
                     try{
                         this.rsaEnc.setPublicKey(pubKey);
@@ -195,7 +195,7 @@ export module Cryptography{
             return p;
         }
         singleInit(pubKey:string): Promise<Error>{
-            const p: Promise<Error> = new Promise (
+            const p: Promise<Error> = new Promise<Error> (
                 (resolve: ()=>void, reject: (err: Error)=>void) => {
                     try{
                         this.rsaEnc.setPublicKey(pubKey);
@@ -208,7 +208,7 @@ export module Cryptography{
             return p;
         }
         encrypt(plain:string): Promise<string | Error>{
-            const p: Promise<string | Error> = new Promise (
+            const p: Promise<string | Error> = new Promise<string | Error> (
                 (resolve: (cipher: string)=>void, reject: (err: Error)=>void) => {
                     try {
                         if(!this.rsaEnc) reject(new Error(config.crypto.RSA.errorMessages.noPubKey));
@@ -223,10 +223,10 @@ export module Cryptography{
             return p;
         }
         decrypt(cipher:string): Promise<string | Error>{
-            const p: Promise<string | Error> = new Promise (
+            const p: Promise<string | Error> = new Promise<string | Error> (
                 (resolve: (plain: string)=>void, reject: (err: Error)=>void) => {
                     try {
-                        if(!this.rsaEnc) reject(new Error(config.crypto.RSA.errorMessages.noPriKey));
+                        if(!this.rsaDec) reject(new Error(config.crypto.RSA.errorMessages.noPriKey));
                         var decrypted:string = this.rsaDec.decrypt(cipher);
 
                         if(!!decrypted) resolve(decrypted);
