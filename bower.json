@@ -1,16 +1,19 @@
 {
-    "name": "plekryption",
-    "version": "0.0.3",
-    "description": "The encryption system for plek(front-end)",
-    "main": "dist/plekryption.js",
-    "keywords": [
-        "encryption",
-        "plekryption"
-    ],
-    "authors": [
-        "Sahand Hosseininejad <sahand@ilumy.com>"
-    ],
-    "dependencies": {
-    },
-    "devDependencies": {}
+  "name": "plekryption",
+  "version": "0.0.4",
+  "description": "The encryption and keymangement library for plek(front-end)",
+  "main": "dist/plekryption.js",
+  "keywords": [
+    "encryption",
+    "keymanagement",
+    "cryptography"
+  ],
+  "authors": [
+    "Sahand Hosseininejad <sahand@ilumy.com>"
+  ],
+  "dependencies": {
+    "jsencrypt": "^2.3.0",
+    "bluebird": "^3.4.0"
+  },
+  "devDependencies": {}
 }

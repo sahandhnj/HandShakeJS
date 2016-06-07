@@ -9,10 +9,8 @@ import {JSEncrypt} from '../../lib'
 
 //noinspection TypeScriptCheckImport
 import {store} from '../../lib'
-import Promise = require('bluebird');
 
 export  {crypto as crypto};
 export  {config as config} ;
 export  {JSEncrypt as JSEncrypt};
 export  {store as store};
-export  {Promise as Promise};
