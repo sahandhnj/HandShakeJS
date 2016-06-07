@@ -39,10 +39,10 @@ gulp.task('clean', function() {
 });
 
 gulp.task('bump', function() {
-    return gulp.src(['./package.json'])
+    return gulp.src(['./package.json','./bower.json'])
         .pipe(bump({type: 'patch'}))
         .pipe(gulp.dest('./'))
-        .pipe(git.commit('bump patch version'))
+        .pipe(git.commit('Bump patch version'))
         .pipe(filter('package.json'))  // read package.json for the new version
         .pipe(tagVersion());           // create tag
 });
