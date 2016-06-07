@@ -213,7 +213,7 @@ export module Keymanager {
                     }
                     else{
                         resolve(null);
-                       /* this.removeKeys().then(()=>{
+                        /*this.removeKeys().then(()=>{
                             resolve(null);
                         }).catch(err => { reject(err); });*/
                     }

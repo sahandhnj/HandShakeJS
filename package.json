@@ -3,7 +3,9 @@
   "version": "0.0.5",
   "description": "The encryption system for plek(front-end)",
   "main": "dist/main.js",
-  "dependencies": {},
+  "dependencies": {
+    "bluebird": "^3.4.0"
+  },
   "devDependencies": {
     "del": "^2.2.0",
     "event-stream": "^3.3.2",

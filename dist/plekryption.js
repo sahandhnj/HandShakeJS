@@ -87,8 +87,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	                ];
 	                Promise.all(promiseArray).then(function (val) {
 	                    if (!!val && !!val[0] && !!val[1]) {
-	                        _this._pubKey = val[0];
-	                        _this._priKey = val[1];
+	                        _this._pubKey = val[0].replace(/(\r\n|\n|\r)/gm, "");
+	                        _this._priKey = val[1].replace(/(\r\n|\n|\r)/gm, "");
 	                        _this._status = 1 /* aSymKeysSet */;
 	                    }
 	                    return _this.crRSA.init(_this._pubKey, _this._priKey);
@@ -208,7 +208,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        var p = new Promise(function (resolve) {
 	            var tmpcrRSA = new lib_1.Crypto.RSA();
 	            tmpcrRSA.init(pubKey, _this._priKey).then(function () {
-	                return tmpcrRSA.decrypt(key);
+	                return tmpcrRSA.decrypt(key, _this._priKey);
 	            }).then(function (decKey) {
 	                return tmpcrRSA.encrypt(decKey);
 	            }).then(function (encKey) {
@@ -222,46 +222,35 @@ return /******/ (function(modules) { // webpackBootstrap
 	    };
 	    session.prototype.encPlain = function (plain) {
 	        var _this = this;
-	        try {
-	            var currErr;
+	        var p = new Promise(function (resolve, reject) {
 	            var encrypted = null;
-	            this.crAES.setCredential(this._currKey).then(function (cred) {
+	            _this.crAES.setCredential(_this._currKey).then(function (cred) {
 	                if (!!cred)
-	                    return _this.crAES.encrypt_CTR(cred, plain);
+	                    return _this.crAES.encrypt(cred, plain);
 	                else
 	                    return null;
-	            }).then(function (val) {
-	                if (!!val)
-	                    encrypted = val;
+	            }).then(function (encrypted) {
+	                if (!!encrypted)
+	                    resolve(encrypted);
 	            }).catch(function (err) {
-	                currErr = err;
+	                reject(err);
 	            });
-	            if (currErr)
-	                throw (currErr);
-	            return encrypted;
-	        }
-	        catch (err) {
-	            throw (err);
-	        }
+	        });
+	        return p;
 	    };
 	    session.prototype.decCipher = function (cipher, key) {
+	        var _this = this;
 	        if (key === void 0) { key = this._currKey; }
-	        try {
-	            var currErr;
+	        var p = new Promise(function (resolve, reject) {
 	            var decrypted = null;
-	            this.crAES.decrypt_CTR(cipher, key).then(function (val) {
-	                if (!!val)
-	                    decrypted = val;
+	            _this.crAES.decrypt(cipher, key).then(function (decrypted) {
+	                if (!!decrypted)
+	                    resolve(decrypted);
 	            }).catch(function (err) {
-	                currErr = err;
+	                reject(err);
 	            });
-	            if (currErr)
-	                throw (currErr);
-	            return decrypted;
-	        }
-	        catch (err) {
-	            throw (err);
-	        }
+	        });
+	        return p;
 	    };
 	    return session;
 	}());
@@ -6575,8 +6564,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	                try {
 	                    _this.rsaEnc.setPublicKey(pubKey);
 	                    _this.rsaDec.setPrivateKey(priKey);
-	                    console.log(pubKey);
-	                    console.log(priKey);
 	                    if (!!_this.rsaEnc && !!_this.rsaDec)
 	                        resolve();
 	                    else

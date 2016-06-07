@@ -49,8 +49,8 @@ export class session{
                     ];
                     Promise.all(promiseArray).then(val => {
                         if (!!val && !!val[0] && !!val[1]) {
-                            this._pubKey = val[0];
-                            this._priKey = val[1];
+                            this._pubKey = val[0].replace(/(\r\n|\n|\r)/gm,"");
+                            this._priKey = val[1].replace(/(\r\n|\n|\r)/gm,"");
 
                             this._status = Status.aSymKeysSet;
                         }
@@ -79,6 +79,7 @@ export class session{
         if(!!this._currKey) return this._currKey;
         else return null;
     }
+
     get status():number{
         if(!!this._status) return this._status;
         else return null;
@@ -132,7 +133,7 @@ export class session{
     }
 
     encKey(pubKey:string){
-        const p: Promise<string | Error> = new Promise<string> (
+        const p: Promise<string> = new Promise<string> (
             (resolve: (enKey: string)=>void) => {
                 var tmpcrRSA:any = new Crypto.RSA();
                 tmpcrRSA.singleInit(pubKey).then(()=>{
@@ -147,11 +148,11 @@ export class session{
     }
 
     updateEncKey(pubKey:string, key){
-        const p: Promise<string | Error> = new Promise<string> (
+        const p: Promise<string> = new Promise<string> (
             (resolve: (enKey: string)=>void) => {
                 var tmpcrRSA:any = new Crypto.RSA();
                 tmpcrRSA.init(pubKey,this._priKey).then(()=>{
-                    return tmpcrRSA.decrypt(key);
+                    return tmpcrRSA.decrypt(key,this._priKey);
                 }).then((decKey)=>{
                     return tmpcrRSA.encrypt(decKey);
                 }).then(encKey => {
@@ -164,40 +165,35 @@ export class session{
     }
 
     encPlain(plain:string){
-        try{
-            var currErr:Error;
-            var encrypted:string = null;
+        const p: Promise<string | Error> = new Promise<string> (
+            (resolve: (enKey: string)=>void, reject: (err: Error)=>void) => {
+                var encrypted:string = null;
 
-            this.crAES.setCredential(this._currKey).then(cred => {
-                if (!!cred) return this.crAES.encrypt_CTR(cred, plain);
-                else return null;
-            }).then(val => {
-                if (!!val) encrypted = val;
-            }).catch(err => {
-                currErr = err;
-            });
-            if(currErr) throw (currErr);
-            return encrypted;
-        } catch (err) {
-            throw (err);
-        }
+                this.crAES.setCredential(this._currKey).then(cred => {
+                    if (!!cred) return this.crAES.encrypt(cred, plain);
+                    else return null;
+                }).then(encrypted => {
+                    if (!!encrypted) resolve(encrypted);
+                }).catch(err => {
+                    reject(err);
+                });
+            }
+        );
+        return p;
     }
 
     decCipher(cipher:string, key:string = this._currKey){
-        try{
-            var currErr:Error;
-            var decrypted:string = null;
+        const p: Promise<string | Error> = new Promise<string> (
+            (resolve: (enKey: string)=>void, reject: (err: Error)=>void) => {
+                var decrypted:string = null;
 
-            this.crAES.decrypt_CTR(cipher,key).then(val => {
-                if (!!val) decrypted = val;
-            }).catch(err => {
-                currErr = err;
-            });
-            if(currErr) throw (currErr);
-            return decrypted;
-        } catch (err) {
-            throw (err);
-        }
+                this.crAES.decrypt(cipher,key).then(decrypted => {
+                    if (!!decrypted) resolve(decrypted);
+                }).catch(err => {
+                    reject(err);
+                });
+            }
+        );
+        return p;
     }
-
 }
