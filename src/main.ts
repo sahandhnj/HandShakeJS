@@ -47,13 +47,15 @@ export class session{
                         this.kmAsym.pubKey,
                         this.kmAsym.priKey
                     ];
-                    Promise.all(promiseArray).then(val => {
+                    return Promise.all(promiseArray).then(val => {
                         if (!!val && !!val[0] && !!val[1]) {
                             this._pubKey = val[0].replace(/(\r\n|\n|\r)/gm,"");
                             this._priKey = val[1].replace(/(\r\n|\n|\r)/gm,"");
 
                             this._status = Status.aSymKeysSet;
                         }
+
+                    }).then(() =>{
                         return this.crRSA.init(this._pubKey,this._priKey);
                     }).then(() =>{
                         resolve();
@@ -186,12 +188,22 @@ export class session{
         const p: Promise<string | Error> = new Promise<string> (
             (resolve: (enKey: string)=>void, reject: (err: Error)=>void) => {
                 var decrypted:string = null;
-
-                this.crAES.decrypt(cipher,key).then(decrypted => {
-                    if (!!decrypted) resolve(decrypted);
-                }).catch(err => {
-                    reject(err);
-                });
+                if(key !== this._currKey){
+                    this.crRSA.decrypt(key,this._priKey).then(nkey => {
+                        if(!nkey) reject(new Error("The key does not exist"));
+                        return  this.crAES.decrypt(cipher,nkey);
+                    }).then(decrypted => {
+                        if (!!decrypted) resolve(decrypted);
+                    }).catch(err => {
+                        reject(err);
+                    });
+                } else {
+                    this.crAES.decrypt(cipher,key).then(decrypted => {
+                        if (!!decrypted) resolve(decrypted);
+                    }).catch(err => {
+                        reject(err);
+                    });
+                }
             }
         );
         return p;

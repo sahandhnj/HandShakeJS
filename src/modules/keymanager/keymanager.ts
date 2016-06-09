@@ -75,16 +75,12 @@ export module Keymanager {
         get pubKey(): Promise<string | Error> {
             const p: Promise<string | Error> = new Promise<string | Error> (
                 (resolve: (pubKey: string)=>void, reject: (err: Error)=>void) => {
-                    try{
-                        if(!!this._pubKey) {
-                            this.cr.decrypt(this._pubKey,config.keyManagement.asymmetric.masterKey).then(val=>{
-                                let tmpPubKey:any = val;
-                                resolve(tmpPubKey);
-                            }).catch(err=>{ reject(err); });
-                        } else reject(new Error(config.keyManagement.asymmetric.errorMessages.noPubKey));
-                    } catch(err) {
-                        reject(err);
-                    }
+                    if(!!this._pubKey) {
+                       return this.cr.decrypt(this._pubKey,config.keyManagement.asymmetric.masterKey).then(val=>{
+                            let tmpPubKey:any = val;
+                            resolve(tmpPubKey);
+                        }).catch(err=>{ reject(err); });
+                    } else reject(new Error(config.keyManagement.asymmetric.errorMessages.noPubKey));
                 }
             );
             return p;
@@ -95,7 +91,7 @@ export module Keymanager {
                 (resolve: (priKey: string)=>void, reject: (err: Error)=>void) => {
                     try{
                         if(!!this._priKey) {
-                            this.cr.decrypt(this._priKey, config.keyManagement.asymmetric.masterKey).then(val=> {
+                            return this.cr.decrypt(this._priKey, config.keyManagement.asymmetric.masterKey).then(val=> {
                                 let tmpPriKey:any = val;
                                 resolve(tmpPriKey);
                             }).catch(err=> {

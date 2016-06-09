@@ -85,12 +85,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	                    _this.kmAsym.pubKey,
 	                    _this.kmAsym.priKey
 	                ];
-	                Promise.all(promiseArray).then(function (val) {
+	                return Promise.all(promiseArray).then(function (val) {
 	                    if (!!val && !!val[0] && !!val[1]) {
 	                        _this._pubKey = val[0].replace(/(\r\n|\n|\r)/gm, "");
 	                        _this._priKey = val[1].replace(/(\r\n|\n|\r)/gm, "");
 	                        _this._status = 1 /* aSymKeysSet */;
 	                    }
+	                }).then(function () {
 	                    return _this.crRSA.init(_this._pubKey, _this._priKey);
 	                }).then(function () {
 	                    resolve();
@@ -243,12 +244,26 @@ return /******/ (function(modules) { // webpackBootstrap
 	        if (key === void 0) { key = this._currKey; }
 	        var p = new Promise(function (resolve, reject) {
 	            var decrypted = null;
-	            _this.crAES.decrypt(cipher, key).then(function (decrypted) {
-	                if (!!decrypted)
-	                    resolve(decrypted);
-	            }).catch(function (err) {
-	                reject(err);
-	            });
+	            if (key !== _this._currKey) {
+	                _this.crRSA.decrypt(key, _this._priKey).then(function (nkey) {
+	                    if (!nkey)
+	                        reject(new Error("The key does not exist"));
+	                    return _this.crAES.decrypt(cipher, nkey);
+	                }).then(function (decrypted) {
+	                    if (!!decrypted)
+	                        resolve(decrypted);
+	                }).catch(function (err) {
+	                    reject(err);
+	                });
+	            }
+	            else {
+	                _this.crAES.decrypt(cipher, key).then(function (decrypted) {
+	                    if (!!decrypted)
+	                        resolve(decrypted);
+	                }).catch(function (err) {
+	                    reject(err);
+	                });
+	            }
 	        });
 	        return p;
 	    };
@@ -6719,19 +6734,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	            get: function () {
 	                var _this = this;
 	                var p = new Promise(function (resolve, reject) {
-	                    try {
-	                        if (!!_this._pubKey) {
-	                            _this.cr.decrypt(_this._pubKey, lib_1.config.keyManagement.asymmetric.masterKey).then(function (val) {
-	                                var tmpPubKey = val;
-	                                resolve(tmpPubKey);
-	                            }).catch(function (err) { reject(err); });
-	                        }
-	                        else
-	                            reject(new Error(lib_1.config.keyManagement.asymmetric.errorMessages.noPubKey));
+	                    if (!!_this._pubKey) {
+	                        return _this.cr.decrypt(_this._pubKey, lib_1.config.keyManagement.asymmetric.masterKey).then(function (val) {
+	                            var tmpPubKey = val;
+	                            resolve(tmpPubKey);
+	                        }).catch(function (err) { reject(err); });
 	                    }
-	                    catch (err) {
-	                        reject(err);
-	                    }
+	                    else
+	                        reject(new Error(lib_1.config.keyManagement.asymmetric.errorMessages.noPubKey));
 	                });
 	                return p;
 	            },
@@ -6744,7 +6754,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                var p = new Promise(function (resolve, reject) {
 	                    try {
 	                        if (!!_this._priKey) {
-	                            _this.cr.decrypt(_this._priKey, lib_1.config.keyManagement.asymmetric.masterKey).then(function (val) {
+	                            return _this.cr.decrypt(_this._priKey, lib_1.config.keyManagement.asymmetric.masterKey).then(function (val) {
 	                                var tmpPriKey = val;
 	                                resolve(tmpPriKey);
 	                            }).catch(function (err) {
