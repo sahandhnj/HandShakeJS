@@ -109,8 +109,7 @@ export module Cryptography{
                         let plain = crypto.AES.decrypt(cipher,key);
                         //noinspection TypeScriptUnresolvedVariable
                         plain = plain.toString(crypto.enc.Utf8);
-                        //(!!plain) ? resolve(plain) : reject (new Error(config.crypto.AES.errorMessages.decryptionFailed));
-                        (!!plain) ? resolve(plain) : resolve(null);
+                        (!!plain) ? resolve(plain) : reject (new Error(config.crypto.AES.errorMessages.decryptionFailed));
 
                     } catch(err) {
                         reject(err);
@@ -231,7 +230,7 @@ export module Cryptography{
                         var decrypted:string = this.rsaDec.decrypt(cipher);
 
                         if(!!decrypted) resolve(decrypted);
-                        else reject(new Error(config.crypto.RSA.errorMessages.decFailed));
+                        else resolve(null);//reject(new Error(config.crypto.RSA.errorMessages.decFailed));
                     } catch (err) { reject(err); }
                 }
             );

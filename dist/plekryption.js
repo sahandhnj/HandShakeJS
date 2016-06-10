@@ -6502,8 +6502,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                    var plain = lib_1.crypto.AES.decrypt(cipher, key);
 	                    //noinspection TypeScriptUnresolvedVariable
 	                    plain = plain.toString(lib_1.crypto.enc.Utf8);
-	                    //(!!plain) ? resolve(plain) : reject (new Error(config.crypto.AES.errorMessages.decryptionFailed));
-	                    (!!plain) ? resolve(plain) : resolve(null);
+	                    (!!plain) ? resolve(plain) : reject(new Error(lib_1.config.crypto.AES.errorMessages.decryptionFailed));
 	                }
 	                catch (err) {
 	                    reject(err);
@@ -6635,7 +6634,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                    if (!!decrypted)
 	                        resolve(decrypted);
 	                    else
-	                        reject(new Error(lib_1.config.crypto.RSA.errorMessages.decFailed));
+	                        resolve(null); //reject(new Error(config.crypto.RSA.errorMessages.decFailed));
 	                }
 	                catch (err) {
 	                    reject(err);
