@@ -109,7 +109,8 @@ export module Cryptography{
                         let plain = crypto.AES.decrypt(cipher,key);
                         //noinspection TypeScriptUnresolvedVariable
                         plain = plain.toString(crypto.enc.Utf8);
-                        (!!plain) ? resolve(plain) : reject (new Error(config.crypto.AES.errorMessages.decryptionFailed));
+                        //(!!plain) ? resolve(plain) : reject (new Error(config.crypto.AES.errorMessages.decryptionFailed));
+                        (!!plain) ? resolve(plain) : resolve(null);
 
                     } catch(err) {
                         reject(err);
