@@ -230,7 +230,7 @@ export module Cryptography{
                         var decrypted:string = this.rsaDec.decrypt(cipher);
 
                         if(!!decrypted) resolve(decrypted);
-                        else resolve(null);//reject(new Error(config.crypto.RSA.errorMessages.decFailed));
+                        else reject(new Error(config.crypto.RSA.errorMessages.decFailed));
                     } catch (err) { reject(err); }
                 }
             );

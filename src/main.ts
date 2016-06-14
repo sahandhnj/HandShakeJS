@@ -117,18 +117,21 @@ export class session{
     setCurrentKey(encKey: string):Promise<string | Error> {
         const p: Promise<string | Error> = new Promise<string | Error> (
             (resolve: (enKey: string)=>void, reject: (err: Error)=>void) => {
-                this.crRSA.decrypt(encKey,this._priKey).then(key => {
-                    if(!!key) {
-                        this._currKey = key;
-                        if(this._status === Status.aSymKeysSet)
-                            this._status = Status.allKeysSet;
-                        else
-                            this._status = Status.symKeySet;
-                        resolve(this._currKey);
-                    } else resolve(null);
-                }).catch(err => {
-                    reject(err);
-                });
+                if(encKey !== this._currKey){
+                    this.crRSA.decrypt(encKey,this._priKey).then(key => {
+                        if(!!key) {
+                            this._currKey = key;
+                            if(this._status === Status.aSymKeysSet)
+                                this._status = Status.allKeysSet;
+                            else
+                                this._status = Status.symKeySet;
+                            resolve(this._currKey);
+                        } else resolve(null);
+                    }).catch(err => {
+                        reject(err);
+                    });
+                }
+                else resolve(null);
             }
         );
         return p;
@@ -166,12 +169,12 @@ export class session{
         return p;
     }
 
-    encPlain(plain:string){
+    encPlain(plain:string,key:string = this._currKey ){
         const p: Promise<string | Error> = new Promise<string> (
             (resolve: (enKey: string)=>void, reject: (err: Error)=>void) => {
-                var encrypted:string = null;
-
-                this.crAES.setCredential(this._currKey).then(cred => {
+                this.setCurrentKey(key).then(() =>{
+                    return this.crAES.setCredential(this._currKey);
+                }).then(cred => {
                     if (!!cred) return this.crAES.encrypt(cred, plain);
                     else return null;
                 }).then(encrypted => {

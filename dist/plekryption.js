@@ -172,20 +172,24 @@ return /******/ (function(modules) { // webpackBootstrap
 	    session.prototype.setCurrentKey = function (encKey) {
 	        var _this = this;
 	        var p = new Promise(function (resolve, reject) {
-	            _this.crRSA.decrypt(encKey, _this._priKey).then(function (key) {
-	                if (!!key) {
-	                    _this._currKey = key;
-	                    if (_this._status === 1 /* aSymKeysSet */)
-	                        _this._status = 3 /* allKeysSet */;
+	            if (encKey !== _this._currKey) {
+	                _this.crRSA.decrypt(encKey, _this._priKey).then(function (key) {
+	                    if (!!key) {
+	                        _this._currKey = key;
+	                        if (_this._status === 1 /* aSymKeysSet */)
+	                            _this._status = 3 /* allKeysSet */;
+	                        else
+	                            _this._status = 2 /* symKeySet */;
+	                        resolve(_this._currKey);
+	                    }
 	                    else
-	                        _this._status = 2 /* symKeySet */;
-	                    resolve(_this._currKey);
-	                }
-	                else
-	                    resolve(null);
-	            }).catch(function (err) {
-	                reject(err);
-	            });
+	                        resolve(null);
+	                }).catch(function (err) {
+	                    reject(err);
+	                });
+	            }
+	            else
+	                resolve(null);
 	        });
 	        return p;
 	    };
@@ -221,11 +225,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	        });
 	        return p;
 	    };
-	    session.prototype.encPlain = function (plain) {
+	    session.prototype.encPlain = function (plain, key) {
 	        var _this = this;
+	        if (key === void 0) { key = this._currKey; }
 	        var p = new Promise(function (resolve, reject) {
-	            var encrypted = null;
-	            _this.crAES.setCredential(_this._currKey).then(function (cred) {
+	            _this.setCurrentKey(key).then(function () {
+	                return _this.crAES.setCredential(_this._currKey);
+	            }).then(function (cred) {
 	                if (!!cred)
 	                    return _this.crAES.encrypt(cred, plain);
 	                else
@@ -6634,7 +6640,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                    if (!!decrypted)
 	                        resolve(decrypted);
 	                    else
-	                        resolve(null); //reject(new Error(config.crypto.RSA.errorMessages.decFailed));
+	                        reject(new Error(lib_1.config.crypto.RSA.errorMessages.decFailed));
 	                }
 	                catch (err) {
 	                    reject(err);
