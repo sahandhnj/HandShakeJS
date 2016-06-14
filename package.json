@@ -1,6 +1,6 @@
 {
   "name": "plekryption",
-  "version": "0.0.12",
+  "version": "0.0.13",
   "description": "The encryption and keymangement library for plek(front-end)",
   "main": "dist/main.js",
   "devDependencies": {
