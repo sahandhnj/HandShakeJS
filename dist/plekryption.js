@@ -67,6 +67,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    session.prototype.init = function () {
 	        var _this = this;
 	        var p = new Promise(function (resolve, reject) {
+	            console.log("PLEKRYPTION UPDATED");
 	            var currErr;
 	            _this.kmAsym.init().then(function () {
 	                return _this.kmAsym.status;
