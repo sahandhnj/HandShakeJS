@@ -223,10 +223,14 @@ export module Cryptography{
             );
             return p;
         }
-        decrypt(cipher:string): Promise<string | Error>{
+        decrypt(cipher:string,priKey:string): Promise<string | Error>{
             const p: Promise<string | Error> = new Promise<string | Error> (
                 (resolve: (plain: string)=>void, reject: (err: Error)=>void) => {
                     try {
+                        if(!!priKey){
+                            this.rsaDec = new JSEncrypt();
+                            this.rsaDec.setPrivateKey(priKey);
+                        }
                         if(!this.rsaDec) reject(new Error(config.crypto.RSA.errorMessages.noPriKey));
                         var decrypted:string = this.rsaDec.decrypt(cipher);
 

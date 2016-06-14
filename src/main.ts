@@ -28,7 +28,7 @@ export class session{
     init(): Promise<Error>{
         const p: Promise<Error> = new Promise<Error> (
             (resolve: ()=>void, reject: (err: Error)=>void) => {
-                console.log("PLEKRYPTION UPDATED");
+                console.log("PLEKRYPTION UPDATEDv3");
                 var currErr:Error;
                 this.kmAsym.init().then(()=>{
                     return this.kmAsym.status
