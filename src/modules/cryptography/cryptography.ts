@@ -105,7 +105,7 @@ export module Cryptography{
                         if(!key && key.length !== this.KEY_LENGTH)
                             reject(new Error(config.crypto.AES.errorMessages.noKEY));
 
-                        console.log("decryptin ",cipher," with ",key);
+                        console.log("decrypting ",cipher," with ",key);
                         //noinspection TypeScriptUnresolvedVariable
                         let plain = crypto.AES.decrypt(cipher,key);
                         //noinspection TypeScriptUnresolvedVariable
