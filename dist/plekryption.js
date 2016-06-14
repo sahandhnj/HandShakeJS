@@ -174,6 +174,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        var _this = this;
 	        var p = new Promise(function (resolve, reject) {
 	            if (encKey !== _this._currKey) {
+	                console.log("set currKey", encKey, _this._priKey);
 	                _this.crRSA.decrypt(encKey, _this._priKey).then(function (key) {
 	                    if (!!key) {
 	                        _this._currKey = key;

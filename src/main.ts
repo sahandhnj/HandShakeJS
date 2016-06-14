@@ -119,6 +119,7 @@ export class session{
         const p: Promise<string | Error> = new Promise<string | Error> (
             (resolve: (enKey: string)=>void, reject: (err: Error)=>void) => {
                 if(encKey !== this._currKey){
+                    console.log("set currKey",encKey,this._priKey);
                     this.crRSA.decrypt(encKey,this._priKey).then(key => {
                         if(!!key) {
                             this._currKey = key;
