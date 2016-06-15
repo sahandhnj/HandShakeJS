@@ -223,7 +223,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	                }).catch(function (err) {
 	                    reject(err);
 	                });
-	                ;
 	            }
 	            catch (err) {
 	                reject(err);
@@ -248,7 +247,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	                }).catch(function (err) {
 	                    reject(err);
 	                });
-	                ;
 	            }
 	            catch (err) {
 	                reject(err);

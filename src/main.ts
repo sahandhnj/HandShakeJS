@@ -160,7 +160,7 @@ export class session{
                         else resolve(null);
                     }).catch(err =>{
                         reject(err);
-                    });;
+                    });
                 } catch(err) {
                     reject(err);
                 }
@@ -183,7 +183,7 @@ export class session{
                        else resolve(null);
                    }).catch(err =>{
                        reject(err);
-                   });;
+                   });
                } catch(err){
                    reject(err);
                }
