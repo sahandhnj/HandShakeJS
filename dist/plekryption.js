@@ -152,25 +152,30 @@ return /******/ (function(modules) { // webpackBootstrap
 	    session.prototype.genSymKey = function () {
 	        var _this = this;
 	        var p = new Promise(function (resolve, reject) {
-	            var encryptedKey = null;
-	            return _this.kmSym.generateKey().then(function (key) {
-	                if (!!key) {
-	                    _this._currKey = key;
-	                    if (_this._status === 1 /* aSymKeysSet */)
-	                        _this._status = 3 /* allKeysSet */;
+	            try {
+	                var encryptedKey = null;
+	                return _this.kmSym.generateKey().then(function (key) {
+	                    if (!!key) {
+	                        _this._currKey = key;
+	                        if (_this._status === 1 /* aSymKeysSet */)
+	                            _this._status = 3 /* allKeysSet */;
+	                        else
+	                            _this._status = 2 /* symKeySet */;
+	                        return _this.crRSA.encrypt(key);
+	                    }
 	                    else
-	                        _this._status = 2 /* symKeySet */;
-	                    return _this.crRSA.encrypt(key);
-	                }
-	                else
-	                    return null;
-	            }).then(function (encKey) {
-	                if (!!encKey)
-	                    encryptedKey = encKey;
-	                resolve(encryptedKey);
-	            }).catch(function (err) {
+	                        return null;
+	                }).then(function (encKey) {
+	                    if (!!encKey)
+	                        encryptedKey = encKey;
+	                    resolve(encryptedKey);
+	                }).catch(function (err) {
+	                    reject(err);
+	                });
+	            }
+	            catch (err) {
 	                reject(err);
-	            });
+	            }
 	        });
 	        return p;
 	    };
@@ -205,16 +210,21 @@ return /******/ (function(modules) { // webpackBootstrap
 	    };
 	    session.prototype.encKey = function (pubKey) {
 	        var _this = this;
-	        var p = new Promise(function (resolve) {
-	            var tmpcrRSA = new lib_1.Crypto.RSA();
-	            tmpcrRSA.singleInit(pubKey).then(function () {
-	                return tmpcrRSA.encrypt(_this._currKey);
-	            }).then(function (encKey) {
-	                if (!!encKey)
-	                    resolve(encKey);
-	                else
-	                    resolve(null);
-	            });
+	        var p = new Promise(function (resolve, reject) {
+	            try {
+	                var tmpcrRSA = new lib_1.Crypto.RSA();
+	                tmpcrRSA.singleInit(pubKey).then(function () {
+	                    return tmpcrRSA.encrypt(_this._currKey);
+	                }).then(function (encKey) {
+	                    if (!!encKey)
+	                        resolve(encKey);
+	                    else
+	                        resolve(null);
+	                });
+	            }
+	            catch (err) {
+	                reject(err);
+	            }
 	        });
 	        return p;
 	    };

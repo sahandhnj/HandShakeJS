@@ -94,25 +94,28 @@ export class session{
     genSymKey():Promise<string | Error> {
         const p: Promise<string | Error> = new Promise<string | Error> (
             (resolve: (enKey: string)=>void, reject: (err: Error)=>void) => {
+                try{
+                    var encryptedKey:string = null;
+                    return this.kmSym.generateKey().then(key =>{
+                        if(!!key) {
+                            this._currKey = key;
+                            if(this._status === Status.aSymKeysSet)
+                                this._status = Status.allKeysSet;
+                            else
+                                this._status = Status.symKeySet;
 
-                var encryptedKey:string = null;
-                return this.kmSym.generateKey().then(key =>{
-                    if(!!key) {
-                        this._currKey = key;
-                        if(this._status === Status.aSymKeysSet)
-                            this._status = Status.allKeysSet;
-                        else
-                            this._status = Status.symKeySet;
-
-                        return this.crRSA.encrypt(key);
-                    } else
-                        return null;
-                }).then(encKey => {
-                    if(!!encKey) encryptedKey = encKey;
-                    resolve(encryptedKey);
-                }).catch(err =>{
+                            return this.crRSA.encrypt(key);
+                        } else
+                            return null;
+                    }).then(encKey => {
+                        if(!!encKey) encryptedKey = encKey;
+                        resolve(encryptedKey);
+                    }).catch(err =>{
+                        reject(err);
+                    });
+                } catch(err) {
                     reject(err);
-                });
+                }
             }
         );
         return p;
@@ -146,22 +149,26 @@ export class session{
     }
 
     encKey(pubKey:string){
-        const p: Promise<string> = new Promise<string > (
-            (resolve: (enKey: string)=>void) => {
-                var tmpcrRSA:any = new Crypto.RSA();
-                tmpcrRSA.singleInit(pubKey).then(()=>{
-                    return tmpcrRSA.encrypt(this._currKey);
-                }).then(encKey => {
-                    if(!!encKey) resolve(encKey);
-                    else resolve(null);
-                });
+        const p: Promise<string| Error> = new Promise<string |Error> (
+            (resolve: (enKey: string)=>void, reject: (err: Error)=>void) => {
+                try {
+                    var tmpcrRSA:any = new Crypto.RSA();
+                    tmpcrRSA.singleInit(pubKey).then(()=>{
+                        return tmpcrRSA.encrypt(this._currKey);
+                    }).then(encKey => {
+                        if(!!encKey) resolve(encKey);
+                        else resolve(null);
+                    });
+                } catch(err) {
+                    reject(err);
+                }
             }
         );
         return p;
     }
 
-    updateEncKey(pubKey:string, key){
-        const p: Promise<string| Errorgit a> = new Promise<string| Error> (
+    updateEncKey(pubKey:string, key):Promise<string| Error>{
+        const p: Promise<string| Error> = new Promise<string| Error> (
             (resolve: (enKey: string)=>void, reject: (err: Error)=>void) => {
                try{
                    var tmpcrRSA:any = new Crypto.RSA();
@@ -181,7 +188,7 @@ export class session{
         return p;
     }
 
-    encPlain(plain:string,key:string = this._currKey ){
+    encPlain(plain:string,key:string = this._currKey ):Promise<string| Error>{
         const p: Promise<string | Error> = new Promise<string| Error> (
             (resolve: (enKey: string)=>void, reject: (err: Error)=>void) => {
                 try{
@@ -203,7 +210,7 @@ export class session{
         return p;
     }
 
-    decCipher(cipher:string, key:string = this._currKey){
+    decCipher(cipher:string, key:string = this._currKey):Promise<string| Error>{
         const p: Promise<string | Error> = new Promise<string| Error> (
             (resolve: (enKey: string)=>void, reject: (err: Error)=>void) => {
                 try{
