@@ -67,7 +67,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	    session.prototype.init = function () {
 	        var _this = this;
 	        var p = new Promise(function (resolve, reject) {
-	            console.log("PLEKRYPTION UPDATEDv3");
 	            var currErr;
 	            _this.kmAsym.init().then(function () {
 	                return _this.kmAsym.status;
@@ -174,7 +173,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	        var _this = this;
 	        var p = new Promise(function (resolve, reject) {
 	            if (encKey !== _this._currKey) {
-	                console.log("set currKey", encKey, _this._priKey);
 	                _this.crRSA.decrypt(encKey, _this._priKey).then(function (key) {
 	                    if (!!key) {
 	                        _this._currKey = key;
@@ -6506,7 +6504,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	                        reject(new Error(lib_1.config.crypto.AES.errorMessages.noCipher));
 	                    if (!key && key.length !== _this.KEY_LENGTH)
 	                        reject(new Error(lib_1.config.crypto.AES.errorMessages.noKEY));
-	                    console.log("decrypting ", cipher, " with ", key);
 	                    //noinspection TypeScriptUnresolvedVariable
 	                    var plain = lib_1.crypto.AES.decrypt(cipher, key);
 	                    //noinspection TypeScriptUnresolvedVariable

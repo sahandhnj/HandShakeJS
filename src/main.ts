@@ -28,7 +28,6 @@ export class session{
     init(): Promise<Error>{
         const p: Promise<Error> = new Promise<Error> (
             (resolve: ()=>void, reject: (err: Error)=>void) => {
-                console.log("PLEKRYPTION UPDATEDv3");
                 var currErr:Error;
                 this.kmAsym.init().then(()=>{
                     return this.kmAsym.status
@@ -119,7 +118,6 @@ export class session{
         const p: Promise<string | Error> = new Promise<string | Error> (
             (resolve: (enKey: string)=>void, reject: (err: Error)=>void) => {
                 if(encKey !== this._currKey){
-                    console.log("set currKey",encKey,this._priKey);
                     this.crRSA.decrypt(encKey,this._priKey).then(key => {
                         if(!!key) {
                             this._currKey = key;
