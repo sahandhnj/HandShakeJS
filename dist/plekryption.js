@@ -6455,6 +6455,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            var _this = this;
 	            var p = new Promise(function (resolve, reject) {
 	                try {
+	                    console.log("encrypting with", cred.key);
 	                    if (!cred.key && cred.key.length !== _this.KEY_LENGTH)
 	                        reject(new Error(lib_1.config.crypto.AES.errorMessages.noKEY));
 	                    if (!!plaintext) {
@@ -6539,6 +6540,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            var _this = this;
 	            var p = new Promise(function (resolve, reject) {
 	                try {
+	                    console.log("decrypting with", key);
 	                    if (!cipher)
 	                        reject(new Error(lib_1.config.crypto.AES.errorMessages.noCipher));
 	                    if (!key && key.length !== _this.KEY_LENGTH)

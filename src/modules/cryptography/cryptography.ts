@@ -12,6 +12,7 @@ export module Cryptography{
             const p: Promise<string | Error> = new Promise<string | Error> (
                 (resolve: (cipher: string)=>void, reject: (err: Error)=>void) => {
                     try{
+                        console.log("encrypting with",cred.key);
                         if(!cred.key && cred.key.length !== this.KEY_LENGTH)
                             reject(new Error(config.crypto.AES.errorMessages.noKEY));
 
@@ -100,6 +101,8 @@ export module Cryptography{
             const p: Promise<string | Error> = new Promise<string | Error> (
                 (resolve: (cipher: string)=>void, reject: (err: Error)=>void) => {
                     try{
+                        console.log("decrypting with",key);
+
                         if(!cipher) reject(new Error(config.crypto.AES.errorMessages.noCipher));
 
                         if(!key && key.length !== this.KEY_LENGTH)
