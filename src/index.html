@@ -19,6 +19,7 @@
                 return session.genSymKey();
 
             }).then(function(chatKey){
+                console.log(session.pubKey);
                 console.log("chatKey",chatKey);
 
                 return session.setCurrentKey(chatKey);

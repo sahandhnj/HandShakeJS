@@ -6644,7 +6644,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                    if (!!decrypted)
 	                        resolve(decrypted);
 	                    else
-	                        reject(new Error(lib_1.config.crypto.RSA.errorMessages.decFailed));
+	                        resolve(null); //reject(new Error(config.crypto.RSA.errorMessages.decFailed));
 	                }
 	                catch (err) {
 	                    reject(err);
