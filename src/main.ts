@@ -158,7 +158,9 @@ export class session{
                     }).then(encKey => {
                         if(!!encKey) resolve(encKey);
                         else resolve(null);
-                    });
+                    }).catch(err =>{
+                        reject(err);
+                    });;
                 } catch(err) {
                     reject(err);
                 }
@@ -179,7 +181,9 @@ export class session{
                    }).then(encKey => {
                        if(!!encKey) resolve(encKey);
                        else resolve(null);
-                   });
+                   }).catch(err =>{
+                       reject(err);
+                   });;
                } catch(err){
                    reject(err);
                }

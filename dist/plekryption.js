@@ -220,7 +220,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	                        resolve(encKey);
 	                    else
 	                        resolve(null);
+	                }).catch(function (err) {
+	                    reject(err);
 	                });
+	                ;
 	            }
 	            catch (err) {
 	                reject(err);
@@ -242,7 +245,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	                        resolve(encKey);
 	                    else
 	                        resolve(null);
+	                }).catch(function (err) {
+	                    reject(err);
 	                });
+	                ;
 	            }
 	            catch (err) {
 	                reject(err);
