@@ -67,40 +67,45 @@ return /******/ (function(modules) { // webpackBootstrap
 	    session.prototype.init = function () {
 	        var _this = this;
 	        var p = new Promise(function (resolve, reject) {
-	            var currErr;
-	            _this.kmAsym.init().then(function () {
-	                return _this.kmAsym.status;
-	            }).then(function (st) {
-	                if (st === 1 /* KeysExist */)
-	                    return null;
-	                else
-	                    return st;
-	            }).then(function (st) {
-	                if (st === 2 /* KeysDoesNotExist */)
-	                    return _this.kmAsym.generateKeys();
-	                else
-	                    return null;
-	            }).then(function () {
-	                var promiseArray = [
-	                    _this.kmAsym.pubKey,
-	                    _this.kmAsym.priKey
-	                ];
-	                return Promise.all(promiseArray).then(function (val) {
-	                    if (!!val && !!val[0] && !!val[1]) {
-	                        _this._pubKey = val[0].replace(/(\r\n|\n|\r)/gm, "");
-	                        _this._priKey = val[1].replace(/(\r\n|\n|\r)/gm, "");
-	                        _this._status = 1 /* aSymKeysSet */;
-	                    }
+	            try {
+	                var currErr;
+	                _this.kmAsym.init().then(function () {
+	                    return _this.kmAsym.status;
+	                }).then(function (st) {
+	                    if (st === 1 /* KeysExist */)
+	                        return null;
+	                    else
+	                        return st;
+	                }).then(function (st) {
+	                    if (st === 2 /* KeysDoesNotExist */)
+	                        return _this.kmAsym.generateKeys();
+	                    else
+	                        return null;
 	                }).then(function () {
-	                    return _this.crRSA.init(_this._pubKey, _this._priKey);
-	                }).then(function () {
-	                    resolve();
+	                    var promiseArray = [
+	                        _this.kmAsym.pubKey,
+	                        _this.kmAsym.priKey
+	                    ];
+	                    return Promise.all(promiseArray).then(function (val) {
+	                        if (!!val && !!val[0] && !!val[1]) {
+	                            _this._pubKey = val[0].replace(/(\r\n|\n|\r)/gm, "");
+	                            _this._priKey = val[1].replace(/(\r\n|\n|\r)/gm, "");
+	                            _this._status = 1 /* aSymKeysSet */;
+	                        }
+	                    }).then(function () {
+	                        return _this.crRSA.init(_this._pubKey, _this._priKey);
+	                    }).then(function () {
+	                        resolve();
+	                    }).catch(function (err) {
+	                        reject(err);
+	                    });
 	                }).catch(function (err) {
 	                    reject(err);
 	                });
-	            }).catch(function (err) {
+	            }
+	            catch (err) {
 	                reject(err);
-	            });
+	            }
 	        });
 	        return p;
 	    };
@@ -172,24 +177,29 @@ return /******/ (function(modules) { // webpackBootstrap
 	    session.prototype.setCurrentKey = function (encKey) {
 	        var _this = this;
 	        var p = new Promise(function (resolve, reject) {
-	            if (encKey !== _this._currKey) {
-	                _this.crRSA.decrypt(encKey, _this._priKey).then(function (key) {
-	                    if (!!key) {
-	                        _this._currKey = key;
-	                        if (_this._status === 1 /* aSymKeysSet */)
-	                            _this._status = 3 /* allKeysSet */;
+	            try {
+	                if (encKey !== _this._currKey) {
+	                    _this.crRSA.decrypt(encKey, _this._priKey).then(function (key) {
+	                        if (!!key) {
+	                            _this._currKey = key;
+	                            if (_this._status === 1 /* aSymKeysSet */)
+	                                _this._status = 3 /* allKeysSet */;
+	                            else
+	                                _this._status = 2 /* symKeySet */;
+	                            resolve(_this._currKey);
+	                        }
 	                        else
-	                            _this._status = 2 /* symKeySet */;
-	                        resolve(_this._currKey);
-	                    }
-	                    else
-	                        resolve(null);
-	                }).catch(function (err) {
-	                    reject(err);
-	                });
+	                            resolve(null);
+	                    }).catch(function (err) {
+	                        reject(err);
+	                    });
+	                }
+	                else
+	                    resolve(null);
 	            }
-	            else
-	                resolve(null);
+	            catch (err) {
+	                reject(err);
+	            }
 	        });
 	        return p;
 	    };
@@ -210,18 +220,23 @@ return /******/ (function(modules) { // webpackBootstrap
 	    };
 	    session.prototype.updateEncKey = function (pubKey, key) {
 	        var _this = this;
-	        var p = new Promise(function (resolve) {
-	            var tmpcrRSA = new lib_1.Crypto.RSA();
-	            tmpcrRSA.init(pubKey, _this._priKey).then(function () {
-	                return tmpcrRSA.decrypt(key, _this._priKey);
-	            }).then(function (decKey) {
-	                return tmpcrRSA.encrypt(decKey);
-	            }).then(function (encKey) {
-	                if (!!encKey)
-	                    resolve(encKey);
-	                else
-	                    resolve(null);
-	            });
+	        var p = new Promise(function (resolve, reject) {
+	            try {
+	                var tmpcrRSA = new lib_1.Crypto.RSA();
+	                tmpcrRSA.init(pubKey, _this._priKey).then(function () {
+	                    return tmpcrRSA.decrypt(key, _this._priKey);
+	                }).then(function (decKey) {
+	                    return tmpcrRSA.encrypt(decKey);
+	                }).then(function (encKey) {
+	                    if (!!encKey)
+	                        resolve(encKey);
+	                    else
+	                        resolve(null);
+	                });
+	            }
+	            catch (err) {
+	                reject(err);
+	            }
 	        });
 	        return p;
 	    };
@@ -229,19 +244,24 @@ return /******/ (function(modules) { // webpackBootstrap
 	        var _this = this;
 	        if (key === void 0) { key = this._currKey; }
 	        var p = new Promise(function (resolve, reject) {
-	            _this.setCurrentKey(key).then(function () {
-	                return _this.crAES.setCredential(_this._currKey);
-	            }).then(function (cred) {
-	                if (!!cred)
-	                    return _this.crAES.encrypt(cred, plain);
-	                else
-	                    return null;
-	            }).then(function (encrypted) {
-	                if (!!encrypted)
-	                    resolve(encrypted);
-	            }).catch(function (err) {
+	            try {
+	                _this.setCurrentKey(key).then(function () {
+	                    return _this.crAES.setCredential(_this._currKey);
+	                }).then(function (cred) {
+	                    if (!!cred)
+	                        return _this.crAES.encrypt(cred, plain);
+	                    else
+	                        return null;
+	                }).then(function (encrypted) {
+	                    if (!!encrypted)
+	                        resolve(encrypted);
+	                }).catch(function (err) {
+	                    reject(err);
+	                });
+	            }
+	            catch (err) {
 	                reject(err);
-	            });
+	            }
 	        });
 	        return p;
 	    };
@@ -249,26 +269,31 @@ return /******/ (function(modules) { // webpackBootstrap
 	        var _this = this;
 	        if (key === void 0) { key = this._currKey; }
 	        var p = new Promise(function (resolve, reject) {
-	            var decrypted = null;
-	            if (key !== _this._currKey) {
-	                _this.crRSA.decrypt(key, _this._priKey).then(function (nkey) {
-	                    if (!nkey)
-	                        reject(new Error("The key does not exist"));
-	                    return _this.crAES.decrypt(cipher, nkey);
-	                }).then(function (decrypted) {
-	                    if (!!decrypted)
-	                        resolve(decrypted);
-	                }).catch(function (err) {
-	                    reject(err);
-	                });
+	            try {
+	                var decrypted = null;
+	                if (key !== _this._currKey) {
+	                    _this.crRSA.decrypt(key, _this._priKey).then(function (nkey) {
+	                        if (!nkey)
+	                            reject(new Error("The key does not exist"));
+	                        return _this.crAES.decrypt(cipher, nkey);
+	                    }).then(function (decrypted) {
+	                        if (!!decrypted)
+	                            resolve(decrypted);
+	                    }).catch(function (err) {
+	                        reject(err);
+	                    });
+	                }
+	                else {
+	                    _this.crAES.decrypt(cipher, key).then(function (decrypted) {
+	                        if (!!decrypted)
+	                            resolve(decrypted);
+	                    }).catch(function (err) {
+	                        reject(err);
+	                    });
+	                }
 	            }
-	            else {
-	                _this.crAES.decrypt(cipher, key).then(function (decrypted) {
-	                    if (!!decrypted)
-	                        resolve(decrypted);
-	                }).catch(function (err) {
-	                    reject(err);
-	                });
+	            catch (err) {
+	                reject(err);
 	            }
 	        });
 	        return p;
