@@ -256,12 +256,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	    };
 	    session.prototype.encPlain = function (plain, key) {
 	        var _this = this;
-	        if (key === void 0) { key = this._currKey; }
 	        var p = new Promise(function (resolve, reject) {
 	            try {
+	                console.log("encPlain with: ", key);
 	                _this.setCurrentKey(key).then(function () {
+	                    console.log("CurrKey: ", _this._currKey);
 	                    return _this.crAES.setCredential(_this._currKey);
 	                }).then(function (cred) {
+	                    console.log("AES with", cred.key);
 	                    if (!!cred)
 	                        return _this.crAES.encrypt(cred, plain);
 	                    else

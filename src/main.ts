@@ -192,13 +192,16 @@ export class session{
         return p;
     }
 
-    encPlain(plain:string,key:string = this._currKey ):Promise<string| Error>{
+    encPlain(plain:string,key:string):Promise<string| Error>{
         const p: Promise<string | Error> = new Promise<string| Error> (
             (resolve: (enKey: string)=>void, reject: (err: Error)=>void) => {
                 try{
+                    console.log("encPlain with: ",key);
                     this.setCurrentKey(key).then(() =>{
+                        console.log("CurrKey: ",this._currKey);
                         return this.crAES.setCredential(this._currKey);
                     }).then(cred => {
+                        console.log("AES with", cred.key);
                         if (!!cred) return this.crAES.encrypt(cred, plain);
                         else return null;
                     }).then(encrypted => {
