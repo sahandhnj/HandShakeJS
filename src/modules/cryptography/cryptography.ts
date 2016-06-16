@@ -12,7 +12,6 @@ export module Cryptography{
             const p: Promise<string | Error> = new Promise<string | Error> (
                 (resolve: (cipher: string)=>void, reject: (err: Error)=>void) => {
                     try{
-                        console.log("encrypting with",cred.key);
                         if(!cred.key && cred.key.length !== this.KEY_LENGTH)
                             reject(new Error(config.crypto.AES.errorMessages.noKEY));
 

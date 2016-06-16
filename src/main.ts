@@ -196,12 +196,9 @@ export class session{
         const p: Promise<string | Error> = new Promise<string| Error> (
             (resolve: (enKey: string)=>void, reject: (err: Error)=>void) => {
                 try{
-                    console.log("encPlain with: ",key);
                     this.setCurrentKey(key).then(() =>{
-                        console.log("CurrKey: ",this._currKey);
                         return this.crAES.setCredential(this._currKey);
                     }).then(cred => {
-                        console.log("AES with", cred.key);
                         if (!!cred) return this.crAES.encrypt(cred, plain);
                         else return null;
                     }).then(encrypted => {
@@ -217,13 +214,15 @@ export class session{
         return p;
     }
 
-    decCipher(cipher:string, key:string = this._currKey):Promise<string| Error>{
+    decCipher(cipher:string, key:string):Promise<string| Error>{
         const p: Promise<string | Error> = new Promise<string| Error> (
             (resolve: (enKey: string)=>void, reject: (err: Error)=>void) => {
                 try{
                     var decrypted:string = null;
                     if(key !== this._currKey){
+                        console.log("sending the", key , "and" , this._priKey);
                         this.crRSA.decrypt(key,this._priKey).then(nkey => {
+                            console.log("sending the n ", nkey);
                             if(!nkey) reject(new Error("The key does not exist"));
                             return  this.crAES.decrypt(cipher,nkey);
                         }).then(decrypted => {

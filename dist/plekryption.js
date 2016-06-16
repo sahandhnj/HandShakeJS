@@ -258,12 +258,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	        var _this = this;
 	        var p = new Promise(function (resolve, reject) {
 	            try {
-	                console.log("encPlain with: ", key);
 	                _this.setCurrentKey(key).then(function () {
-	                    console.log("CurrKey: ", _this._currKey);
 	                    return _this.crAES.setCredential(_this._currKey);
 	                }).then(function (cred) {
-	                    console.log("AES with", cred.key);
 	                    if (!!cred)
 	                        return _this.crAES.encrypt(cred, plain);
 	                    else
@@ -283,12 +280,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	    };
 	    session.prototype.decCipher = function (cipher, key) {
 	        var _this = this;
-	        if (key === void 0) { key = this._currKey; }
 	        var p = new Promise(function (resolve, reject) {
 	            try {
 	                var decrypted = null;
 	                if (key !== _this._currKey) {
+	                    console.log("sending the", key, "and", _this._priKey);
 	                    _this.crRSA.decrypt(key, _this._priKey).then(function (nkey) {
+	                        console.log("sending the n ", nkey);
 	                        if (!nkey)
 	                            reject(new Error("The key does not exist"));
 	                        return _this.crAES.decrypt(cipher, nkey);
@@ -6457,7 +6455,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	            var _this = this;
 	            var p = new Promise(function (resolve, reject) {
 	                try {
-	                    console.log("encrypting with", cred.key);
 	                    if (!cred.key && cred.key.length !== _this.KEY_LENGTH)
 	                        reject(new Error(lib_1.config.crypto.AES.errorMessages.noKEY));
 	                    if (!!plaintext) {
