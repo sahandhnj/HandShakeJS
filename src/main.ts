@@ -104,7 +104,7 @@ export class session{
                             else
                                 this._status = Status.symKeySet;
 
-                            return this.crRSA.encrypt(key);
+                            return this.crRSA.encrypt(key,this._pubKey);
                         } else
                             return null;
                     }).then(encKey => {
@@ -154,7 +154,7 @@ export class session{
                 try {
                     var tmpcrRSA:any = new Crypto.RSA();
                     tmpcrRSA.singleInit(pubKey).then(()=>{
-                        return tmpcrRSA.encrypt(this._currKey);
+                        return tmpcrRSA.encrypt(this._currKey,this._pubKey);
                     }).then(encKey => {
                         if(!!encKey) resolve(encKey);
                         else resolve(null);
@@ -177,7 +177,7 @@ export class session{
                    tmpcrRSA.init(pubKey,this._priKey).then(()=>{
                        return tmpcrRSA.decrypt(key,this._priKey);
                    }).then((decKey)=>{
-                       return tmpcrRSA.encrypt(decKey);
+                       return tmpcrRSA.encrypt(decKey,this._pubKey);
                    }).then(encKey => {
                        if(!!encKey) resolve(encKey);
                        else resolve(null);

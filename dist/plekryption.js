@@ -161,7 +161,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                            _this._status = 3 /* allKeysSet */;
 	                        else
 	                            _this._status = 2 /* symKeySet */;
-	                        return _this.crRSA.encrypt(key);
+	                        return _this.crRSA.encrypt(key, _this._pubKey);
 	                    }
 	                    else
 	                        return null;
@@ -214,7 +214,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            try {
 	                var tmpcrRSA = new lib_1.Crypto.RSA();
 	                tmpcrRSA.singleInit(pubKey).then(function () {
-	                    return tmpcrRSA.encrypt(_this._currKey);
+	                    return tmpcrRSA.encrypt(_this._currKey, _this._pubKey);
 	                }).then(function (encKey) {
 	                    if (!!encKey)
 	                        resolve(encKey);
@@ -238,7 +238,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                tmpcrRSA.init(pubKey, _this._priKey).then(function () {
 	                    return tmpcrRSA.decrypt(key, _this._priKey);
 	                }).then(function (decKey) {
-	                    return tmpcrRSA.encrypt(decKey);
+	                    return tmpcrRSA.encrypt(decKey, _this._pubKey);
 	                }).then(function (encKey) {
 	                    if (!!encKey)
 	                        resolve(encKey);
@@ -6649,17 +6649,22 @@ return /******/ (function(modules) { // webpackBootstrap
 	            });
 	            return p;
 	        };
-	        RSA.prototype.encrypt = function (plain) {
-	            var _this = this;
+	        RSA.prototype.encrypt = function (plain, pubKey) {
 	            var p = new Promise(function (resolve, reject) {
 	                try {
-	                    if (!_this.rsaEnc)
-	                        reject(new Error(lib_1.config.crypto.RSA.errorMessages.noPubKey));
-	                    var encrypted = _this.rsaEnc.encrypt(plain);
-	                    if (!!encrypted)
-	                        resolve(encrypted);
+	                    if (!!pubKey) {
+	                        var rsaEnc = new lib_1.JSEncrypt();
+	                        rsaEnc.setPublicKey(pubKey);
+	                        if (!rsaEnc)
+	                            reject(new Error(lib_1.config.crypto.RSA.errorMessages.noPubKey));
+	                        var encrypted = rsaEnc.encrypt(plain);
+	                        if (!!encrypted)
+	                            resolve(encrypted);
+	                        else
+	                            reject(new Error(lib_1.config.crypto.RSA.errorMessages.encFailed));
+	                    }
 	                    else
-	                        reject(new Error(lib_1.config.crypto.RSA.errorMessages.encFailed));
+	                        reject(new Error(lib_1.config.crypto.RSA.errorMessages.noPubKey));
 	                }
 	                catch (err) {
 	                    reject(err);

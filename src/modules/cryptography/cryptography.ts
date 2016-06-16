@@ -104,7 +104,7 @@ export module Cryptography{
 
                         if(!key && key.length !== this.KEY_LENGTH)
                             reject(new Error(config.crypto.AES.errorMessages.noKEY));
-
+                        console.log("decrypting with, ",key);
                         //noinspection TypeScriptUnresolvedVariable
                         let plain = crypto.AES.decrypt(cipher,key);
                         //noinspection TypeScriptUnresolvedVariable
@@ -207,16 +207,20 @@ export module Cryptography{
             );
             return p;
         }
-        encrypt(plain:string): Promise<string | Error>{
+        encrypt(plain:string,pubKey:string): Promise<string | Error>{
             const p: Promise<string | Error> = new Promise<string | Error> (
                 (resolve: (cipher: string)=>void, reject: (err: Error)=>void) => {
                     try {
-                        if(!this.rsaEnc) reject(new Error(config.crypto.RSA.errorMessages.noPubKey));
-                        var encrypted:string = this.rsaEnc.encrypt(plain);
+                        if(!!pubKey){
+                            var rsaEnc = new JSEncrypt();
+                            rsaEnc.setPublicKey(pubKey);
 
-                        if(!!encrypted) resolve(encrypted);
-                        else reject(new Error(config.crypto.RSA.errorMessages.encFailed));
+                            if(!rsaEnc) reject(new Error(config.crypto.RSA.errorMessages.noPubKey));
+                            var encrypted:string = rsaEnc.encrypt(plain);
 
+                            if(!!encrypted) resolve(encrypted);
+                            else reject(new Error(config.crypto.RSA.errorMessages.encFailed));
+                        } else reject(new Error(config.crypto.RSA.errorMessages.noPubKey));
                     } catch (err) { reject(err); }
                 }
             );
