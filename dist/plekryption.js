@@ -6541,6 +6541,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                        reject(new Error(lib_1.config.crypto.AES.errorMessages.noCipher));
 	                    if (!key && key.length !== _this.KEY_LENGTH)
 	                        reject(new Error(lib_1.config.crypto.AES.errorMessages.noKEY));
+	                    console.log("decrypting with, ", key);
 	                    //noinspection TypeScriptUnresolvedVariable
 	                    var plain = lib_1.crypto.AES.decrypt(cipher, key);
 	                    //noinspection TypeScriptUnresolvedVariable
