@@ -100,8 +100,6 @@ export module Cryptography{
             const p: Promise<string | Error> = new Promise<string | Error> (
                 (resolve: (cipher: string)=>void, reject: (err: Error)=>void) => {
                     try{
-                        console.log("decrypting with",key);
-
                         if(!cipher) reject(new Error(config.crypto.AES.errorMessages.noCipher));
 
                         if(!key && key.length !== this.KEY_LENGTH)
@@ -229,14 +227,15 @@ export module Cryptography{
                 (resolve: (plain: string)=>void, reject: (err: Error)=>void) => {
                     try {
                         if(!!priKey){
-                            this.rsaDec = new JSEncrypt();
-                            this.rsaDec.setPrivateKey(priKey);
-                        }
-                        if(!this.rsaDec) reject(new Error(config.crypto.RSA.errorMessages.noPriKey));
-                        var decrypted:string = this.rsaDec.decrypt(cipher);
+                            var rsaDec = new JSEncrypt();
+                            rsaDec.setPrivateKey(priKey);
 
-                        if(!!decrypted) resolve(decrypted);
-                        else resolve(null);//reject(new Error(config.crypto.RSA.errorMessages.decFailed));
+                            if(!rsaDec) reject(new Error(config.crypto.RSA.errorMessages.noPriKey));
+                            var decrypted:string = rsaDec.decrypt(cipher);
+
+                            if(!!decrypted) resolve(decrypted);
+                            else resolve(null);//reject(new Error(config.crypto.RSA.errorMessages.decFailed));
+                        }else reject(new Error(config.crypto.RSA.errorMessages.noPriKey));
                     } catch (err) { reject(err); }
                 }
             );

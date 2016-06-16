@@ -220,10 +220,8 @@ export class session{
                 try{
                     var decrypted:string = null;
                     if(key !== this._currKey){
-                        console.log("sending the", key , "and" , this._priKey);
                         this.crRSA.decrypt(key,this._priKey).then(nkey => {
-                            console.log("sending the n ", nkey);
-                            if(!nkey) reject(new Error("The key does not exist"));
+                            if(!nkey || nkey === null) reject(new Error("The key does not exist"));
                             return  this.crAES.decrypt(cipher,nkey);
                         }).then(decrypted => {
                             if (!!decrypted) resolve(decrypted);

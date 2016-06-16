@@ -284,10 +284,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	            try {
 	                var decrypted = null;
 	                if (key !== _this._currKey) {
-	                    console.log("sending the", key, "and", _this._priKey);
 	                    _this.crRSA.decrypt(key, _this._priKey).then(function (nkey) {
-	                        console.log("sending the n ", nkey);
-	                        if (!nkey)
+	                        if (!nkey || nkey === null)
 	                            reject(new Error("The key does not exist"));
 	                        return _this.crAES.decrypt(cipher, nkey);
 	                    }).then(function (decrypted) {
@@ -6539,7 +6537,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	            var _this = this;
 	            var p = new Promise(function (resolve, reject) {
 	                try {
-	                    console.log("decrypting with", key);
 	                    if (!cipher)
 	                        reject(new Error(lib_1.config.crypto.AES.errorMessages.noCipher));
 	                    if (!key && key.length !== _this.KEY_LENGTH)
@@ -6671,20 +6668,21 @@ return /******/ (function(modules) { // webpackBootstrap
 	            return p;
 	        };
 	        RSA.prototype.decrypt = function (cipher, priKey) {
-	            var _this = this;
 	            var p = new Promise(function (resolve, reject) {
 	                try {
 	                    if (!!priKey) {
-	                        _this.rsaDec = new lib_1.JSEncrypt();
-	                        _this.rsaDec.setPrivateKey(priKey);
+	                        var rsaDec = new lib_1.JSEncrypt();
+	                        rsaDec.setPrivateKey(priKey);
+	                        if (!rsaDec)
+	                            reject(new Error(lib_1.config.crypto.RSA.errorMessages.noPriKey));
+	                        var decrypted = rsaDec.decrypt(cipher);
+	                        if (!!decrypted)
+	                            resolve(decrypted);
+	                        else
+	                            resolve(null); //reject(new Error(config.crypto.RSA.errorMessages.decFailed));
 	                    }
-	                    if (!_this.rsaDec)
-	                        reject(new Error(lib_1.config.crypto.RSA.errorMessages.noPriKey));
-	                    var decrypted = _this.rsaDec.decrypt(cipher);
-	                    if (!!decrypted)
-	                        resolve(decrypted);
 	                    else
-	                        resolve(null); //reject(new Error(config.crypto.RSA.errorMessages.decFailed));
+	                        reject(new Error(lib_1.config.crypto.RSA.errorMessages.noPriKey));
 	                }
 	                catch (err) {
 	                    reject(err);
