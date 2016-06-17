@@ -148,13 +148,15 @@ export class session{
         return p;
     }
 
-    encKey(pubKey:string){
+    encKey(pubKey:string,key:string){
         const p: Promise<string| Error> = new Promise<string |Error> (
             (resolve: (enKey: string)=>void, reject: (err: Error)=>void) => {
                 try {
                     var tmpcrRSA:any = new Crypto.RSA();
-                    tmpcrRSA.singleInit(pubKey).then(()=>{
-                        return tmpcrRSA.encrypt(this._currKey,this._pubKey);
+                    this.setCurrentKey(key).then(() => {
+                        return tmpcrRSA.singleInit(pubKey)
+                    }).then(()=>{
+                        return tmpcrRSA.encrypt(this._currKey,pubKey);
                     }).then(encKey => {
                         if(!!encKey) resolve(encKey);
                         else resolve(null);

@@ -208,13 +208,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	        });
 	        return p;
 	    };
-	    session.prototype.encKey = function (pubKey) {
+	    session.prototype.encKey = function (pubKey, key) {
 	        var _this = this;
 	        var p = new Promise(function (resolve, reject) {
 	            try {
 	                var tmpcrRSA = new lib_1.Crypto.RSA();
-	                tmpcrRSA.singleInit(pubKey).then(function () {
-	                    return tmpcrRSA.encrypt(_this._currKey, _this._pubKey);
+	                _this.setCurrentKey(key).then(function () {
+	                    return tmpcrRSA.singleInit(pubKey);
+	                }).then(function () {
+	                    return tmpcrRSA.encrypt(_this._currKey, pubKey);
 	                }).then(function (encKey) {
 	                    if (!!encKey)
 	                        resolve(encKey);
