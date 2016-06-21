@@ -179,7 +179,7 @@ export class session{
                    tmpcrRSA.init(pubKey,this._priKey).then(()=>{
                        return tmpcrRSA.decrypt(key,this._priKey);
                    }).then((decKey)=>{
-                       return tmpcrRSA.encrypt(decKey,this._pubKey);
+                       return tmpcrRSA.encrypt(decKey,pubKey);
                    }).then(encKey => {
                        if(!!encKey) resolve(encKey);
                        else resolve(null);

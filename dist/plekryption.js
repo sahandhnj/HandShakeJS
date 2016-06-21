@@ -240,7 +240,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                tmpcrRSA.init(pubKey, _this._priKey).then(function () {
 	                    return tmpcrRSA.decrypt(key, _this._priKey);
 	                }).then(function (decKey) {
-	                    return tmpcrRSA.encrypt(decKey, _this._pubKey);
+	                    return tmpcrRSA.encrypt(decKey, pubKey);
 	                }).then(function (encKey) {
 	                    if (!!encKey)
 	                        resolve(encKey);
