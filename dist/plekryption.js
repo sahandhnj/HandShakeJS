@@ -264,7 +264,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                    return _this.crAES.setCredential(_this._currKey);
 	                }).then(function (cred) {
 	                    if (!!cred)
-	                        return _this.crAES.encrypt(cred, plain);
+	                        return _this.crAES.encrypt_CTR(cred, plain);
 	                    else
 	                        return null;
 	                }).then(function (encrypted) {
@@ -289,7 +289,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                    _this.crRSA.decrypt(key, _this._priKey).then(function (nkey) {
 	                        if (!nkey || nkey === null)
 	                            reject(new Error("The key does not exist"));
-	                        return _this.crAES.decrypt(cipher, nkey);
+	                        return _this.crAES.decrypt_CTR(cipher, nkey);
 	                    }).then(function (decrypted) {
 	                        if (!!decrypted)
 	                            resolve(decrypted);
@@ -298,7 +298,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                    });
 	                }
 	                else {
-	                    _this.crAES.decrypt(cipher, key).then(function (decrypted) {
+	                    _this.crAES.decrypt_CTR(cipher, key).then(function (decrypted) {
 	                        if (!!decrypted)
 	                            resolve(decrypted);
 	                    }).catch(function (err) {

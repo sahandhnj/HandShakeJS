@@ -201,7 +201,7 @@ export class session{
                     this.setCurrentKey(key).then(() =>{
                         return this.crAES.setCredential(this._currKey);
                     }).then(cred => {
-                        if (!!cred) return this.crAES.encrypt(cred, plain);
+                        if (!!cred) return this.crAES.encrypt_CTR(cred, plain);
                         else return null;
                     }).then(encrypted => {
                         if (!!encrypted) resolve(encrypted);
@@ -224,14 +224,14 @@ export class session{
                     if(key !== this._currKey){
                         this.crRSA.decrypt(key,this._priKey).then(nkey => {
                             if(!nkey || nkey === null) reject(new Error("The key does not exist"));
-                            return  this.crAES.decrypt(cipher,nkey);
+                            return  this.crAES.decrypt_CTR(cipher,nkey);
                         }).then(decrypted => {
                             if (!!decrypted) resolve(decrypted);
                         }).catch(err => {
                             reject(err);
                         });
                     } else {
-                        this.crAES.decrypt(cipher,key).then(decrypted => {
+                        this.crAES.decrypt_CTR(cipher,key).then(decrypted => {
                             if (!!decrypted) resolve(decrypted);
                         }).catch(err => {
                             reject(err);
