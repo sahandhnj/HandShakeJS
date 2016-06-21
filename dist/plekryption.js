@@ -66,7 +66,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }
 	    session.prototype.init = function () {
 	        var _this = this;
-	        console.log("SESSION STARTED");
 	        var p = new Promise(function (resolve, reject) {
 	            try {
 	                var currErr;
@@ -287,16 +286,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	            try {
 	                var decrypted = null;
 	                if (key !== _this._currKey) {
-	                    console.log("RSA", key, _this._priKey);
 	                    _this.crRSA.decrypt(key, _this._priKey).then(function (nkey) {
 	                        if (!nkey || nkey === null)
 	                            reject(new Error("The key does not exist"));
-	                        if (!nkey || nkey === null)
-	                            console.log("RSA Failed");
 	                        return _this.crAES.decrypt(cipher, nkey);
 	                    }).then(function (decrypted) {
-	                        if (!decrypted)
-	                            console.log("AES Failed");
 	                        if (!!decrypted)
 	                            resolve(decrypted);
 	                    }).catch(function (err) {

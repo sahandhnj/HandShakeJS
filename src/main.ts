@@ -26,7 +26,6 @@ export class session{
         this.crRSA = new Crypto.RSA();
     }
     init(): Promise<Error>{
-        console.log("SESSION STARTED");
         const p: Promise<Error> = new Promise<Error> (
             (resolve: ()=>void, reject: (err: Error)=>void) => {
                 try{
@@ -223,13 +222,10 @@ export class session{
                 try{
                     var decrypted:string = null;
                     if(key !== this._currKey){
-                        console.log("RSA",key,this._priKey);
                         this.crRSA.decrypt(key,this._priKey).then(nkey => {
                             if(!nkey || nkey === null) reject(new Error("The key does not exist"));
-                            if(!nkey || nkey === null) console.log("RSA Failed");
                             return  this.crAES.decrypt(cipher,nkey);
                         }).then(decrypted => {
-                            if(!decrypted) console.log("AES Failed");
                             if (!!decrypted) resolve(decrypted);
                         }).catch(err => {
                             reject(err);
