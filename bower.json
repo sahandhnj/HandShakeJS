@@ -11,9 +11,6 @@
   "authors": [
     "Sahand Hosseininejad <sahand@ilumy.com>"
   ],
-  "dependencies": {
-    "jsencrypt": "^2.3.0",
-    "bluebird": "^3.4.0"
-  },
+  "dependencies": {},
   "devDependencies": {}
 }

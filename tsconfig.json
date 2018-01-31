@@ -16,7 +16,8 @@
         "noImplicitAny": false,
         "declaration": false,
         "noLib": false,
-        "outDir": "dist"
+        "outDir": "dist",
+        "lib": [ "es2015" ]
     },
     "filesGlob": [
         "./src/**/*.ts"
