@@ -6,46 +6,64 @@ export module Keymanager {
         keySize: number;
     }
     export class asymmetric {
-        private keyStorageId: string = config.keyManagement.asymmetric.keyStorageId;
+        private static keyStorageId: string = config.keyManagement.asymmetric.keyStorageId;
 
-        public async generateKeys(){
+        public static async generateKeys(){
             const keyGen = new genAssymetricKeys();
             this.storeKeysInStorage(keyGen.pubKey, keyGen.priKey);
             debug('New asymmetric keys has been generated');
         }
 
-        public async getPublicKey(){
+        public static async getKeys(){
+            const pubKey = await this.getPublicKey();
+            const priKey = await this.getPrivateKey();
+
+            if(pubKey && priKey){
+                return {
+                    pubKey,priKey
+                }
+            }
+        }
+
+        public static async getPublicKey(){
             const keys = await this.loadKeysFromStorage();
             let pubKey;
 
-            if(keys.publicKey){
+            if(keys && keys.publicKey){
                 pubKey = Crypto.AES.decrypt(keys.publicKey,config.keyManagement.asymmetric.masterKey);
             }
 
             return pubKey;
         }
 
-        public async getPrivateKey(){
+        public static async getPrivateKey(){
             const keys = await this.loadKeysFromStorage();
             let priKey;
 
-            if(keys.privateKey){
+            if(keys && keys.privateKey){
                 priKey = Crypto.AES.decrypt(keys.privateKey,config.keyManagement.asymmetric.masterKey);
             }
 
             return priKey;
         }
 
-        public async loadKeysFromStorage(){
-            const keys = store.get(this.keyStorageId);
+        public static async loadKeysFromStorage(){
+            let keys = store.get(this.keyStorageId);
 
+            if(!keys){
+                keys= {
+                    publicKey: null,
+                    privateKey: null
+                }   
+            }
+            
             return {
                 publicKey: keys.publicKey,
                 privateKey: keys.privateKey
             }
         }
 
-        public async storeKeysInStorage(publicKey, privateKey){
+        public static async storeKeysInStorage(publicKey, privateKey){
             if(!publicKey || !privateKey){
                 throw new Error(config.keyManagement.asymmetric.errorMessages.noSetKeyPairs);
             }
@@ -61,7 +79,7 @@ export module Keymanager {
             debug('Asymmetric keys has been stored in storage');
         }
         
-        public async removeKeysFromStorage(){
+        public static async removeKeysFromStorage(){
             store.remove(this.keyStorageId);
             debug('Asymmetric keys has been removed from storage');
         }

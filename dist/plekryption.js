@@ -88,14 +88,37 @@ var S = __webpack_require__(6);
 exports.store = S;
 var cr = __webpack_require__(8);
 exports.crypto = cr;
-var cryptography_1 = __webpack_require__(1);
+var cryptography_1 = __webpack_require__(2);
 exports.Crypto = cryptography_1.Cryptography;
 var keymanager_1 = __webpack_require__(10);
 exports.Keymanager = keymanager_1.Keymanager;
+var util_1 = __webpack_require__(1);
+exports.Util = util_1.Util;
 
 
 /***/ }),
 /* 1 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var Util;
+(function (Util) {
+    var util = /** @class */ (function () {
+        function util() {
+        }
+        util.debug = function (message) {
+            console.log(message);
+        };
+        return util;
+    }());
+    Util.util = util;
+})(Util = exports.Util || (exports.Util = {}));
+
+
+/***/ }),
+/* 2 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -158,7 +181,7 @@ var Cryptography;
                             if (!cipher) {
                                 throw new Error(lib_1.config.crypto.AES.errorMessages.other);
                             }
-                            debug("AES: Encrypted plaintext:" + plaintext + " with key:" + cred.key + " to " + cipher.toString());
+                            debug("AES: Encrypted\nplaintext: " + plaintext + "\nwith key: " + cred.key + "\nto: " + cipher.toString());
                             return [2 /*return*/, cipher.toString()];
                     }
                 });
@@ -180,7 +203,7 @@ var Cryptography;
                             if (!cipher) {
                                 throw new Error(lib_1.config.crypto.AES.errorMessages.other);
                             }
-                            debug("AES: Encrypted plaintext:" + plaintext + " with key:" + cred.key + ", nonce:" + cred.nonce + " to " + cipher.toString());
+                            debug("AES: Encrypted\nplaintext: " + plaintext + "\nwith key: " + cred.key + "\nnonce: " + cred.nonce + "\nto: " + cipher.toString());
                             return [2 /*return*/, cipher.toString()];
                     }
                 });
@@ -242,7 +265,7 @@ var Cryptography;
                             if (!plain) {
                                 new Error(lib_1.config.crypto.AES.errorMessages.decryptionFailed);
                             }
-                            debug("AES: Decrypted cipher:" + cipher + " with key:" + key + " to " + plain);
+                            debug("AES: Decrypted\ncipher: " + cipher + "\nwith key: " + key + "\nto: " + plain);
                             return [2 /*return*/, plain];
                     }
                 });
@@ -273,7 +296,7 @@ var Cryptography;
                             if (!plain) {
                                 new Error(lib_1.config.crypto.AES.errorMessages.decryptionFailed);
                             }
-                            debug("AES: Decrypted cipher:" + ex.cipher + ", nonce:" + ex.nonce + " with key:" + key + " to " + plain);
+                            debug("AES: Decrypted\ncipher: " + ex.cipher + "\nnonce: " + ex.nonce + "\nwith key: " + key + "\nto: " + plain);
                             return [2 /*return*/, plain];
                     }
                 });
@@ -323,7 +346,7 @@ var Cryptography;
                     if (!cred.key || !cred.nonce) {
                         throw new Error(lib_1.config.crypto.AES.errorMessages.credGenFail);
                     }
-                    debug("AES: Setting credential from " + key + ", to cred: " + cred);
+                    debug("AES: Setting credential\nfrom: " + key + "\nto cred: " + cred);
                     return [2 /*return*/, cred];
                 });
             });
@@ -345,7 +368,7 @@ var Cryptography;
                     if (!cipher) {
                         throw new Error(lib_1.config.crypto.RSA.errorMessages.encFailed);
                     }
-                    debug("RSA: Encrypted plain:" + plain + " to cipher:" + cipher);
+                    debug("RSA: Encrypted\nplain: " + plain + "\nto cipher: " + cipher);
                     return [2 /*return*/, cipher];
                 });
             });
@@ -359,7 +382,7 @@ var Cryptography;
                     if (!plain) {
                         throw new Error(lib_1.config.crypto.RSA.errorMessages.decFailed);
                     }
-                    debug("RSA: Decrypted cipher:" + cipher + " to plain:" + plain);
+                    debug("RSA: Decrypted\ncipher: " + cipher + "\nto plain: " + plain);
                     return [2 /*return*/, plain];
                 });
             });
@@ -370,27 +393,6 @@ var Cryptography;
     }());
     Cryptography.RSA = RSA;
 })(Cryptography = exports.Cryptography || (exports.Cryptography = {}));
-
-
-/***/ }),
-/* 2 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-var Util;
-(function (Util) {
-    var util = /** @class */ (function () {
-        function util() {
-        }
-        util.debug = function (message) {
-            console.log(message);
-        };
-        return util;
-    }());
-    Util.util = util;
-})(Util = exports.Util || (exports.Util = {}));
 
 
 /***/ }),
@@ -436,18 +438,151 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var lib_1 = __webpack_require__(0);
+var debug = lib_1.Util.util.debug;
 var session = /** @class */ (function () {
     function session() {
+        var _this = this;
         this._status = 0 /* noAsymKeys */;
-        this.kmAsym = new lib_1.Keymanager.asymmetric();
-        this.kmSym = new lib_1.Keymanager.symmetric();
-        this.crAES = new lib_1.Crypto.AES();
-        this.crRSA = new lib_1.Crypto.RSA();
+        (function () { return __awaiter(_this, void 0, void 0, function () {
+            var keys, e_1;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        _a.trys.push([0, 2, , 3]);
+                        return [4 /*yield*/, lib_1.Keymanager.asymmetric.getKeys()];
+                    case 1:
+                        keys = _a.sent();
+                        if (keys && keys.pubKey && keys.priKey) {
+                            this._pubKey = keys.pubKey;
+                            this._priKey = keys.priKey;
+                            this._status = 1 /* aSymKeysSet */;
+                        }
+                        debug("Status: " + this._status);
+                        return [3 /*break*/, 3];
+                    case 2:
+                        e_1 = _a.sent();
+                        console.log("Issue: " + e_1);
+                        return [3 /*break*/, 3];
+                    case 3: return [2 /*return*/];
+                }
+            });
+        }); })();
     }
-    session.prototype.init = function () {
+    session.prototype.generateKeys = function () {
         return __awaiter(this, void 0, void 0, function () {
             return __generator(this, function (_a) {
-                return [2 /*return*/];
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, lib_1.Keymanager.asymmetric.generateKeys()];
+                    case 1:
+                        _a.sent();
+                        this._status = 1 /* aSymKeysSet */;
+                        return [2 /*return*/];
+                }
+            });
+        });
+    };
+    session.prototype.getStatus = function () {
+        return this._status;
+    };
+    session.prototype.generateSymKey = function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var symKey, symKeyEncrypted;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, lib_1.Keymanager.symmetric.generateKey()];
+                    case 1:
+                        symKey = _a.sent();
+                        if (!symKey) return [3 /*break*/, 3];
+                        this._symKey = symKey;
+                        this._status = (this._status === 1 /* aSymKeysSet */) ? 3 /* allKeysSet */ : 2 /* symKeySet */;
+                        return [4 /*yield*/, lib_1.Crypto.RSA.encrypt(this._pubKey, symKey)];
+                    case 2:
+                        symKeyEncrypted = _a.sent();
+                        return [2 /*return*/, symKeyEncrypted];
+                    case 3: return [2 /*return*/];
+                }
+            });
+        });
+    };
+    session.prototype.setSymKey = function (symKeyEncrypted) {
+        return __awaiter(this, void 0, void 0, function () {
+            var symKey;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, lib_1.Crypto.RSA.decrypt(this._priKey, symKeyEncrypted)];
+                    case 1:
+                        symKey = _a.sent();
+                        if (symKey) {
+                            this._symKey = symKey;
+                        }
+                        return [2 /*return*/];
+                }
+            });
+        });
+    };
+    session.prototype.getSymKey = function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var symKeyEncrypted;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        if (!this._symKey) return [3 /*break*/, 2];
+                        return [4 /*yield*/, lib_1.Crypto.RSA.encrypt(this._pubKey, this._symKey)];
+                    case 1:
+                        symKeyEncrypted = _a.sent();
+                        return [2 /*return*/, symKeyEncrypted];
+                    case 2: return [2 /*return*/];
+                }
+            });
+        });
+    };
+    session.prototype.updateSymKey = function (symKeyEncrypted, publicKey) {
+        return __awaiter(this, void 0, void 0, function () {
+            var symKey, symKeyEncrypted_1;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, lib_1.Crypto.RSA.decrypt(this._priKey, symKeyEncrypted)];
+                    case 1:
+                        symKey = _a.sent();
+                        if (!symKey) return [3 /*break*/, 3];
+                        return [4 /*yield*/, lib_1.Crypto.RSA.encrypt(publicKey, this._symKey)];
+                    case 2:
+                        symKeyEncrypted_1 = _a.sent();
+                        return [2 /*return*/, symKeyEncrypted_1];
+                    case 3: return [2 /*return*/];
+                }
+            });
+        });
+    };
+    session.prototype.encrypt = function (message) {
+        return __awaiter(this, void 0, void 0, function () {
+            var creds, cipher;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, lib_1.Crypto.AES.setCredential(this._symKey)];
+                    case 1:
+                        creds = _a.sent();
+                        return [4 /*yield*/, lib_1.Crypto.AES.encrypt(creds, message)];
+                    case 2:
+                        cipher = _a.sent();
+                        return [2 /*return*/, cipher];
+                }
+            });
+        });
+    };
+    session.prototype.decrypt = function (message) {
+        return __awaiter(this, void 0, void 0, function () {
+            var creds, cipher;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, lib_1.Crypto.AES.setCredential(this._symKey)];
+                    case 1:
+                        creds = _a.sent();
+                        return [4 /*yield*/, lib_1.Crypto.AES.decrypt(message, creds.key)];
+                    case 2:
+                        cipher = _a.sent();
+                        return [2 /*return*/, cipher];
+                }
             });
         });
     };
@@ -6602,7 +6737,7 @@ var lib_3 = __webpack_require__(0);
 exports.JSEncrypt = lib_3.JSEncrypt;
 var lib_4 = __webpack_require__(0);
 exports.store = lib_4.store;
-var util_1 = __webpack_require__(2);
+var util_1 = __webpack_require__(1);
 exports.Util = util_1.Util;
 
 
@@ -6654,9 +6789,8 @@ var Keymanager;
 (function (Keymanager) {
     var asymmetric = /** @class */ (function () {
         function asymmetric() {
-            this.keyStorageId = lib_1.config.keyManagement.asymmetric.keyStorageId;
         }
-        asymmetric.prototype.generateKeys = function () {
+        asymmetric.generateKeys = function () {
             return __awaiter(this, void 0, void 0, function () {
                 var keyGen;
                 return __generator(this, function (_a) {
@@ -6667,7 +6801,28 @@ var Keymanager;
                 });
             });
         };
-        asymmetric.prototype.getPublicKey = function () {
+        asymmetric.getKeys = function () {
+            return __awaiter(this, void 0, void 0, function () {
+                var pubKey, priKey;
+                return __generator(this, function (_a) {
+                    switch (_a.label) {
+                        case 0: return [4 /*yield*/, this.getPublicKey()];
+                        case 1:
+                            pubKey = _a.sent();
+                            return [4 /*yield*/, this.getPrivateKey()];
+                        case 2:
+                            priKey = _a.sent();
+                            if (pubKey && priKey) {
+                                return [2 /*return*/, {
+                                        pubKey: pubKey, priKey: priKey
+                                    }];
+                            }
+                            return [2 /*return*/];
+                    }
+                });
+            });
+        };
+        asymmetric.getPublicKey = function () {
             return __awaiter(this, void 0, void 0, function () {
                 var keys, pubKey;
                 return __generator(this, function (_a) {
@@ -6675,7 +6830,7 @@ var Keymanager;
                         case 0: return [4 /*yield*/, this.loadKeysFromStorage()];
                         case 1:
                             keys = _a.sent();
-                            if (keys.publicKey) {
+                            if (keys && keys.publicKey) {
                                 pubKey = lib_1.Crypto.AES.decrypt(keys.publicKey, lib_1.config.keyManagement.asymmetric.masterKey);
                             }
                             return [2 /*return*/, pubKey];
@@ -6683,7 +6838,7 @@ var Keymanager;
                 });
             });
         };
-        asymmetric.prototype.getPrivateKey = function () {
+        asymmetric.getPrivateKey = function () {
             return __awaiter(this, void 0, void 0, function () {
                 var keys, priKey;
                 return __generator(this, function (_a) {
@@ -6691,7 +6846,7 @@ var Keymanager;
                         case 0: return [4 /*yield*/, this.loadKeysFromStorage()];
                         case 1:
                             keys = _a.sent();
-                            if (keys.privateKey) {
+                            if (keys && keys.privateKey) {
                                 priKey = lib_1.Crypto.AES.decrypt(keys.privateKey, lib_1.config.keyManagement.asymmetric.masterKey);
                             }
                             return [2 /*return*/, priKey];
@@ -6699,11 +6854,17 @@ var Keymanager;
                 });
             });
         };
-        asymmetric.prototype.loadKeysFromStorage = function () {
+        asymmetric.loadKeysFromStorage = function () {
             return __awaiter(this, void 0, void 0, function () {
                 var keys;
                 return __generator(this, function (_a) {
                     keys = lib_1.store.get(this.keyStorageId);
+                    if (!keys) {
+                        keys = {
+                            publicKey: null,
+                            privateKey: null
+                        };
+                    }
                     return [2 /*return*/, {
                             publicKey: keys.publicKey,
                             privateKey: keys.privateKey
@@ -6711,7 +6872,7 @@ var Keymanager;
                 });
             });
         };
-        asymmetric.prototype.storeKeysInStorage = function (publicKey, privateKey) {
+        asymmetric.storeKeysInStorage = function (publicKey, privateKey) {
             return __awaiter(this, void 0, void 0, function () {
                 var pubKey, priKey;
                 return __generator(this, function (_a) {
@@ -6736,7 +6897,7 @@ var Keymanager;
                 });
             });
         };
-        asymmetric.prototype.removeKeysFromStorage = function () {
+        asymmetric.removeKeysFromStorage = function () {
             return __awaiter(this, void 0, void 0, function () {
                 return __generator(this, function (_a) {
                     lib_1.store.remove(this.keyStorageId);
@@ -6745,6 +6906,7 @@ var Keymanager;
                 });
             });
         };
+        asymmetric.keyStorageId = lib_1.config.keyManagement.asymmetric.keyStorageId;
         return asymmetric;
     }());
     Keymanager.asymmetric = asymmetric;
@@ -6812,9 +6974,9 @@ var lib_2 = __webpack_require__(0);
 exports.JSEncrypt = lib_2.JSEncrypt;
 var lib_3 = __webpack_require__(0);
 exports.store = lib_3.store;
-var cryptography_1 = __webpack_require__(1);
+var cryptography_1 = __webpack_require__(2);
 exports.Crypto = cryptography_1.Cryptography;
-var util_1 = __webpack_require__(2);
+var util_1 = __webpack_require__(1);
 exports.Util = util_1.Util;
 
 

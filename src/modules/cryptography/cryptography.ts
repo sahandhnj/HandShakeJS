@@ -18,7 +18,7 @@ export module Cryptography{
                 throw new Error(config.crypto.AES.errorMessages.other);
             }
 
-            debug(`AES: Encrypted plaintext:${plaintext} with key:${cred.key} to ${cipher.toString()}`);            
+            debug(`AES: Encrypted\nplaintext: ${plaintext}\nwith key: ${cred.key}\nto: ${cipher.toString()}`);            
             return cipher.toString();
         }
 
@@ -36,7 +36,7 @@ export module Cryptography{
                 throw new Error(config.crypto.AES.errorMessages.other);
             }
 
-            debug(`AES: Encrypted plaintext:${plaintext} with key:${cred.key}, nonce:${cred.nonce} to ${cipher.toString()}`);            
+            debug(`AES: Encrypted\nplaintext: ${plaintext}\nwith key: ${cred.key}\nnonce: ${cred.nonce}\nto: ${cipher.toString()}`);            
             return cipher.toString();
         }
 
@@ -81,7 +81,7 @@ export module Cryptography{
                 new Error(config.crypto.AES.errorMessages.decryptionFailed)
             }
 
-            debug(`AES: Decrypted cipher:${cipher} with key:${key} to ${plain}`);                        
+            debug(`AES: Decrypted\ncipher: ${cipher}\nwith key: ${key}\nto: ${plain}`);                        
             return plain;
         }
         
@@ -110,7 +110,7 @@ export module Cryptography{
                 new Error(config.crypto.AES.errorMessages.decryptionFailed)
             }
 
-            debug(`AES: Decrypted cipher:${ex.cipher}, nonce:${ex.nonce} with key:${key} to ${plain}`);                        
+            debug(`AES: Decrypted\ncipher: ${ex.cipher}\nnonce: ${ex.nonce}\nwith key: ${key}\nto: ${plain}`);                        
             return plain;
         }
 
@@ -168,7 +168,7 @@ export module Cryptography{
                 throw new Error(config.crypto.AES.errorMessages.credGenFail);
             }
             
-            debug(`AES: Setting credential from ${key}, to cred: ${cred}`);                                    
+            debug(`AES: Setting credential\nfrom: ${key}\nto cred: ${cred}`);                                    
             return cred;
         }
     }
@@ -185,7 +185,7 @@ export module Cryptography{
                 throw new Error(config.crypto.RSA.errorMessages.encFailed);
             }
 
-            debug(`RSA: Encrypted plain:${plain} to cipher:${cipher}`);
+            debug(`RSA: Encrypted\nplain: ${plain}\nto cipher: ${cipher}`);
             return cipher;
         }
 
@@ -197,7 +197,7 @@ export module Cryptography{
                 throw new Error(config.crypto.RSA.errorMessages.decFailed)
             }
 
-            debug(`RSA: Decrypted cipher:${cipher} to plain:${plain}`);
+            debug(`RSA: Decrypted\ncipher: ${cipher}\nto plain: ${plain}`);
             return plain;
         }
     }

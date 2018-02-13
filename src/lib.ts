@@ -13,3 +13,4 @@ export  {c as config} ;
 export  {J as JSEncrypt};
 export  {S as store};
 export  {cr as crypto};
+export  {Util as Util};

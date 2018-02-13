@@ -1,4 +1,7 @@
-import {Crypto,Keymanager} from './lib'
+import {Crypto,Keymanager,Util} from './lib'
+import { Stats } from 'fs';
+import { keyManagement } from './config';
+const debug= Util.util.debug;
 
 const enum Status {
     noAsymKeys,
@@ -10,195 +13,85 @@ const enum Status {
 export class session{
     private _pubKey:string;
     private _priKey:string;
-    private _currKey:string;
+    private _symKey:string;
     private _status:Status = Status.noAsymKeys;
 
-    private kmAsym:any;
-    private kmSym:any;
-    private crAES:any;
-    private crRSA:any;
 
     constructor(){
-        this.kmAsym = new Keymanager.asymmetric();
-        this.kmSym = new Keymanager.symmetric();
+        (async () => {
+            try {                
+                const keys = await Keymanager.asymmetric.getKeys();
 
-        this.crAES = new Crypto.AES();
-        this.crRSA = new Crypto.RSA();
+                if(keys && keys.pubKey && keys.priKey){
+                    this._pubKey= keys.pubKey;
+                    this._priKey= keys.priKey;
+                    this._status= Status.aSymKeysSet;
+                }
+                
+                debug(`Status: ${this._status}`);
+            } catch (e) {
+                console.log(`Issue: ${e}`);
+            }
+        })();
     }
 
-    public async init(){
-       
+    public async generateKeys(){
+        await Keymanager.asymmetric.generateKeys();
+        this._status= Status.aSymKeysSet;
     }
 
-    // init2(): Promise<Error>{
-    //     const p: Promise<Error> = new Promise<Error> (
-    //         (resolve: ()=>void, reject: (err: Error)=>void) => {
-    //             var currErr:Error;
-    //             this.kmAsym.init().then(()=>{
-    //                 return this.kmAsym.status
+    public getStatus(){
+        return this._status;
+    }
 
-    //             }).then(st => {
-    //                 if(st === Keymanager.Status.KeysExist)
-    //                     return null;
-    //                 else return st;
+    public async generateSymKey(){
+        const symKey= await Keymanager.symmetric.generateKey();
+        let symKeyEncrypted;
 
-    //             }).then((st)=>{
-    //                 if (st === Keymanager.Status.KeysDoesNotExist)
-    //                     return this.kmAsym.generateKeys();
-    //                 else return null;
+        if(symKey){
+            this._symKey = symKey;
+            this._status = (this._status === Status.aSymKeysSet) ? Status.allKeysSet : Status.symKeySet;
+            symKeyEncrypted= await Crypto.RSA.encrypt(this._pubKey, symKey);
 
-    //             }).then(()=>{
-    //                 var promiseArray = [
-    //                     this.kmAsym.pubKey,
-    //                     this.kmAsym.priKey
-    //                 ];
-    //                 Promise.all(promiseArray).then(val => {
-    //                     if (!!val && !!val[0] && !!val[1]) {
-    //                         this._pubKey = val[0].replace(/(\r\n|\n|\r)/gm,"");
-    //                         this._priKey = val[1].replace(/(\r\n|\n|\r)/gm,"");
+            return symKeyEncrypted;
+        }
+    }
 
-    //                         this._status = Status.aSymKeysSet;
-    //                     }
-    //                     return this.crRSA.init(this._pubKey,this._priKey);
-    //                 }).then(() =>{
-    //                     resolve();
-    //                 }).catch(err => {
-    //                     reject(err);
-    //                 });
-    //             }).catch(err => {
-    //                 reject(err);
-    //             });
-    //         }
-    //     );
-    //     return p;
-    // }
-    // get pubKey():string{
-    //     if(!!this._pubKey) return this._pubKey;
-    //     else return null;
-    // }
-    // get priKey():string{
-    //     if(!!this._priKey) return this._priKey;
-    //     else return null;
-    // }
-    // get currKey():string{
-    //     if(!!this._currKey) return this._currKey;
-    //     else return null;
-    // }
+    public async setSymKey(symKeyEncrypted){
+        const symKey= await Crypto.RSA.decrypt(this._priKey,symKeyEncrypted);
 
-    // get status():number{
-    //     if(!!this._status) return this._status;
-    //     else return null;
-    // }
+        if(symKey){
+            this._symKey = symKey;
+        }
+    }
 
-    // genSymKey():Promise<string | Error> {
-    //     const p: Promise<string | Error> = new Promise<string | Error> (
-    //         (resolve: (enKey: string)=>void, reject: (err: Error)=>void) => {
+    public async getSymKey(){
+        if(this._symKey){
+            const symKeyEncrypted= await Crypto.RSA.encrypt(this._pubKey, this._symKey);
+            return symKeyEncrypted;
+        }
+    }
 
-    //             var encryptedKey:string = null;
-    //             return this.kmSym.generateKey().then(key =>{
-    //                 if(!!key) {
-    //                     this._currKey = key;
-    //                     if(this._status === Status.aSymKeysSet)
-    //                         this._status = Status.allKeysSet;
-    //                     else
-    //                         this._status = Status.symKeySet;
+    public async updateSymKey(symKeyEncrypted, publicKey){
+        const symKey= await Crypto.RSA.decrypt(this._priKey,symKeyEncrypted);
 
-    //                     return this.crRSA.encrypt(key);
-    //                 } else
-    //                     return null;
-    //             }).then(encKey => {
-    //                 if(!!encKey) encryptedKey = encKey;
-    //                 resolve(encryptedKey);
-    //             }).catch(err =>{
-    //                 reject(err);
-    //             });
-    //         }
-    //     );
-    //     return p;
-    // }
+        if(symKey){
+            const symKeyEncrypted= await Crypto.RSA.encrypt(publicKey, this._symKey);
+            return symKeyEncrypted;
+        }
+    }
 
-    // setCurrentKey(encKey: string):Promise<string | Error> {
-    //     const p: Promise<string | Error> = new Promise<string | Error> (
-    //         (resolve: (enKey: string)=>void, reject: (err: Error)=>void) => {
-    //             this.crRSA.decrypt(encKey,this._priKey).then(key => {
-    //                 if(!!key) {
-    //                     this._currKey = key;
-    //                     if(this._status === Status.aSymKeysSet)
-    //                         this._status = Status.allKeysSet;
-    //                     else
-    //                         this._status = Status.symKeySet;
-    //                     resolve(this._currKey);
-    //                 } else resolve(null);
-    //             }).catch(err => {
-    //                 reject(err);
-    //             });
-    //         }
-    //     );
-    //     return p;
-    // }
+    public async encrypt(message){
+        const creds = await Crypto.AES.setCredential(this._symKey)
+        const cipher= await Crypto.AES.encrypt(creds,message);
+        
+        return cipher;
+    }
 
-    // encKey(pubKey:string){
-    //     const p: Promise<string> = new Promise<string> (
-    //         (resolve: (enKey: string)=>void) => {
-    //             var tmpcrRSA:any = new Crypto.RSA();
-    //             tmpcrRSA.singleInit(pubKey).then(()=>{
-    //                 return tmpcrRSA.encrypt(this._currKey);
-    //             }).then(encKey => {
-    //                 if(!!encKey) resolve(encKey);
-    //                 else resolve(null);
-    //             });
-    //         }
-    //     );
-    //     return p;
-    // }
-
-    // updateEncKey(pubKey:string, key){
-    //     const p: Promise<string> = new Promise<string> (
-    //         (resolve: (enKey: string)=>void) => {
-    //             var tmpcrRSA:any = new Crypto.RSA();
-    //             tmpcrRSA.init(pubKey,this._priKey).then(()=>{
-    //                 return tmpcrRSA.decrypt(key,this._priKey);
-    //             }).then((decKey)=>{
-    //                 return tmpcrRSA.encrypt(decKey);
-    //             }).then(encKey => {
-    //                 if(!!encKey) resolve(encKey);
-    //                 else resolve(null);
-    //             });
-    //         }
-    //     );
-    //     return p;
-    // }
-
-    // encPlain(plain:string){
-    //     const p: Promise<string | Error> = new Promise<string> (
-    //         (resolve: (enKey: string)=>void, reject: (err: Error)=>void) => {
-    //             var encrypted:string = null;
-
-    //             this.crAES.setCredential(this._currKey).then(cred => {
-    //                 if (!!cred) return this.crAES.encrypt(cred, plain);
-    //                 else return null;
-    //             }).then(encrypted => {
-    //                 if (!!encrypted) resolve(encrypted);
-    //             }).catch(err => {
-    //                 reject(err);
-    //             });
-    //         }
-    //     );
-    //     return p;
-    // }
-
-    // decCipher(cipher:string, key:string = this._currKey){
-    //     const p: Promise<string | Error> = new Promise<string> (
-    //         (resolve: (enKey: string)=>void, reject: (err: Error)=>void) => {
-    //             var decrypted:string = null;
-
-    //             this.crAES.decrypt(cipher,key).then(decrypted => {
-    //                 if (!!decrypted) resolve(decrypted);
-    //             }).catch(err => {
-    //                 reject(err);
-    //             });
-    //         }
-    //     );
-    //     return p;
-    // }
+    public async decrypt(message){
+        const creds = await Crypto.AES.setCredential(this._symKey)
+        const cipher= await Crypto.AES.decrypt(message,creds.key);
+        
+        return cipher;
+    }
 }
