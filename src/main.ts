@@ -18,21 +18,41 @@ export class session{
 
 
     constructor(){
-        (async () => {
-            try {                
-                const keys = await Keymanager.asymmetric.getKeys();
+        // (async () => {
+        //     try {                
+        //         const keys = await Keymanager.asymmetric.getKeys();
 
-                if(keys && keys.pubKey && keys.priKey){
-                    this._pubKey= keys.pubKey;
-                    this._priKey= keys.priKey;
-                    this._status= Status.aSymKeysSet;
-                }
+        //         if(keys && keys.pubKey && keys.priKey){
+        //             this._pubKey= keys.pubKey;
+        //             this._priKey= keys.priKey;
+        //             this._status= Status.aSymKeysSet;
+        //         }
                 
-                debug(`Status: ${this._status}`);
-            } catch (e) {
-                console.log(`Issue: ${e}`);
+        //         debug(`Status: ${this._status}`);
+        //     } catch (e) {
+        //         console.log(`Issue: ${e}`);
+        //     }
+        // })();
+    }
+
+    public async initiate(){
+        try {                
+            const keys = await Keymanager.asymmetric.getKeys();
+
+            if(keys && keys.pubKey && keys.priKey){
+                this._pubKey= keys.pubKey;
+                this._priKey= keys.priKey;
+                this._status= Status.aSymKeysSet;
             }
-        })();
+
+            if(this.getStatus() === 0){
+                await this.generateKeys();
+            }
+            
+            debug(`Status: ${this._status}`);
+        } catch (e) {
+            console.log(`Issue: ${e}`);
+        }
     }
 
     public async generateKeys(){
