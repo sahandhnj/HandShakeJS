@@ -312,6 +312,7 @@ var Cryptography;
             }
             for (var j = this.NONCE_LENGTH * 2; j < cipher.length; j++)
                 result.cipher += cipher[j];
+            1;
             if (!(result.nonce.length == this.NONCE_LENGTH * 2 && result.cipher.length > 0)) {
                 throw new Error(lib_1.config.crypto.AES.errorMessages.nonceExtractionFail);
             }
@@ -441,14 +442,28 @@ var lib_1 = __webpack_require__(0);
 var debug = lib_1.Util.util.debug;
 var session = /** @class */ (function () {
     function session() {
-        var _this = this;
+        // (async () => {
+        //     try {                
+        //         const keys = await Keymanager.asymmetric.getKeys();
         this._status = 0 /* noAsymKeys */;
-        (function () { return __awaiter(_this, void 0, void 0, function () {
+        //         if(keys && keys.pubKey && keys.priKey){
+        //             this._pubKey= keys.pubKey;
+        //             this._priKey= keys.priKey;
+        //             this._status= Status.aSymKeysSet;
+        //         }
+        //         debug(`Status: ${this._status}`);
+        //     } catch (e) {
+        //         console.log(`Issue: ${e}`);
+        //     }
+        // })();
+    }
+    session.prototype.initiate = function () {
+        return __awaiter(this, void 0, void 0, function () {
             var keys, e_1;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        _a.trys.push([0, 2, , 3]);
+                        _a.trys.push([0, 4, , 5]);
                         return [4 /*yield*/, lib_1.Keymanager.asymmetric.getKeys()];
                     case 1:
                         keys = _a.sent();
@@ -457,17 +472,23 @@ var session = /** @class */ (function () {
                             this._priKey = keys.priKey;
                             this._status = 1 /* aSymKeysSet */;
                         }
-                        debug("Status: " + this._status);
-                        return [3 /*break*/, 3];
+                        if (!(this.getStatus() === 0)) return [3 /*break*/, 3];
+                        return [4 /*yield*/, this.generateKeys()];
                     case 2:
+                        _a.sent();
+                        _a.label = 3;
+                    case 3:
+                        debug("Status: " + this._status);
+                        return [3 /*break*/, 5];
+                    case 4:
                         e_1 = _a.sent();
                         console.log("Issue: " + e_1);
-                        return [3 /*break*/, 3];
-                    case 3: return [2 /*return*/];
+                        return [3 /*break*/, 5];
+                    case 5: return [2 /*return*/];
                 }
             });
-        }); })();
-    }
+        });
+    };
     session.prototype.generateKeys = function () {
         return __awaiter(this, void 0, void 0, function () {
             return __generator(this, function (_a) {
