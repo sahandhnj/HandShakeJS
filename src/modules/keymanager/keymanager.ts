@@ -1,244 +1,109 @@
-import {config,JSEncrypt,store,Crypto} from './lib';
+import {config,JSEncrypt,store,Crypto,Util} from './lib';
+const debug= Util.util.debug;
 
 export module Keymanager {
-    export const enum Status {
-        Initiated,
-        KeysExist,
-        KeysDoesNotExist,
-        KeysGenerated,
-        Other,
-        Failed
-    }
     export interface keyConfig {
         keySize: number;
     }
     export class asymmetric {
-        private _pubKey: string;
-        private _priKey: string;
-        private _status: Status = Status.Initiated;
-        private keyStorageId: string = config.keyManagement.asymmetric.keyStorageId;
-        private cr:any;
+        private static keyStorageId: string = config.keyManagement.asymmetric.keyStorageId;
 
-
-        constructor(){
-            this.cr = new Crypto.AES();
+        public static async generateKeys(){
+            const keyGen = new genAssymetricKeys();
+            this.storeKeysInStorage(keyGen.pubKey, keyGen.priKey);
+            debug('New asymmetric keys has been generated');
         }
 
-        init(): Promise<Error> {
-            const p: Promise<Error> = new Promise<Error> (
-                (resolve: ()=>void, reject: (err: Error)=>void) => {
-                    try{
-                        var arrayOfPromise = [
-                            this.initialChecks(),
-                            this.retrievePubKey(),
-                            this.retrievePriKey()
-                        ];
+        public static async getKeys(){
+            const pubKey = await this.getPublicKey();
+            const priKey = await this.getPrivateKey();
 
-                        Promise.all(arrayOfPromise).then(val =>{
-                            if(!!val[1] && !!val[2]) this._status = Status.KeysExist;
-                            else this._status = Status.KeysDoesNotExist;
-                        }).then(()=>{
-                           resolve();
-                        }).catch((err: any)=>{
-                            reject(err);
-                        });
-
-                    } catch(err){
-                        reject(err);
-                    }
+            if(pubKey && priKey){
+                return {
+                    pubKey,priKey
                 }
-            );
-            return p;
+            }
         }
 
-        generateKeys(): Promise<string | Error> {
-            const p: Promise<string | Error> = new Promise<string | Error> (
-                (resolve: () => void, reject: (err: Error)=>void) => {
-                    try{
-                        if(this._status === Status.KeysDoesNotExist) {
-                            let keyGen = new genKeys();
+        public static async getPublicKey(){
+            const keys = await this.loadKeysFromStorage();
+            let pubKey;
 
-                            this.storeKeys(keyGen.pubKey, keyGen.priKey).then(() => {
-                                if(!!this._priKey && !!this._priKey && this._status === Status.KeysGenerated){
-                                    this._status = Status.KeysExist;
-                                    resolve();
-                                } else {reject(new Error(config.keyManagement.asymmetric.errorMessages.keysNotGen))}
-                            }).catch((err) => {reject(err);})
-                        }
-                    } catch(err) {
-                        reject(err);
-                    }
-                });
-            return p;
+            if(keys && keys.publicKey){
+                pubKey = Crypto.AES.decrypt(keys.publicKey,config.keyManagement.asymmetric.masterKey);
+            }
+
+            return pubKey;
         }
 
-        get pubKey(): Promise<string | Error> {
-            const p: Promise<string | Error> = new Promise<string | Error> (
-                (resolve: (pubKey: string)=>void, reject: (err: Error)=>void) => {
-                    if(!!this._pubKey) {
-                       return this.cr.decrypt(this._pubKey,config.keyManagement.asymmetric.masterKey).then(val=>{
-                            let tmpPubKey:any = val;
-                            resolve(tmpPubKey);
-                        }).catch(err=>{ reject(err); });
-                    } else reject(new Error(config.keyManagement.asymmetric.errorMessages.noPubKey));
-                }
-            );
-            return p;
+        public static async getPrivateKey(){
+            const keys = await this.loadKeysFromStorage();
+            let priKey;
+
+            if(keys && keys.privateKey){
+                priKey = Crypto.AES.decrypt(keys.privateKey,config.keyManagement.asymmetric.masterKey);
+            }
+
+            return priKey;
         }
 
-        get priKey(): Promise<string | Error> {
-            const p: Promise<string | Error> = new Promise<string | Error> (
-                (resolve: (priKey: string)=>void, reject: (err: Error)=>void) => {
-                    try{
-                        if(!!this._priKey) {
-                            return this.cr.decrypt(this._priKey, config.keyManagement.asymmetric.masterKey).then(val=> {
-                                let tmpPriKey:any = val;
-                                resolve(tmpPriKey);
-                            }).catch(err=> {
-                                reject(err)
-                            });
-                        } else reject(new Error(config.keyManagement.asymmetric.errorMessages.noStatus));
-                    } catch(err){
-                        reject(err);
-                    }
-                }
-            );
-            return p;
+        public static async loadKeysFromStorage(){
+            let keys = store.get(this.keyStorageId);
+
+            if(!keys){
+                keys= {
+                    publicKey: null,
+                    privateKey: null
+                }   
+            }
+            
+            return {
+                publicKey: keys.publicKey,
+                privateKey: keys.privateKey
+            }
         }
 
-        get status(): Promise<number | Error> {
-            const p: Promise<number | Error> = new Promise<number | Error> (
-                (resolve: (status: number)=>void, reject: (err: Error)=>void) => {
-                    try{
-                        if(!!this._status) resolve(this._status);
-                        else throw new Error(config.keyManagement.asymmetric.errorMessages.noStatus);
-                    } catch(err){
-                        reject(err);
-                    }
-                }
-            );
-            return p;
+        public static async storeKeysInStorage(publicKey, privateKey){
+            if(!publicKey || !privateKey){
+                throw new Error(config.keyManagement.asymmetric.errorMessages.noSetKeyPairs);
+            }
+
+            const pubKey= await Crypto.AES.encrypt({key:config.keyManagement.asymmetric.masterKey},publicKey);
+            const priKey= await Crypto.AES.encrypt({key:config.keyManagement.asymmetric.masterKey},privateKey);
+
+            if(!pubKey || !priKey || typeof pubKey !== "string" || typeof priKey !== "string"){
+                throw new Error(config.keyManagement.asymmetric.errorMessages.keyEncryptionFailed);
+            }
+
+            store.set(this.keyStorageId, { publicKey: pubKey, privateKey: priKey});
+            debug('Asymmetric keys has been stored in storage');
         }
-
-        retrievePubKey(): Promise<string | Error> {
-            const p: Promise<string | Error> = new Promise<string | Error> (
-                (resolve: (str: string)=>void, reject: (err: Error)=>void) => {
-                    try{
-                        let res = store.get(this.keyStorageId);
-                        if(!!res && !!res.publicKey){
-                            this._pubKey = res.publicKey;
-                            resolve(res.publicKey);
-                        } else
-                            resolve(null);
-                    } catch(err){
-                        reject(err);
-                    }
-                }
-            );
-            return p;
-        }
-
-        retrievePriKey(): Promise<string | Error> {
-            const p: Promise<string | Error> = new Promise<string | Error> (
-                (resolve: (str: string)=>void, reject: (err: Error)=>void) => {
-                    try{
-                        let res = store.get(this.keyStorageId);
-                        if(!!res && !!res.privateKey){
-                            this._priKey = res.privateKey;
-                            resolve(res.privateKey);
-                        } else
-                            resolve(null);
-                    } catch(err){
-                        reject(err);
-                    }
-                }
-            );
-            return p;
-        }
-
-        removeKeys(): Promise<Error> {
-            const p: Promise<Error> = new Promise<Error> (
-                (resolve: ()=>void, reject: (err: Error)=>void) => {
-                    try{
-                        store.remove(this.keyStorageId);
-                        resolve();
-                    } catch(err){
-                        reject(err);
-                    }
-                }
-            );
-            return p;
-        }
-
-        storeKeys(pubKey: string, priKey: string): Promise<Error> {
-            const p: Promise<Error> = new Promise<Error> (
-                (resolve: ()=>void, reject: (err: Error)=>void) => {
-                    try{
-                        if(!!pubKey && !!priKey ){
-                            var promises: Promise<string | Error>[] = [
-                                this.cr.encrypt({key:config.keyManagement.asymmetric.masterKey},priKey),
-                                this.cr.encrypt({key:config.keyManagement.asymmetric.masterKey},pubKey)
-                            ];
-
-                            Promise.all(promises).then(val =>{
-                                if(typeof val[0] !== "string" || typeof val[1] !== "string")
-                                  reject(new Error(config.keyManagement.asymmetric.errorMessages.keyEncryptionFailed));
-
-                                store.set(this.keyStorageId, { publicKey: val[1], privateKey: val[0]});
-                                this._pubKey = val[1].toString();
-                                this._priKey = val[0].toString();
-                                this._status = Status.KeysGenerated;
-                                resolve();
-                            }).catch(err => { reject(err); });
-                        }
-                        else reject(new Error(config.keyManagement.asymmetric.errorMessages.noSetKeyPairs))
-                    } catch(err){
-                        reject(err);
-                    }
-                }
-            );
-            return p;
-        }
-
-        initialChecks() : Promise<Error> {
-            const p: Promise<Error> = new Promise<Error> (
-                (resolve: (n: any)=>void, reject: (err: Error)=>void) => {
-                    if (!store.enabled){
-                        this._status = Status.Failed;
-                        reject(new Error(config.keyManagement.asymmetric.errorMessages.localStorageNoSupport));
-                    }
-                    else{
-                        resolve(null);
-                        /*this.removeKeys().then(()=>{
-                            resolve(null);
-                        }).catch(err => { reject(err); });*/
-                    }
-                }
-            );
-            return p;
+        
+        public static async removeKeysFromStorage(){
+            store.remove(this.keyStorageId);
+            debug('Asymmetric keys has been removed from storage');
         }
     }
 
     export class symmetric{
-        private KEY_LENGTH :number = config.keyManagement.symmetric.keyLength/8 || 32;
+        private static KEY_LENGTH :number = config.keyManagement.symmetric.keyLength/8 || 32;
 
-        generateKey(len:number = this.KEY_LENGTH ): Promise<string | Error>{
-            const p: Promise<string | Error> = new Promise<string | Error> (
-                (resolve: (key: string)=>void, reject: (err: Error)=>void) => {
-                    let key = "";
-                    let possible = config.keyManagement.symmetric.keyGenPossibilities;
-                    for( let i=0; i < len; i++ )
-                        key += possible.charAt(Math.floor(Math.random() * possible.length));
+        public static async generateKey(len:number = this.KEY_LENGTH ){
+            let key = "";
+            let possible = config.keyManagement.symmetric.keyGenPossibilities;
 
-                    if(!!key && key.length === this.KEY_LENGTH) resolve(key);
-                    else reject(new Error(config.keyManagement.symmetric.errorMessages.keyGen));
-                }
-            );
-            return p;
+            for( let i=0; i < len; i++ ){
+                key += possible.charAt(Math.floor(Math.random() * possible.length));                
+            }
+
+            if(!key || key.length !== this.KEY_LENGTH){
+                throw new Error(config.keyManagement.symmetric.errorMessages.keyGen);
+            }
+            
+            return key;
         }
     }
-
-    class genKeys {
+    class genAssymetricKeys {
         private _pubKey: string;
         private _priKey: string;
 
@@ -255,6 +120,5 @@ export module Keymanager {
         get priKey(): string {
             return this._priKey;
         }
-
     }
 };

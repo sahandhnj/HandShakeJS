@@ -1,13 +1,13 @@
 module.exports = {
     entry: './src/main',
     output: {
-        path: "dist",
+        path: "/home/sahand/Projects/Node/Plekryption/dist",
         filename: 'plekryption.js',
         libraryTarget:  'umd',
         library: "Plekryption"
     },
     resolve: {
-        extensions: ['', '.webpack.js', '.web.js', '.ts', '.js' , '.json']
+        extensions: ['.webpack.js', '.web.js', '.ts', '.js' , '.json']
     },
     module: {
         loaders: [

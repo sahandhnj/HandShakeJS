@@ -4,7 +4,7 @@
 </head>
 <body>
 <script>
-    function go(session)
+    async function go(session)
     {
         /***** BEGIN TESTING **********/
         var pubKey = null;
@@ -14,26 +14,35 @@
         var decChatKey2 = null;
 
         try {
-            session.init().then(function(){
-                console.log("Set public/private");
-                return session.genSymKey();
+            console.log(`Index: Session: ${session.getStatus()}`);
+            
+            if(session.getStatus() === 0){
+                await session.generateKeys();
+                console.log(`Genereted Keys - Index: Session: ${session.getStatus()}`);
+            }
 
-            }).then(function(chatKey){
-                console.log(session.pubKey);
-                console.log("chatKey",chatKey);
+            await session.generateSymKey();
+            console.log(`Index: Session: ${session.getStatus()}`);
+            console.log(session.getSymKey());
+            // session.init().then(function(){
+            //     console.log("Set public/private");
+            //     return session.genSymKey();
 
-                return session.setCurrentKey(chatKey);
-            }).catch(function(err){
-                console.log(err);
-            });
+            // }).then(function(chatKey){
+            //     console.log("chatKey",chatKey);
+
+            //     return session.setCurrentKey(chatKey);
+            // }).catch(function(err){
+            //     console.log(err);
+            // });
         } catch (err) {
             console.log(err);
         }
-    }
-    function chat(msg){
+    }1
+    async function chat(msg){
         try{
-            var decMsg = session.encPlain(msg);
-            var encMsg = session.decCipher(decMsg);
+            var decMsg = await session.encrypt(msg);
+            var encMsg = await session.decrypt(decMsg);
 
             document.getElementById('stuff').innerHTML += '<hr>';
             document.getElementById('stuff').innerHTML += ('<h3>Cipher</h3><p>'+ decMsg +'</p>');
@@ -43,9 +52,13 @@
             console.log(err);
         }
     }
-    var session = new Plekryption.session();
+    var session= new Plekryption.session();
+    setTimeout(() =>{
+        go(session);
+    },100)
+    
 
-    go(session);
+    
 
 
     window.onload = function () {
