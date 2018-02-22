@@ -459,45 +459,60 @@ var session = /** @class */ (function () {
     }
     session.prototype.initiate = function () {
         return __awaiter(this, void 0, void 0, function () {
-            var keys, e_1;
+            var keys, newKeys, e_1;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        _a.trys.push([0, 4, , 5]);
+                        _a.trys.push([0, 5, , 6]);
                         return [4 /*yield*/, lib_1.Keymanager.asymmetric.getKeys()];
                     case 1:
                         keys = _a.sent();
                         if (keys && keys.pubKey && keys.priKey) {
-                            this._pubKey = keys.pubKey;
-                            this._priKey = keys.priKey;
-                            this._status = 1 /* aSymKeysSet */;
+                            this.setAsymKeys(keys);
                         }
-                        if (!(this.getStatus() === 0)) return [3 /*break*/, 3];
+                        if (!(this.getStatus() === 0)) return [3 /*break*/, 4];
                         return [4 /*yield*/, this.generateKeys()];
                     case 2:
                         _a.sent();
-                        _a.label = 3;
+                        return [4 /*yield*/, lib_1.Keymanager.asymmetric.getKeys()];
                     case 3:
-                        debug("Status: " + this._status);
-                        return [3 /*break*/, 5];
+                        newKeys = _a.sent();
+                        this.setAsymKeys(newKeys);
+                        _a.label = 4;
                     case 4:
+                        debug("Status: " + this._status);
+                        return [3 /*break*/, 6];
+                    case 5:
                         e_1 = _a.sent();
-                        console.log("Issue: " + e_1);
-                        return [3 /*break*/, 5];
-                    case 5: return [2 /*return*/];
+                        debug("Issue: " + e_1);
+                        return [3 /*break*/, 6];
+                    case 6: return [2 /*return*/];
                 }
             });
         });
     };
+    session.prototype.setAsymKeys = function (keys) {
+        this._pubKey = keys.pubKey;
+        this._priKey = keys.priKey;
+        this._status = 1 /* aSymKeysSet */;
+    };
     session.prototype.generateKeys = function () {
         return __awaiter(this, void 0, void 0, function () {
+            var e_2;
             return __generator(this, function (_a) {
                 switch (_a.label) {
-                    case 0: return [4 /*yield*/, lib_1.Keymanager.asymmetric.generateKeys()];
+                    case 0:
+                        _a.trys.push([0, 2, , 3]);
+                        return [4 /*yield*/, lib_1.Keymanager.asymmetric.generateKeys()];
                     case 1:
                         _a.sent();
                         this._status = 1 /* aSymKeysSet */;
-                        return [2 /*return*/];
+                        return [3 /*break*/, 3];
+                    case 2:
+                        e_2 = _a.sent();
+                        debug(e_2);
+                        return [3 /*break*/, 3];
+                    case 3: return [2 /*return*/];
                 }
             });
         });
@@ -507,12 +522,15 @@ var session = /** @class */ (function () {
     };
     session.prototype.generateSymKey = function () {
         return __awaiter(this, void 0, void 0, function () {
-            var symKey, symKeyEncrypted;
+            var symKey, symKeyEncrypted, e_3;
             return __generator(this, function (_a) {
                 switch (_a.label) {
-                    case 0: return [4 /*yield*/, lib_1.Keymanager.symmetric.generateKey()];
+                    case 0:
+                        _a.trys.push([0, 4, , 5]);
+                        return [4 /*yield*/, lib_1.Keymanager.symmetric.generateKey()];
                     case 1:
                         symKey = _a.sent();
+                        symKeyEncrypted = void 0;
                         if (!symKey) return [3 /*break*/, 3];
                         this._symKey = symKey;
                         this._status = (this._status === 1 /* aSymKeysSet */) ? 3 /* allKeysSet */ : 2 /* symKeySet */;
@@ -520,49 +538,69 @@ var session = /** @class */ (function () {
                     case 2:
                         symKeyEncrypted = _a.sent();
                         return [2 /*return*/, symKeyEncrypted];
-                    case 3: return [2 /*return*/];
+                    case 3: return [3 /*break*/, 5];
+                    case 4:
+                        e_3 = _a.sent();
+                        debug(e_3);
+                        return [3 /*break*/, 5];
+                    case 5: return [2 /*return*/];
                 }
             });
         });
     };
     session.prototype.setSymKey = function (symKeyEncrypted) {
         return __awaiter(this, void 0, void 0, function () {
-            var symKey;
+            var symKey, e_4;
             return __generator(this, function (_a) {
                 switch (_a.label) {
-                    case 0: return [4 /*yield*/, lib_1.Crypto.RSA.decrypt(this._priKey, symKeyEncrypted)];
+                    case 0:
+                        _a.trys.push([0, 2, , 3]);
+                        return [4 /*yield*/, lib_1.Crypto.RSA.decrypt(this._priKey, symKeyEncrypted)];
                     case 1:
                         symKey = _a.sent();
                         if (symKey) {
                             this._symKey = symKey;
                         }
-                        return [2 /*return*/];
+                        return [3 /*break*/, 3];
+                    case 2:
+                        e_4 = _a.sent();
+                        debug(e_4);
+                        return [3 /*break*/, 3];
+                    case 3: return [2 /*return*/];
                 }
             });
         });
     };
     session.prototype.getSymKey = function () {
         return __awaiter(this, void 0, void 0, function () {
-            var symKeyEncrypted;
+            var symKeyEncrypted, e_5;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
+                        _a.trys.push([0, 3, , 4]);
                         if (!this._symKey) return [3 /*break*/, 2];
                         return [4 /*yield*/, lib_1.Crypto.RSA.encrypt(this._pubKey, this._symKey)];
                     case 1:
                         symKeyEncrypted = _a.sent();
                         return [2 /*return*/, symKeyEncrypted];
-                    case 2: return [2 /*return*/];
+                    case 2: return [3 /*break*/, 4];
+                    case 3:
+                        e_5 = _a.sent();
+                        debug(e_5);
+                        return [3 /*break*/, 4];
+                    case 4: return [2 /*return*/];
                 }
             });
         });
     };
     session.prototype.updateSymKey = function (symKeyEncrypted, publicKey) {
         return __awaiter(this, void 0, void 0, function () {
-            var symKey, symKeyEncrypted_1;
+            var symKey, symKeyEncrypted_1, e_6;
             return __generator(this, function (_a) {
                 switch (_a.label) {
-                    case 0: return [4 /*yield*/, lib_1.Crypto.RSA.decrypt(this._priKey, symKeyEncrypted)];
+                    case 0:
+                        _a.trys.push([0, 4, , 5]);
+                        return [4 /*yield*/, lib_1.Crypto.RSA.decrypt(this._priKey, symKeyEncrypted)];
                     case 1:
                         symKey = _a.sent();
                         if (!symKey) return [3 /*break*/, 3];
@@ -570,39 +608,58 @@ var session = /** @class */ (function () {
                     case 2:
                         symKeyEncrypted_1 = _a.sent();
                         return [2 /*return*/, symKeyEncrypted_1];
-                    case 3: return [2 /*return*/];
+                    case 3: return [3 /*break*/, 5];
+                    case 4:
+                        e_6 = _a.sent();
+                        debug(e_6);
+                        return [3 /*break*/, 5];
+                    case 5: return [2 /*return*/];
                 }
             });
         });
     };
     session.prototype.encrypt = function (message) {
         return __awaiter(this, void 0, void 0, function () {
-            var creds, cipher;
+            var creds, cipher, e_7;
             return __generator(this, function (_a) {
                 switch (_a.label) {
-                    case 0: return [4 /*yield*/, lib_1.Crypto.AES.setCredential(this._symKey)];
+                    case 0:
+                        _a.trys.push([0, 3, , 4]);
+                        return [4 /*yield*/, lib_1.Crypto.AES.setCredential(this._symKey)];
                     case 1:
                         creds = _a.sent();
                         return [4 /*yield*/, lib_1.Crypto.AES.encrypt(creds, message)];
                     case 2:
                         cipher = _a.sent();
                         return [2 /*return*/, cipher];
+                    case 3:
+                        e_7 = _a.sent();
+                        debug(e_7);
+                        return [3 /*break*/, 4];
+                    case 4: return [2 /*return*/];
                 }
             });
         });
     };
     session.prototype.decrypt = function (message) {
         return __awaiter(this, void 0, void 0, function () {
-            var creds, cipher;
+            var creds, cipher, e_8;
             return __generator(this, function (_a) {
                 switch (_a.label) {
-                    case 0: return [4 /*yield*/, lib_1.Crypto.AES.setCredential(this._symKey)];
+                    case 0:
+                        _a.trys.push([0, 3, , 4]);
+                        return [4 /*yield*/, lib_1.Crypto.AES.setCredential(this._symKey)];
                     case 1:
                         creds = _a.sent();
                         return [4 /*yield*/, lib_1.Crypto.AES.decrypt(message, creds.key)];
                     case 2:
                         cipher = _a.sent();
                         return [2 /*return*/, cipher];
+                    case 3:
+                        e_8 = _a.sent();
+                        debug(e_8);
+                        return [3 /*break*/, 4];
+                    case 4: return [2 /*return*/];
                 }
             });
         });
