@@ -459,60 +459,53 @@ var session = /** @class */ (function () {
     }
     session.prototype.initiate = function () {
         return __awaiter(this, void 0, void 0, function () {
-            var keys, newKeys, e_1;
+            var keys, e_1;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        _a.trys.push([0, 5, , 6]);
+                        _a.trys.push([0, 2, , 3]);
                         return [4 /*yield*/, lib_1.Keymanager.asymmetric.getKeys()];
                     case 1:
                         keys = _a.sent();
                         if (keys && keys.pubKey && keys.priKey) {
-                            this.setAsymKeys(keys);
+                            this._pubKey = keys.pubKey;
+                            this._priKey = keys.priKey;
+                            this._status = 1 /* aSymKeysSet */;
                         }
-                        if (!(this.getStatus() === 0)) return [3 /*break*/, 4];
-                        return [4 /*yield*/, this.generateKeys()];
+                        return [3 /*break*/, 3];
                     case 2:
-                        _a.sent();
-                        return [4 /*yield*/, lib_1.Keymanager.asymmetric.getKeys()];
-                    case 3:
-                        newKeys = _a.sent();
-                        this.setAsymKeys(newKeys);
-                        _a.label = 4;
-                    case 4:
-                        debug("Status: " + this._status);
-                        return [3 /*break*/, 6];
-                    case 5:
                         e_1 = _a.sent();
                         debug("Issue: " + e_1);
-                        return [3 /*break*/, 6];
-                    case 6: return [2 /*return*/];
+                        return [3 /*break*/, 3];
+                    case 3: return [2 /*return*/];
                 }
             });
         });
     };
     session.prototype.setAsymKeys = function (keys) {
-        this._pubKey = keys.pubKey;
-        this._priKey = keys.priKey;
-        this._status = 1 /* aSymKeysSet */;
     };
     session.prototype.generateKeys = function () {
         return __awaiter(this, void 0, void 0, function () {
-            var e_2;
+            var keys, e_2;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        _a.trys.push([0, 2, , 3]);
+                        _a.trys.push([0, 3, , 4]);
                         return [4 /*yield*/, lib_1.Keymanager.asymmetric.generateKeys()];
                     case 1:
                         _a.sent();
-                        this._status = 1 /* aSymKeysSet */;
-                        return [3 /*break*/, 3];
+                        return [4 /*yield*/, lib_1.Keymanager.asymmetric.getKeys()];
                     case 2:
+                        keys = _a.sent();
+                        this._pubKey = keys.pubKey;
+                        this._priKey = keys.priKey;
+                        this._status = 1 /* aSymKeysSet */;
+                        return [3 /*break*/, 4];
+                    case 3:
                         e_2 = _a.sent();
                         debug(e_2);
-                        return [3 /*break*/, 3];
-                    case 3: return [2 /*return*/];
+                        return [3 /*break*/, 4];
+                    case 4: return [2 /*return*/];
                 }
             });
         });
@@ -6872,10 +6865,15 @@ var Keymanager;
             return __awaiter(this, void 0, void 0, function () {
                 var keyGen;
                 return __generator(this, function (_a) {
-                    keyGen = new genAssymetricKeys();
-                    this.storeKeysInStorage(keyGen.pubKey, keyGen.priKey);
-                    debug('New asymmetric keys has been generated');
-                    return [2 /*return*/];
+                    switch (_a.label) {
+                        case 0:
+                            keyGen = new genAssymetricKeys();
+                            return [4 /*yield*/, this.storeKeysInStorage(keyGen.pubKey, keyGen.priKey)];
+                        case 1:
+                            _a.sent();
+                            debug('New asymmetric keys has been generated');
+                            return [2 /*return*/];
+                    }
                 });
             });
         };

@@ -58,7 +58,7 @@ export class session{
         try{
             await Keymanager.asymmetric.generateKeys();
             const keys = await Keymanager.asymmetric.getKeys();
-
+          
             this._pubKey= keys.pubKey;
             this._priKey= keys.priKey;
             this._status= Status.aSymKeysSet;

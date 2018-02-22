@@ -10,7 +10,7 @@ export module Keymanager {
 
         public static async generateKeys(){
             const keyGen = new genAssymetricKeys();
-            this.storeKeysInStorage(keyGen.pubKey, keyGen.priKey);
+            await this.storeKeysInStorage(keyGen.pubKey, keyGen.priKey);
             debug('New asymmetric keys has been generated');
         }
 
