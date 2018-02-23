@@ -586,9 +586,9 @@ var session = /** @class */ (function () {
             });
         });
     };
-    session.prototype.updateSymKey = function (symKeyEncrypted, publicKey) {
+    session.prototype.updateSymKey = function (symKeyEncrypted, publicKey, oldSymKey) {
         return __awaiter(this, void 0, void 0, function () {
-            var symKey, symKeyEncrypted_1, e_6;
+            var symKey, symKeyToUpdate, symKeyEncrypted_1, e_6;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -597,7 +597,8 @@ var session = /** @class */ (function () {
                     case 1:
                         symKey = _a.sent();
                         if (!symKey) return [3 /*break*/, 3];
-                        return [4 /*yield*/, lib_1.Crypto.RSA.encrypt(publicKey, this._symKey)];
+                        symKeyToUpdate = oldSymKey ? symKey : this._symKey;
+                        return [4 /*yield*/, lib_1.Crypto.RSA.encrypt(publicKey, symKeyToUpdate)];
                     case 2:
                         symKeyEncrypted_1 = _a.sent();
                         return [2 /*return*/, symKeyEncrypted_1];

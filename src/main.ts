@@ -117,12 +117,13 @@ export class session{
         }
     }
 
-    public async updateSymKey(symKeyEncrypted, publicKey){
+    public async updateSymKey(symKeyEncrypted, publicKey, oldSymKey){
         try{
             const symKey= await Crypto.RSA.decrypt(this._priKey,symKeyEncrypted);
 
             if(symKey){
-                const symKeyEncrypted= await Crypto.RSA.encrypt(publicKey, this._symKey);
+                const symKeyToUpdate = oldSymKey ? symKey : this._symKey;
+                const symKeyEncrypted= await Crypto.RSA.encrypt(publicKey, symKeyToUpdate);
                 return symKeyEncrypted;
             }
         }
