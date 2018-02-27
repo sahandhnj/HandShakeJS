@@ -120,10 +120,10 @@ export class session{
     public async updateSymKey(symKeyEncrypted, publicKey, oldSymKey){
         try{
             const symKey= await Crypto.RSA.decrypt(this._priKey,symKeyEncrypted);
-
             if(symKey){
-                const symKeyToUpdate = oldSymKey ? symKey : this._symKey;
+                const symKeyToUpdate = oldSymKey ? symKey : this._symKey;                
                 const symKeyEncrypted= await Crypto.RSA.encrypt(publicKey, symKeyToUpdate);
+                                
                 return symKeyEncrypted;
             }
         }
@@ -144,9 +144,15 @@ export class session{
         }
     }
 
-    public async decrypt(message){
+    public async decrypt(message, encryptedSymKey?){
         try{
-            const creds = await Crypto.AES.setCredential(this._symKey)
+            let symKeyToBeProcessed = this._symKey;
+
+            if(encryptedSymKey){
+                symKeyToBeProcessed = await Crypto.RSA.decrypt(this._priKey,encryptedSymKey);
+            }
+
+            const creds = await Crypto.AES.setCredential(symKeyToBeProcessed)
             const cipher= await Crypto.AES.decrypt(message,creds.key);
 
             return cipher;

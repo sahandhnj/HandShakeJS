@@ -635,25 +635,31 @@ var session = /** @class */ (function () {
             });
         });
     };
-    session.prototype.decrypt = function (message) {
+    session.prototype.decrypt = function (message, encryptedSymKey) {
         return __awaiter(this, void 0, void 0, function () {
-            var creds, cipher, e_8;
+            var symKeyToBeProcessed, creds, cipher, e_8;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        _a.trys.push([0, 3, , 4]);
-                        return [4 /*yield*/, lib_1.Crypto.AES.setCredential(this._symKey)];
+                        _a.trys.push([0, 5, , 6]);
+                        symKeyToBeProcessed = this._symKey;
+                        if (!encryptedSymKey) return [3 /*break*/, 2];
+                        return [4 /*yield*/, lib_1.Crypto.RSA.decrypt(this._priKey, encryptedSymKey)];
                     case 1:
+                        symKeyToBeProcessed = _a.sent();
+                        _a.label = 2;
+                    case 2: return [4 /*yield*/, lib_1.Crypto.AES.setCredential(symKeyToBeProcessed)];
+                    case 3:
                         creds = _a.sent();
                         return [4 /*yield*/, lib_1.Crypto.AES.decrypt(message, creds.key)];
-                    case 2:
+                    case 4:
                         cipher = _a.sent();
                         return [2 /*return*/, cipher];
-                    case 3:
+                    case 5:
                         e_8 = _a.sent();
                         debug(e_8);
-                        return [3 /*break*/, 4];
-                    case 4: return [2 /*return*/];
+                        return [3 /*break*/, 6];
+                    case 6: return [2 /*return*/];
                 }
             });
         });
