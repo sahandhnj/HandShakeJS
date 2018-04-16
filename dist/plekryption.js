@@ -109,7 +109,7 @@ var Util;
         function util() {
         }
         util.debug = function (message) {
-            console.log(message);
+            //console.log(message);
         };
         return util;
     }());
