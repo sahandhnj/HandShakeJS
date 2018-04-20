@@ -78,7 +78,7 @@ gulp.task('ts-default', ['ts-build', 'ts-watch']);
 gulp.task('webpack:build', ['clean'], function(callback) {
     var myConfig = Object.create(webpackConfig);
     myConfig.plugins = [
-        new webpack.optimize.DedupePlugin(),
+       // new webpack.optimize.DedupePlugin(),
        // new webpack.optimize.UglifyJsPlugin()
     ];
 
