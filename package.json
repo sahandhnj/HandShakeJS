@@ -2,7 +2,7 @@
   "name": "plekryption",
   "version": "0.0.37",
   "description": "The encryption and keymangement library for plek(front-end)",
-  "main": "dist/main.js",
+  "main": "dist/plekryption.js",
   "devDependencies": {
     "del": "^3.0.0",
     "event-stream": "^3.3.2",
