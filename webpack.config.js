@@ -3,7 +3,7 @@ module.exports = {
     output: {
         path: "/home/sahand/Projects/Node/Plekryption/dist",
         filename: 'plekryption.js',
-        libraryTarget:  'commonjs2',
+        libraryTarget:  'umd',
         library: "Plekryption"
     },
     resolve: {
