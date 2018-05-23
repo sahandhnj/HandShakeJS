@@ -90,7 +90,7 @@ var cr = __webpack_require__(8);
 exports.crypto = cr;
 var cryptography_1 = __webpack_require__(2);
 exports.Crypto = cryptography_1.Cryptography;
-var keymanager_1 = __webpack_require__(10);
+var keymanager_1 = __webpack_require__(11);
 exports.Keymanager = keymanager_1.Keymanager;
 var util_1 = __webpack_require__(1);
 exports.Util = util_1.Util;
@@ -102,7 +102,43 @@ exports.Util = util_1.Util;
 
 "use strict";
 
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+var __generator = (this && this.__generator) || function (thisArg, body) {
+    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g;
+    return g = { next: verb(0), "throw": verb(1), "return": verb(2) }, typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
+    function verb(n) { return function (v) { return step([n, v]); }; }
+    function step(op) {
+        if (f) throw new TypeError("Generator is already executing.");
+        while (_) try {
+            if (f = 1, y && (t = y[op[0] & 2 ? "return" : op[0] ? "throw" : "next"]) && !(t = t.call(y, op[1])).done) return t;
+            if (y = 0, t) op = [0, t.value];
+            switch (op[0]) {
+                case 0: case 1: t = op; break;
+                case 4: _.label++; return { value: op[1], done: false };
+                case 5: _.label++; y = op[1]; op = [0]; continue;
+                case 7: op = _.ops.pop(); _.trys.pop(); continue;
+                default:
+                    if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) { _ = 0; continue; }
+                    if (op[0] === 3 && (!t || (op[1] > t[0] && op[1] < t[3]))) { _.label = op[1]; break; }
+                    if (op[0] === 6 && _.label < t[1]) { _.label = t[1]; t = op; break; }
+                    if (t && _.label < t[2]) { _.label = t[2]; _.ops.push(op); break; }
+                    if (t[2]) _.ops.pop();
+                    _.trys.pop(); continue;
+            }
+            op = body.call(thisArg, _);
+        } catch (e) { op = [6, e]; y = 0; } finally { f = t = 0; }
+        if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
+    }
+};
 Object.defineProperty(exports, "__esModule", { value: true });
+var lib_1 = __webpack_require__(10);
 var Util;
 (function (Util) {
     var util = /** @class */ (function () {
@@ -114,6 +150,39 @@ var Util;
         return util;
     }());
     Util.util = util;
+    var LocalStore = /** @class */ (function () {
+        function LocalStore(externalStoreHandler) {
+            if (externalStoreHandler) {
+                this.currStore = externalStoreHandler;
+            }
+            else {
+                this.currStore = lib_1.store;
+            }
+        }
+        LocalStore.prototype.set = function (key, data) {
+            return __awaiter(this, void 0, void 0, function () {
+                return __generator(this, function (_a) {
+                    return [2 /*return*/, this.currStore.set(key, data)];
+                });
+            });
+        };
+        LocalStore.prototype.get = function (key) {
+            return __awaiter(this, void 0, void 0, function () {
+                return __generator(this, function (_a) {
+                    return [2 /*return*/, this.currStore.get(key)];
+                });
+            });
+        };
+        LocalStore.prototype.remove = function (key) {
+            return __awaiter(this, void 0, void 0, function () {
+                return __generator(this, function (_a) {
+                    return [2 /*return*/, this.currStore.remove(key)];
+                });
+            });
+        };
+        return LocalStore;
+    }());
+    Util.LocalStore = LocalStore;
 })(Util = exports.Util || (exports.Util = {}));
 
 
@@ -466,7 +535,9 @@ var session = /** @class */ (function () {
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        _a.trys.push([0, 2, , 3]);
+                        _a.trys.push([0, 4, , 5]);
+                        newStore = new lib_1.Util.LocalStore(store);
+                        lib_1.Keymanager.asymmetric.setStore(newStore);
                         return [4 /*yield*/, lib_1.Keymanager.asymmetric.getKeys()];
                     case 1:
                         keys = _a.sent();
@@ -475,17 +546,22 @@ var session = /** @class */ (function () {
                             this._priKey = keys.priKey;
                             this._status = 1 /* aSymKeysSet */;
                         }
-                        return [3 /*break*/, 3];
+                        if (!(this.getStatus() === 0)) return [3 /*break*/, 3];
+                        return [4 /*yield*/, this.generateKeys()];
                     case 2:
+                        _a.sent();
+                        _a.label = 3;
+                    case 3:
+                        debug("Status: " + this._status);
+                        return [3 /*break*/, 5];
+                    case 4:
                         e_1 = _a.sent();
-                        debug("Issue: " + e_1);
-                        return [3 /*break*/, 3];
-                    case 3: return [2 /*return*/];
+                        console.log(e_1);
+                        return [3 /*break*/, 5];
+                    case 5: return [2 /*return*/];
                 }
             });
         });
-    };
-    session.prototype.setAsymKeys = function (keys) {
     };
     session.prototype.generateKeys = function () {
         return __awaiter(this, void 0, void 0, function () {
@@ -6828,6 +6904,17 @@ exports.Util = util_1.Util;
 
 "use strict";
 
+Object.defineProperty(exports, "__esModule", { value: true });
+var lib_1 = __webpack_require__(0);
+exports.store = lib_1.store;
+
+
+/***/ }),
+/* 11 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
@@ -6864,13 +6951,16 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-var lib_1 = __webpack_require__(11);
+var lib_1 = __webpack_require__(12);
 var debug = lib_1.Util.util.debug;
 var Keymanager;
 (function (Keymanager) {
     var asymmetric = /** @class */ (function () {
         function asymmetric() {
         }
+        asymmetric.setStore = function (_store) {
+            this.store = _store;
+        };
         asymmetric.generateKeys = function () {
             return __awaiter(this, void 0, void 0, function () {
                 var keyGen;
@@ -6944,17 +7034,21 @@ var Keymanager;
             return __awaiter(this, void 0, void 0, function () {
                 var keys;
                 return __generator(this, function (_a) {
-                    keys = lib_1.store.get(this.keyStorageId);
-                    if (!keys) {
-                        keys = {
-                            publicKey: null,
-                            privateKey: null
-                        };
+                    switch (_a.label) {
+                        case 0: return [4 /*yield*/, this.store.get(this.keyStorageId)];
+                        case 1:
+                            keys = _a.sent();
+                            if (!keys) {
+                                keys = {
+                                    publicKey: null,
+                                    privateKey: null
+                                };
+                            }
+                            return [2 /*return*/, {
+                                    publicKey: keys.publicKey,
+                                    privateKey: keys.privateKey
+                                }];
                     }
-                    return [2 /*return*/, {
-                            publicKey: keys.publicKey,
-                            privateKey: keys.privateKey
-                        }];
                 });
             });
         };
@@ -6976,7 +7070,9 @@ var Keymanager;
                             if (!pubKey || !priKey || typeof pubKey !== "string" || typeof priKey !== "string") {
                                 throw new Error(lib_1.config.keyManagement.asymmetric.errorMessages.keyEncryptionFailed);
                             }
-                            lib_1.store.set(this.keyStorageId, { publicKey: pubKey, privateKey: priKey });
+                            return [4 /*yield*/, this.store.set(this.keyStorageId, { publicKey: pubKey, privateKey: priKey })];
+                        case 3:
+                            _a.sent();
                             debug('Asymmetric keys has been stored in storage');
                             return [2 /*return*/];
                     }
@@ -6986,9 +7082,13 @@ var Keymanager;
         asymmetric.removeKeysFromStorage = function () {
             return __awaiter(this, void 0, void 0, function () {
                 return __generator(this, function (_a) {
-                    lib_1.store.remove(this.keyStorageId);
-                    debug('Asymmetric keys has been removed from storage');
-                    return [2 /*return*/];
+                    switch (_a.label) {
+                        case 0: return [4 /*yield*/, this.store.remove(this.keyStorageId)];
+                        case 1:
+                            _a.sent();
+                            debug('Asymmetric keys has been removed from storage');
+                            return [2 /*return*/];
+                    }
                 });
             });
         };
@@ -7048,7 +7148,7 @@ var Keymanager;
 
 
 /***/ }),
-/* 11 */
+/* 12 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -7058,8 +7158,6 @@ var lib_1 = __webpack_require__(0);
 exports.config = lib_1.config;
 var lib_2 = __webpack_require__(0);
 exports.JSEncrypt = lib_2.JSEncrypt;
-var lib_3 = __webpack_require__(0);
-exports.store = lib_3.store;
 var cryptography_1 = __webpack_require__(2);
 exports.Crypto = cryptography_1.Cryptography;
 var util_1 = __webpack_require__(1);

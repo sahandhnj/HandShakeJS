@@ -15,13 +15,13 @@
 
         try {
             console.log(`Index: Session: ${session.getStatus()}`);
-            
-            if(session.getStatus() === 0){
-                await session.generateKeys();
-                console.log(`Genereted Keys - Index: Session: ${session.getStatus()}`);
-            }
+            session.initiate();
+            // if(session.getStatus() === 0){
+            //     await session.generateKeys();
+            //     console.log(`Genereted Keys - Index: Session: ${session.getStatus()}`);
+            // }
 
-            await session.generateSymKey();
+            // await session.generateSymKey();
             console.log(`Index: Session: ${session.getStatus()}`);
             console.log(session.getSymKey());
             // session.init().then(function(){

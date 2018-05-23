@@ -6,6 +6,7 @@ import * as cr from './lib/crypto-js'
 import {Cryptography} from './modules/cryptography/cryptography'
 import {Keymanager} from  './modules/keymanager/keymanager'
 import {Util} from  './modules/util/util'
+import {ILocalStore} from './interfaces/localstore'
 
 
 export  {Cryptography as Crypto};
@@ -15,3 +16,4 @@ export  {J as JSEncrypt};
 export  {S as store};
 export  {cr as crypto};
 export  {Util as Util};
+export  {ILocalStore as ILocalStore};

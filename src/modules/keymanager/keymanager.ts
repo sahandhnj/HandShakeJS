@@ -1,4 +1,4 @@
-import {config,JSEncrypt,store,Crypto,Util} from './lib';
+import {config,JSEncrypt,Crypto,Util} from './lib';
 const debug= Util.util.debug;
 
 export module Keymanager {
@@ -7,6 +7,11 @@ export module Keymanager {
     }
     export class asymmetric {
         private static keyStorageId: string = config.keyManagement.asymmetric.keyStorageId;
+        private static store;
+
+        public static setStore(_store){
+            this.store = _store;
+        }
 
         public static async generateKeys(){
             const keyGen = new genAssymetricKeys();
@@ -48,7 +53,7 @@ export module Keymanager {
         }
 
         public static async loadKeysFromStorage(){
-            let keys = store.get(this.keyStorageId);
+            let keys = await this.store.get(this.keyStorageId);
 
             if(!keys){
                 keys= {
@@ -75,12 +80,12 @@ export module Keymanager {
                 throw new Error(config.keyManagement.asymmetric.errorMessages.keyEncryptionFailed);
             }
 
-            store.set(this.keyStorageId, { publicKey: pubKey, privateKey: priKey});
+            await this.store.set(this.keyStorageId, { publicKey: pubKey, privateKey: priKey});
             debug('Asymmetric keys has been stored in storage');
         }
         
         public static async removeKeysFromStorage(){
-            store.remove(this.keyStorageId);
+            await this.store.remove(this.keyStorageId);
             debug('Asymmetric keys has been removed from storage');
         }
     }

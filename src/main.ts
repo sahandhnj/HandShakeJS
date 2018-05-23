@@ -1,4 +1,4 @@
-import {Crypto,Keymanager,Util} from './lib'
+import {Crypto,Keymanager,Util,ILocalStore} from './lib'
 import { Stats } from 'fs';
 import { keyManagement } from './config';
 const debug= Util.util.debug;
@@ -15,6 +15,7 @@ export class session{
     private _priKey:string;
     private _symKey:string;
     private _status:Status = Status.noAsymKeys;
+    private _store:ILocalStore;
 
 
     constructor(){
@@ -35,8 +36,11 @@ export class session{
         // })();
     }
 
-    public async initiate(){
-        try {                
+    public async initiate(store?: ILocalStore){
+        try {
+            const newStore = new Util.LocalStore(store);
+            Keymanager.asymmetric.setStore(newStore);
+
             const keys = await Keymanager.asymmetric.getKeys();
 
             if(keys && keys.pubKey && keys.priKey){
