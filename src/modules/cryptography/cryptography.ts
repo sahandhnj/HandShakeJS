@@ -174,12 +174,12 @@ export module Cryptography{
     }
 
     export class RSA {
-        private static rsaEnc = new JSEncrypt();
-        private static rsaDec = new JSEncrypt();
 
         public static async encrypt(pubKey, plain){
-            this.rsaEnc.setPublicKey(pubKey);
-            const cipher:string = this.rsaEnc.encrypt(plain);
+            let rsaEnc = new JSEncrypt();
+            
+            rsaEnc.setPublicKey(pubKey);
+            const cipher:string = rsaEnc.encrypt(plain);
             
             if(!cipher){
                 throw new Error(config.crypto.RSA.errorMessages.encFailed);
@@ -190,8 +190,10 @@ export module Cryptography{
         }
 
         public static async decrypt(priKey, cipher){
-            this.rsaDec.setPrivateKey(priKey);
-            const plain:string = this.rsaDec.decrypt(cipher);
+            let rsaDec = new JSEncrypt();
+            
+            rsaDec.setPrivateKey(priKey);
+            const plain:string = rsaDec.decrypt(cipher);
 
             if(!plain){
                 throw new Error(config.crypto.RSA.errorMessages.decFailed)

@@ -109,7 +109,7 @@ var Util;
         function util() {
         }
         util.debug = function (message) {
-            //console.log(message);
+            console.log(message);
         };
         return util;
     }());
@@ -360,12 +360,16 @@ var Cryptography;
     var RSA = /** @class */ (function () {
         function RSA() {
         }
+        // private static rsaEnc = new JSEncrypt();
+        // private static rsaDec = new JSEncrypt();
         RSA.encrypt = function (pubKey, plain) {
             return __awaiter(this, void 0, void 0, function () {
-                var cipher;
+                var rsaEnc, cipher;
                 return __generator(this, function (_a) {
-                    this.rsaEnc.setPublicKey(pubKey);
-                    cipher = this.rsaEnc.encrypt(plain);
+                    rsaEnc = new lib_1.JSEncrypt();
+                    rsaEnc.setPublicKey(pubKey);
+                    cipher = rsaEnc.encrypt(plain);
+                    console.log('FAILED', pubKey, plain);
                     if (!cipher) {
                         throw new Error(lib_1.config.crypto.RSA.errorMessages.encFailed);
                     }
@@ -376,10 +380,11 @@ var Cryptography;
         };
         RSA.decrypt = function (priKey, cipher) {
             return __awaiter(this, void 0, void 0, function () {
-                var plain;
+                var rsaDec, plain;
                 return __generator(this, function (_a) {
-                    this.rsaDec.setPrivateKey(priKey);
-                    plain = this.rsaDec.decrypt(cipher);
+                    rsaDec = new lib_1.JSEncrypt();
+                    rsaDec.setPrivateKey(priKey);
+                    plain = rsaDec.decrypt(cipher);
                     if (!plain) {
                         throw new Error(lib_1.config.crypto.RSA.errorMessages.decFailed);
                     }
@@ -388,8 +393,6 @@ var Cryptography;
                 });
             });
         };
-        RSA.rsaEnc = new lib_1.JSEncrypt();
-        RSA.rsaDec = new lib_1.JSEncrypt();
         return RSA;
     }());
     Cryptography.RSA = RSA;
