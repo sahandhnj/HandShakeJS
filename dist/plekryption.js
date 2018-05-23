@@ -145,7 +145,7 @@ var Util;
         function util() {
         }
         util.debug = function (message) {
-            console.log(message);
+            //console.log(message);
         };
         return util;
     }());
@@ -429,8 +429,6 @@ var Cryptography;
     var RSA = /** @class */ (function () {
         function RSA() {
         }
-        // private static rsaEnc = new JSEncrypt();
-        // private static rsaDec = new JSEncrypt();
         RSA.encrypt = function (pubKey, plain) {
             return __awaiter(this, void 0, void 0, function () {
                 var rsaEnc, cipher;
@@ -438,7 +436,6 @@ var Cryptography;
                     rsaEnc = new lib_1.JSEncrypt();
                     rsaEnc.setPublicKey(pubKey);
                     cipher = rsaEnc.encrypt(plain);
-                    console.log('FAILED', pubKey, plain);
                     if (!cipher) {
                         throw new Error(lib_1.config.crypto.RSA.errorMessages.encFailed);
                     }
@@ -529,13 +526,13 @@ var session = /** @class */ (function () {
         //     }
         // })();
     }
-    session.prototype.initiate = function () {
+    session.prototype.initiate = function (store) {
         return __awaiter(this, void 0, void 0, function () {
-            var keys, e_1;
+            var newStore, keys, e_1;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        _a.trys.push([0, 4, , 5]);
+                        _a.trys.push([0, 2, , 3]);
                         newStore = new lib_1.Util.LocalStore(store);
                         lib_1.Keymanager.asymmetric.setStore(newStore);
                         return [4 /*yield*/, lib_1.Keymanager.asymmetric.getKeys()];
@@ -546,22 +543,17 @@ var session = /** @class */ (function () {
                             this._priKey = keys.priKey;
                             this._status = 1 /* aSymKeysSet */;
                         }
-                        if (!(this.getStatus() === 0)) return [3 /*break*/, 3];
-                        return [4 /*yield*/, this.generateKeys()];
+                        return [3 /*break*/, 3];
                     case 2:
-                        _a.sent();
-                        _a.label = 3;
-                    case 3:
-                        debug("Status: " + this._status);
-                        return [3 /*break*/, 5];
-                    case 4:
                         e_1 = _a.sent();
-                        console.log(e_1);
-                        return [3 /*break*/, 5];
-                    case 5: return [2 /*return*/];
+                        debug("Issue: " + e_1);
+                        return [3 /*break*/, 3];
+                    case 3: return [2 /*return*/];
                 }
             });
         });
+    };
+    session.prototype.setAsymKeys = function (keys) {
     };
     session.prototype.generateKeys = function () {
         return __awaiter(this, void 0, void 0, function () {
