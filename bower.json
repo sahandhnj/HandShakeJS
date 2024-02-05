@@ -1,0 +1,16 @@
+{
+  "name": "HandshakeJS",
+  "version": "0.0.10",
+  "description": "The encryption and keymangement library",
+  "main": "dist/HandshakeJS.js",
+  "keywords": [
+    "encryption",
+    "keymanagement",
+    "cryptography"
+  ],
+  "authors": [
+    "Sahand Hosseininejad <contact@sahand.dev>"
+  ],
+  "dependencies": {},
+  "devDependencies": {}
+}
