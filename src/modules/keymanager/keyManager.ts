@@ -1,27 +1,27 @@
 import {config,JSEncrypt,Crypto,Util} from './lib';
 const debug= Util.util.debug;
 
-export module Keymanager {
+export module KeyManager {
     export interface keyConfig {
         keySize: number;
     }
     export class asymmetric {
         private static keyStorageId: string = config.keyManagement.asymmetric.keyStorageId;
-        private static store;
+        private static store: { get: (arg0: string) => any; set: (arg0: string, arg1: { publicKey: string; privateKey: string; }) => any; remove: (arg0: string) => any; };
 
-        public static setStore(_store){
+        public static setStore(_store: Util.LocalStore){
             this.store = _store;
         }
 
         public static async generateKeys(){
-            const keyGen = new genAssymetricKeys();
-            await this.storeKeysInStorage(keyGen.pubKey, keyGen.priKey);
+            const keyGen = new genAsymmetricKeys();
+            await asymmetric.storeKeysInStorage(keyGen.pubKey, keyGen.priKey);
             debug('New asymmetric keys has been generated');
         }
 
         public static async getKeys(){
-            const pubKey = await this.getPublicKey();
-            const priKey = await this.getPrivateKey();
+            const pubKey = await asymmetric.getPublicKey();
+            const priKey = await asymmetric.getPrivateKey();
 
             if(pubKey && priKey){
                 return {
@@ -31,8 +31,8 @@ export module Keymanager {
         }
 
         public static async getPublicKey(){
-            const keys = await this.loadKeysFromStorage();
-            let pubKey;
+            const keys = await asymmetric.loadKeysFromStorage();
+            let pubKey: Promise<any>;
 
             if(keys && keys.publicKey){
                 pubKey = Crypto.AES.decrypt(keys.publicKey,config.keyManagement.asymmetric.masterKey);
@@ -42,8 +42,8 @@ export module Keymanager {
         }
 
         public static async getPrivateKey(){
-            const keys = await this.loadKeysFromStorage();
-            let priKey;
+            const keys = await asymmetric.loadKeysFromStorage();
+            let priKey: Promise<any>;
 
             if(keys && keys.privateKey){
                 priKey = Crypto.AES.decrypt(keys.privateKey,config.keyManagement.asymmetric.masterKey);
@@ -59,16 +59,16 @@ export module Keymanager {
                 keys= {
                     publicKey: null,
                     privateKey: null
-                }   
+                }
             }
-            
+
             return {
                 publicKey: keys.publicKey,
                 privateKey: keys.privateKey
             }
         }
 
-        public static async storeKeysInStorage(publicKey, privateKey){
+        public static async storeKeysInStorage(publicKey: string, privateKey: string){
             if(!publicKey || !privateKey){
                 throw new Error(config.keyManagement.asymmetric.errorMessages.noSetKeyPairs);
             }
@@ -83,7 +83,7 @@ export module Keymanager {
             await this.store.set(this.keyStorageId, { publicKey: pubKey, privateKey: priKey});
             debug('Asymmetric keys has been stored in storage');
         }
-        
+
         public static async removeKeysFromStorage(){
             await this.store.remove(this.keyStorageId);
             debug('Asymmetric keys has been removed from storage');
@@ -98,19 +98,19 @@ export module Keymanager {
             let possible = config.keyManagement.symmetric.keyGenPossibilities;
 
             for( let i=0; i < len; i++ ){
-                key += possible.charAt(Math.floor(Math.random() * possible.length));                
+                key += possible.charAt(Math.floor(Math.random() * possible.length));
             }
 
             if(!key || key.length !== this.KEY_LENGTH){
                 throw new Error(config.keyManagement.symmetric.errorMessages.keyGen);
             }
-            
+
             return key;
         }
     }
-    class genAssymetricKeys {
-        private _pubKey: string;
-        private _priKey: string;
+    class genAsymmetricKeys {
+        private readonly _pubKey: string;
+        private readonly _priKey: string;
 
         constructor(keySize: keyConfig = {keySize : 2048}) {
             let jsen = new JSEncrypt();
@@ -126,4 +126,4 @@ export module Keymanager {
             return this._priKey;
         }
     }
-};
+}

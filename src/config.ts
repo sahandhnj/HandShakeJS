@@ -1,4 +1,4 @@
-var keyManagementJSON = {
+const keyManagementJSON = {
     asymmetric:{
         masterKey: "J]oIc0M$A~*im+XOOK+K[2L4N6alEbk(",
         keyStorageId: "keys",
@@ -21,7 +21,7 @@ var keyManagementJSON = {
     }
 
 };
-var cryptoJSON = {
+const cryptoJSON = {
     AES: {
         nonceLength:96,
         keyLength:256,
@@ -40,14 +40,14 @@ var cryptoJSON = {
     },
     RSA: {
         errorMessages:{
-            initiationFialed: "can not initiate the rsa process",
+            initiationFailed: "can not initiate the rsa process",
             encFailed: "can not encrypt the plain text via rsa",
             decFailed: "can not decrypt the cipher via rsa",
             noPubKey: "No Public key is set, Initiate first",
             noPriKey: "No Private key is set, Initiate first"
         }
     }
-    
+
 };
 
 export {keyManagementJSON as keyManagement};

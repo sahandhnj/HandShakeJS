@@ -6,7 +6,7 @@ export module Cryptography{
         private static NONCE_LENGTH :number = config.crypto.AES.nonceLength/8 || 12;
         private static KEY_LENGTH :number = config.crypto.AES.keyLength/8 || 32;
 
-        public static async encrypt(cred:{key}, plaintext){
+        public static async encrypt(cred:{key}, plaintext: string){
             await this.validateCredKey(cred);
 
             if(!plaintext){
@@ -18,13 +18,13 @@ export module Cryptography{
                 throw new Error(config.crypto.AES.errorMessages.other);
             }
 
-            debug(`AES: Encrypted\nplaintext: ${plaintext}\nwith key: ${cred.key}\nto: ${cipher.toString()}`);            
+            debug(`AES: Encrypted\nplaintext: ${plaintext}\nwith key: ${cred.key}\nto: ${cipher.toString()}`);
             return cipher.toString();
         }
 
-        public static async encrypt_CTR(cred:{key, nonce}, plaintext){
+        public static async encrypt_CTR(cred:{key, nonce}, plaintext: string){
             let nonce = await this.validateAndDecomposeNonce(cred);
-            
+
             if(!plaintext){
                 throw new Error(config.crypto.AES.errorMessages.noPlainText)
             }
@@ -36,7 +36,7 @@ export module Cryptography{
                 throw new Error(config.crypto.AES.errorMessages.other);
             }
 
-            debug(`AES: Encrypted\nplaintext: ${plaintext}\nwith key: ${cred.key}\nnonce: ${cred.nonce}\nto: ${cipher.toString()}`);            
+            debug(`AES: Encrypted\nplaintext: ${plaintext}\nwith key: ${cred.key}\nnonce: ${cred.nonce}\nto: ${cipher.toString()}`);
             return cipher.toString();
         }
 
@@ -58,7 +58,7 @@ export module Cryptography{
            if(!cred.nonce){
                throw new Error(config.crypto.AES.errorMessages.noNONCE);
            }
-         
+
            let nonce = crypto.enc.Hex.parse(cred.nonce);
            if(nonce.words.length !== this.NONCE_LENGTH/4) {
                throw new Error(config.crypto.AES.errorMessages.badNONCESize)
@@ -70,7 +70,7 @@ export module Cryptography{
         public static async decrypt(cipher: string, key:string){
             await this.validateKey(key);
 
-            if(!cipher && cipher.length < 1){
+            if(!cipher || cipher.length < 1){
                 throw new Error(config.crypto.AES.errorMessages.noCipher);
             }
 
@@ -78,19 +78,19 @@ export module Cryptography{
             plain = plain.toString(crypto.enc.Utf8);
 
             if(!plain){
-                new Error(config.crypto.AES.errorMessages.decryptionFailed)
+                throw new Error(config.crypto.AES.errorMessages.decryptionFailed)
             }
 
-            debug(`AES: Decrypted\ncipher: ${cipher}\nwith key: ${key}\nto: ${plain}`);                        
+            debug(`AES: Decrypted\ncipher: ${cipher}\nwith key: ${key}\nto: ${plain}`);
             return plain;
         }
-        
+
         public static async decrypt_CTR(cipher: string, key:string){
-            if(!cipher && cipher.length < 1){
+            if(!cipher || cipher.length < 1){
                 throw new Error(config.crypto.AES.errorMessages.noCipher);
             }
 
-            const ex:{nonce,cipher} = this.extractNONCE(cipher);
+            const ex:{nonce,cipher} = AES.extractNONCE(cipher);
             if(!ex.nonce || (ex.nonce.length !== this.NONCE_LENGTH*2)){
                 throw new Error(config.crypto.AES.errorMessages.noNONCE);
             }
@@ -98,19 +98,19 @@ export module Cryptography{
             const nonce = crypto.enc.Hex.parse(ex.nonce);
 
             if(!ex.cipher){
-                new Error(config.crypto.AES.errorMessages.noCipher);
+                throw new Error(config.crypto.AES.errorMessages.noCipher);
             }
-            
+
             await this.validateKey(key);
 
             let plain = crypto.AES.decrypt(ex.cipher,key,{iv: nonce,mode: crypto.mode.CTR, padding: crypto.pad.NoPadding});
             plain = plain.toString(crypto.enc.Utf8);
-            
+
             if(!plain){
-                new Error(config.crypto.AES.errorMessages.decryptionFailed)
+                throw new Error(config.crypto.AES.errorMessages.decryptionFailed)
             }
 
-            debug(`AES: Decrypted\ncipher: ${ex.cipher}\nnonce: ${ex.nonce}\nwith key: ${key}\nto: ${plain}`);                        
+            debug(`AES: Decrypted\ncipher: ${ex.cipher}\nnonce: ${ex.nonce}\nwith key: ${key}\nto: ${plain}`);
             return plain;
         }
 
@@ -121,7 +121,7 @@ export module Cryptography{
             };
 
             for (let i=0; i < this.NONCE_LENGTH*2; i++){
-                result.nonce += cipher[i];                    
+                result.nonce += cipher[i];
             }
 
             for (let j=this.NONCE_LENGTH*2; j < cipher.length; j++)
@@ -130,7 +130,7 @@ export module Cryptography{
             if(!(result.nonce.length == this.NONCE_LENGTH*2 && result.cipher.length > 0)){
                 throw new Error(config.crypto.AES.errorMessages.nonceExtractionFail);
             }
-            
+
             return result;
         }
 
@@ -139,7 +139,7 @@ export module Cryptography{
             let possible = config.crypto.AES.keyGenPossibilities;
 
             for(let i=0; i < len; i++ ){
-                key += possible.charAt(Math.floor(Math.random() * possible.length));                
+                key += possible.charAt(Math.floor(Math.random() * possible.length));
             }
 
             return key;
@@ -149,7 +149,7 @@ export module Cryptography{
             let str = '';
 
             for (let i = 0; i < hex.length; i += 2){
-                str += String.fromCharCode(parseInt(hex.substr(i, 2), 16));    
+                str += String.fromCharCode(parseInt(hex.substr(i, 2), 16));
             }
 
             return str;
@@ -163,12 +163,12 @@ export module Cryptography{
 
             cred.nonce = crypto.lib.WordArray.random(this.NONCE_LENGTH).toString();
 
-            (key && key.length === this.KEY_LENGTH) ? cred.key = key : cred.key = this.generateRandomKey();
+            (key && key.length === this.KEY_LENGTH) ? cred.key = key : cred.key = AES.generateRandomKey();
             if(!cred.key || !cred.nonce) {
                 throw new Error(config.crypto.AES.errorMessages.credGenFail);
             }
-            
-            debug(`AES: Setting credential\nfrom: ${key}\nto cred: ${cred}`);                                    
+
+            debug(`AES: Setting credential\nfrom: ${key}\nto cred: ${cred}`);
             return cred;
         }
     }
@@ -177,10 +177,10 @@ export module Cryptography{
 
         public static async encrypt(pubKey, plain){
             let rsaEnc = new JSEncrypt();
-            
+
             rsaEnc.setPublicKey(pubKey);
             const cipher:string = rsaEnc.encrypt(plain);
-            
+
             if(!cipher){
                 throw new Error(config.crypto.RSA.errorMessages.encFailed);
             }
@@ -191,7 +191,7 @@ export module Cryptography{
 
         public static async decrypt(priKey, cipher){
             let rsaDec = new JSEncrypt();
-            
+
             rsaDec.setPrivateKey(priKey);
             const plain:string = rsaDec.decrypt(cipher);
 

@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>HandshakeJS Test</title>
+    <script src="../dist/HandshakeJS.js"></script>
+</head>
+<body>
+<div id="stuff"></div>
+<script>
+    // Define asynchronous function to initiate the session and test encryption/decryption
+    async function go(session) {
+        try {
+            console.log(`Index: Session: ${session.getStatus()}`);
+            session.initiate();
+            console.log(`Index: Session: ${session.getStatus()}`);
+            session.getSymKey().then(keys => {
+                console.log(`Index: Symmetric Key: ${keys}`);
+            });
+        } catch (err) {
+            console.log(err);
+        }
+    }
+
+    // Define asynchronous function for chat message encryption and decryption
+    async function chat(msg) {
+        try {
+            const decMsg = await session.encrypt(msg);
+            const encMsg = await session.decrypt(decMsg);
+
+            // Display the cipher and decrypted text in the HTML
+            const stuffDiv = document.getElementById('stuff');
+            stuffDiv.innerHTML += '<hr>';
+            stuffDiv.innerHTML += `<h3>Cipher</h3><p>${decMsg}</p>`;
+            stuffDiv.innerHTML += `<h3>TEXT</h3><p>${encMsg}</p>`;
+        } catch (err) {
+            console.log(err);
+        }
+    }
+
+    // Initialize a new session
+    const session = new HandshakeJS.session();
+
+    // Use setTimeout to delay execution, ensuring any async setup tasks are completed
+    setTimeout(() => {
+        go(session);
+    }, 100);
+
+    // Function to add a textarea and a button for sending messages
+    function addHtmlForm() {
+        const txt = document.createElement("textarea");
+        txt.rows = 10;
+        txt.cols = 100;
+        txt.id = "msg";
+        document.body.appendChild(txt);
+
+        const button = document.createElement('button');
+        button.innerText = "Send";
+        button.onclick = () => chat(txt.value);
+        document.body.appendChild(button);
+    }
+
+    // On window load, add the HTML form for chat
+    window.onload = function() {
+        addHtmlForm();
+    };
+
+    // Utility function to create a timer with pause and resume functionality
+    function Timer(callback, delay) {
+        let timerId, start, remaining = delay;
+
+        this.pause = function() {
+            window.clearTimeout(timerId);
+            remaining -= new Date() - start;
+        };
+
+        this.resume = function() {
+            start = new Date();
+            window.clearTimeout(timerId);
+            timerId = window.setTimeout(callback, remaining);
+        };
+
+        this.resume();
+    }
+</script>
+</body>
+</html>

@@ -1,123 +1,93 @@
-/*jslint node: true */ // allow 'require' global
-'use strict';
-var tsconfig = require('./tsconfig.json'),
-    webpackConfig = require('./webpack.config');
-var gulp = require('gulp'),
-    gutil = require('gulp-util'),
-    concat = require('gulp-concat'),
-    del = require('del'),
-    util = require('gulp-util'),
-    es = require('event-stream'),
-    ts = require('gulp-typescript'),
-    bump = require('gulp-bump'),
-    git = require('gulp-git'),
-    filter = require('gulp-filter'),
-    tagVersion = require('gulp-tag-version'),
-    inquirer = require('inquirer'),
-    webpack = require('webpack');
+// Import necessary modules
+const gulp = require('gulp');
+const del = require('del');
+const ts = require('gulp-typescript');
+const bump = require('gulp-bump');
+const git = require('gulp-git');
+const filter = require('gulp-filter');
+const tagVersion = require('gulp-tag-version');
+const concat = require('gulp-concat');
+const log = require('fancy-log');
+const colors = require('ansi-colors');
+const webpack = require('webpack');
+const webpackStream = require('webpack-stream');
+const tsconfig = require('./tsconfig.json');
+const webpackConfig = require('./webpack.config');
 
-
-var sources = {
+const sources = {
     app: {
-        ts: tsconfig.filesGlob
+        ts: tsconfig.include,
     }
 };
-
-var destinations = {
-    js: tsconfig.compilerOptions.outDir
+const destinations = {
+    js: tsconfig.compilerOptions.outDir,
 };
 
-// deletes the dist folder for a clean build
-gulp.task('clean', function() {
-    del([destinations.js], function(err, deletedFiles) {
-        if(deletedFiles.length) {
-            util.log('Deleted', util.colors.red(deletedFiles.join(' ,')) );
+function clean() {
+    return del([destinations.js]).then(deletedFiles => {
+        if (deletedFiles.length) {
+            log('Deleted', colors.red(deletedFiles.join(', ')));
         } else {
-            util.log(util.colors.yellow('/dist directory empty - nothing to delete'));
+            log(colors.yellow('Directory clean. No files deleted.'));
         }
     });
-});
+}
 
-gulp.task('bump', function() {
-    return gulp.src(['./package.json','./bower.json'])
+function bumpVersion() {
+    return gulp.src(['./package.json', './bower.json'])
         .pipe(bump({type: 'patch'}))
         .pipe(gulp.dest('./'))
         .pipe(git.commit('Bump patch version'))
-        .pipe(filter('package.json'))  // read package.json for the new version
-        .pipe(tagVersion());           // create tag
-});
+        .pipe(filter('package.json'))
+        .pipe(tagVersion());
+}
 
-/*** TypeScript builds ***/
-gulp.task('ts-compile', function() {
-    var tsStream = gulp.src(sources.app.ts)
-        .pipe(ts(tsconfig.compilerOptions));
+function tsCompile() {
+    const tsProject = ts.createProject('tsconfig.json');
+    return tsProject.src()
+        .pipe(tsProject())
+        .js.pipe(concat('main.js'))
+        .pipe(gulp.dest(destinations.js));
+}
 
-    es.merge(
-        tsStream.dts.pipe(gulp.dest(destinations.js)),
-        tsStream.js
-            .pipe(concat('main.js'))
-            .pipe(gulp.dest(destinations.js))
-    );
-});
+function tsWatch() {
+    gulp.watch(sources.app.ts, tsCompile);
+}
 
-gulp.task('ts-build', [
-    'clean',
-    'ts-compile'
-]);
-
-// watch scripts, styles, and templates
-gulp.task('ts-watch', function() {
-    gulp.watch(sources.app.ts, ['ts-compile']);
-});
-
-// default
-gulp.task('ts-default', ['ts-build', 'ts-watch']);
-
-
-/*** WebPack Build ***/
-gulp.task('webpack:build', ['clean'], function(callback) {
-    var myConfig = Object.create(webpackConfig);
-    myConfig.plugins = [
-       // new webpack.optimize.DedupePlugin(),
-       // new webpack.optimize.UglifyJsPlugin()
-    ];
-
-    // run webpack
-    webpack(myConfig, function(err, stats) {
-        if (err) throw new gutil.PluginError('webpack', err);
-        gutil.log('[webpack]', stats.toString({
-            colors: true,
-            progress: true
-        }));
-        callback();
-    });
-});
-
-gulp.task("build", ["clean","webpack:build"]);
-gulp.task("default", ["build"]);
-
-
-
-/*** Dev Build In order to get the map ***/
-// modify some webpack config options
-var myDevConfig = Object.create(webpackConfig);
-myDevConfig.devtool = "sourcemap";
-//myDevConfig.debug = true;
-
-// create a single instance of the compiler to allow caching
-var devCompiler = webpack(myDevConfig);
-
-gulp.task("webpack:build-dev", function(callback) {
-    // run webpack
-    devCompiler.run(function(err, stats) {
-        if(err) throw new gutil.PluginError("webpack:build-dev", err);
-        gutil.log("[webpack:build-dev]", stats.toString({
+function webpackBuild(callback) {
+    webpack(webpackConfig, (err, stats) => {
+        if (err) throw new log.error('webpack', err);
+        log('[webpack]', stats.toString({
             colors: true
         }));
         callback();
     });
-});
+}
 
-gulp.task("build-dev", ["clean","webpack:build-dev"], function() {
-    gulp.watch(["app/**/*"], ["webpack:build-dev"]);
-});
+function webpackBuildDev(callback) {
+    const myDevConfig = Object.assign({}, webpackConfig, { devtool: 'sourcemap' });
+    const devCompiler = webpack(myDevConfig);
+
+    devCompiler.run((err, stats) => {
+        if (err) throw new log.error('webpack:build-dev', err);
+        log('[webpack:build-dev]', stats.toString({ colors: true }));
+        callback();
+    });
+}
+
+function devWatch() {
+    gulp.watch(['app/**/*'], webpackBuildDev);
+}
+
+const tsBuild = gulp.series(clean, tsCompile);
+const build = gulp.series(clean, webpackBuild);
+const buildDev = gulp.series(clean, webpackBuildDev, devWatch);
+
+exports.clean = clean;
+exports.bump = bumpVersion;
+exports['ts-compile'] = tsCompile;
+exports['ts-build'] = tsBuild;
+exports['ts-watch'] = tsWatch;
+exports.build = build;
+exports['build-dev'] = buildDev;
+exports.default = build;

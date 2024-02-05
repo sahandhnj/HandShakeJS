@@ -1,18 +1,22 @@
+const path = require('path');
+
 module.exports = {
-    entry: './src/main',
+    entry: './src/main.ts',
     output: {
-        path: "/home/sahand/Projects/Node/Plekryption/dist",
-        filename: 'plekryption.js',
-        libraryTarget:  'umd',
-        library: "Plekryption"
+        path: path.resolve(__dirname, 'dist'),
+        filename: 'HandshakeJS.js',
+        library: {
+            name: 'HandshakeJS',
+            type: 'umd',
+        },
     },
     resolve: {
-        extensions: ['.webpack.js', '.web.js', '.ts', '.js' , '.json']
+        extensions: ['.ts', '.js', '.json'],
     },
     module: {
-        loaders: [
-            { test: /\.ts$/, loader: 'ts-loader' },
-            { test: /\.json$/, loader: 'json' }
-        ]
-    }
-}
+        rules: [
+            { test: /\.ts$/, use: 'ts-loader' },
+            { test: /\.json$/, type: 'json' },
+        ],
+    },
+};

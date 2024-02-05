@@ -1,15 +1,15 @@
 {
-  "name": "plekryption",
+  "name": "HandshakeJS",
   "version": "0.0.10",
-  "description": "The encryption and keymangement library for plek(front-end)",
-  "main": "dist/plekryption.js",
+  "description": "The encryption and keymangement library",
+  "main": "dist/HandshakeJS.js",
   "keywords": [
     "encryption",
     "keymanagement",
     "cryptography"
   ],
   "authors": [
-    "Sahand Hosseininejad <sahand@ilumy.com>"
+    "Sahand Hosseininejad <contact@sahand.dev>"
   ],
   "dependencies": {},
   "devDependencies": {}

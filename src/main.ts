@@ -1,6 +1,5 @@
-import {Crypto,Keymanager,Util,ILocalStore} from './lib'
-import { Stats } from 'fs';
-import { keyManagement } from './config';
+import {Crypto, ILocalStore, Keymanager, Util} from './lib'
+
 const debug= Util.util.debug;
 
 const enum Status {
@@ -15,26 +14,6 @@ export class session{
     private _priKey:string;
     private _symKey:string;
     private _status:Status = Status.noAsymKeys;
-    private _store:ILocalStore;
-
-
-    constructor(){
-        // (async () => {
-        //     try {                
-        //         const keys = await Keymanager.asymmetric.getKeys();
-
-        //         if(keys && keys.pubKey && keys.priKey){
-        //             this._pubKey= keys.pubKey;
-        //             this._priKey= keys.priKey;
-        //             this._status= Status.aSymKeysSet;
-        //         }
-                
-        //         debug(`Status: ${this._status}`);
-        //     } catch (e) {
-        //         console.log(`Issue: ${e}`);
-        //     }
-        // })();
-    }
 
     public async initiate(store?: ILocalStore){
         try {
@@ -53,16 +32,11 @@ export class session{
             debug(`Issue: ${e}`);
         }
     }
-
-    private setAsymKeys(keys){
-        
-    }
-
     public async generateKeys(){
         try{
             await Keymanager.asymmetric.generateKeys();
             const keys = await Keymanager.asymmetric.getKeys();
-          
+
             this._pubKey= keys.pubKey;
             this._priKey= keys.priKey;
             this._status= Status.aSymKeysSet;
@@ -70,7 +44,7 @@ export class session{
         catch(e){
             debug(e);
         }
-        
+
     }
 
     public getStatus(){
@@ -80,20 +54,17 @@ export class session{
     public async generateSymKey(){
         try{
             const symKey= await Keymanager.symmetric.generateKey();
-            let symKeyEncrypted;
-    
+
             if(symKey){
                 this._symKey = symKey;
                 this._status = (this._status === Status.aSymKeysSet) ? Status.allKeysSet : Status.symKeySet;
-                symKeyEncrypted= await Crypto.RSA.encrypt(this._pubKey, symKey);
-    
-                return symKeyEncrypted;
+                return  await Crypto.RSA.encrypt(this._pubKey, symKey);
             }
         }
         catch(e){
             debug(e);
         }
-       
+
     }
 
     public async setSymKey(symKeyEncrypted){
@@ -112,8 +83,7 @@ export class session{
     public async getSymKey(){
         try{
             if(this._symKey){
-                const symKeyEncrypted= await Crypto.RSA.encrypt(this._pubKey, this._symKey);
-                return symKeyEncrypted;
+                return await Crypto.RSA.encrypt(this._pubKey, this._symKey);
             }
         }
         catch(e){
@@ -125,10 +95,8 @@ export class session{
         try{
             const symKey= await Crypto.RSA.decrypt(this._priKey,symKeyEncrypted);
             if(symKey){
-                const symKeyToUpdate = oldSymKey ? symKey : this._symKey;                
-                const symKeyEncrypted= await Crypto.RSA.encrypt(publicKey, symKeyToUpdate);
-                                
-                return symKeyEncrypted;
+                const symKeyToUpdate = oldSymKey ? symKey : this._symKey;
+                return await Crypto.RSA.encrypt(publicKey, symKeyToUpdate);
             }
         }
         catch(e){
@@ -139,9 +107,7 @@ export class session{
     public async encrypt(message){
         try{
             const creds = await Crypto.AES.setCredential(this._symKey)
-            const cipher= await Crypto.AES.encrypt(creds,message);
-            
-            return cipher;
+            return await Crypto.AES.encrypt(creds, message);
         }
         catch(e){
             debug(e);
@@ -157,13 +123,11 @@ export class session{
             }
 
             const creds = await Crypto.AES.setCredential(symKeyToBeProcessed)
-            const cipher= await Crypto.AES.decrypt(message,creds.key);
-
-            return cipher;
+            return await Crypto.AES.decrypt(message, creds.key);
         }
         catch(e){
             debug(e);
         }
-        
+
     }
 }
